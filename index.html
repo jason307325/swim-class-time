@@ -3,19 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>游泳課程時間規劃器 - 新版面</title>
+<title>游泳課程時間規劃器 - 方形鍵盤版</title>
 <style>
 * { box-sizing: border-box; margin:0; padding:0; }
-
-html,body {
-    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto;
-    background:#eaf6ff;
-    touch-action: manipulation;
-    height:100%;
-}
+html,body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto; background:#eaf6ff; touch-action: manipulation; height:100%; }
 
 .app { display:flex; flex-direction:column; height:100vh; padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-.main { flex:1; overflow-y:auto; padding:16px; padding-bottom:220px; }
+.main { flex:1; overflow-y:auto; padding:16px; padding-bottom:200px; }
 
 h1 { text-align:center; font-size:22px; color:#0b5394; margin-bottom:16px; }
 
@@ -25,7 +19,7 @@ h1 { text-align:center; font-size:22px; color:#0b5394; margin-bottom:16px; }
 .label { font-weight:600; margin-bottom:6px; display:block; }
 
 .input-card { display:grid; grid-template-columns: repeat(2,1fr); gap:10px; margin-bottom:8px; }
-input { width:100%; padding:12px; font-size:18px; border-radius:12px; border:1px solid #bbb; text-align:center; caret-color:transparent; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+input { width:100%; padding:12px; font-size:18px; border-radius:12px; border:1px solid #bbb; text-align:center; caret-color:initial; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
 
 button.action { width:100%; margin-top:12px; padding:14px; font-size:17px; border:none; border-radius:12px; background:linear-gradient(145deg,#1abc9c,#16a085); color:#fff; box-shadow:0 4px 8px rgba(0,0,0,.2); transition:0.1s; }
 button.action:active { transform:scale(0.97); box-shadow:0 2px 4px rgba(0,0,0,.2); }
@@ -39,8 +33,9 @@ button.action:active { transform:scale(0.97); box-shadow:0 2px 4px rgba(0,0,0,.2
 .item.dragging { opacity:0.5; transform:scale(1.02); }
 .delete { color:#c0392b; font-weight:bold; cursor:pointer; }
 
-.numpad { position:sticky; bottom:0; background:linear-gradient(145deg,#e0f0ff,#cce6ff); padding:10px; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; border-top-left-radius:20px; border-top-right-radius:20px; box-shadow:0 -4px 12px rgba(0,0,0,.15); z-index:10; }
-.numpad button { font-size:24px; padding:14px 0; border-radius:50%; border:1px solid #aac; background:linear-gradient(145deg,#fff,#ddeeff); box-shadow:0 2px 4px rgba(0,0,0,.15); transition:0.1s; }
+/* ===== 虛擬鍵盤 ===== */
+.numpad { position:sticky; bottom:0; background:linear-gradient(145deg,#e0f0ff,#cce6ff); display:grid; grid-template-columns:repeat(3,1fr); gap:6px; border-top-left-radius:20px; border-top-right-radius:20px; box-shadow:0 -4px 12px rgba(0,0,0,.15); z-index:10; height:45vh; padding:6px; }
+.numpad button { font-size:24px; width:100%; aspect-ratio:1/1; border-radius:12px; border:1px solid #aac; background:linear-gradient(145deg,#fff,#ddeeff); box-shadow:0 2px 4px rgba(0,0,0,.15); transition:0.1s; }
 .numpad button:active { transform:scale(0.95); box-shadow:inset 0 2px 4px rgba(0,0,0,.2); }
 </style>
 </head>
@@ -52,27 +47,27 @@ button.action:active { transform:scale(0.97); box-shadow:0 2px 4px rgba(0,0,0,.2
 
 <div class="section">
     <span class="label">課堂總時間（分鐘）</span>
-    <input readonly data-num id="classTime">
+    <input id="classTime">
 </div>
 
 <div class="section">
     <span class="label">每趟時間</span>
     <div class="input-card">
-        <input readonly data-num id="lapMin" placeholder="分">
-        <input readonly data-num id="lapSec" placeholder="秒">
+        <input id="lapMin" placeholder="分">
+        <input id="lapSec" placeholder="秒">
     </div>
 </div>
 
 <div class="section input-card">
-    <input readonly data-num id="lapsPerSet" placeholder="每組幾趟">
-    <input readonly data-num id="sets" placeholder="組數">
+    <input id="lapsPerSet" placeholder="每組幾趟">
+    <input id="sets" placeholder="組數">
 </div>
 
 <div class="section">
     <span class="label">每組休息</span>
     <div class="input-card">
-        <input readonly data-num id="restMin" placeholder="分">
-        <input readonly data-num id="restSec" placeholder="秒">
+        <input id="restMin" placeholder="分">
+        <input id="restSec" placeholder="秒">
     </div>
 </div>
 
@@ -107,14 +102,21 @@ let items = [];
 let dragIndex = null;
 
 const f = s => `${Math.floor(s/60)} 分 ${s%60} 秒`;
-document.querySelectorAll("[data-num]").forEach(i=>i.addEventListener("pointerdown",()=>activeInput=i));
 
+// 點擊輸入框激活
+document.querySelectorAll("input").forEach(i=>{
+    i.addEventListener("focus",()=>activeInput=i);
+    i.addEventListener("click",()=>activeInput=i);
+});
+
+// 虛擬鍵盤
 function num(n){ if(activeInput) activeInput.value+=n; }
 function back(){ if(activeInput) activeInput.value=activeInput.value.slice(0,-1); }
 function clearInput(){ if(activeInput) activeInput.blur(); }
 
+// 核心計算
 function addItem(){
-    if(remainingSeconds===null) remainingSeconds=(classTime.value||0)*60;
+    if(remainingSeconds===null) remainingSeconds=(+classTime.value||0)*60;
     const lap=(+lapMin.value||0)*60+(+lapSec.value||0);
     const swim=lap*(+lapsPerSet.value||0)*(+sets.value||0);
     const rest=((+restMin.value||0)*60+(+restSec.value||0))*Math.max((+sets.value||0)-1,0);
@@ -143,7 +145,7 @@ function render(){
 
 function swap(i){ if(dragIndex===null||dragIndex===i) return; [items[dragIndex],items[i]]=[items[i],items[dragIndex]]; dragIndex=null; render(); }
 function del(i){ remainingSeconds+=items[i]; items.splice(i,1); render(); }
-function clearAll(){ items=[]; remainingSeconds=(classTime.value||0)*60; render(); }
+function clearAll(){ items=[]; remainingSeconds=(+classTime.value||0)*60; render(); }
 </script>
 </body>
 </html>
