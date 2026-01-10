@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>游泳課程時間計算器</title>
+<title>游泳課程時間規劃器</title>
 
 <style>
 body {
@@ -13,7 +13,7 @@ body {
 }
 
 .container {
-    max-width: 420px;
+    max-width: 460px;
     margin: auto;
     background: #ffffff;
     padding: 22px;
@@ -24,8 +24,8 @@ body {
 h1 {
     text-align: center;
     font-size: 22px;
-    margin-bottom: 18px;
     color: #0b5394;
+    margin-bottom: 16px;
 }
 
 .section {
@@ -42,7 +42,8 @@ h1 {
     gap: 8px;
 }
 
-.time-row input {
+.time-row input,
+.single input {
     flex: 1;
     padding: 10px;
     font-size: 16px;
@@ -51,19 +52,11 @@ h1 {
     text-align: center;
 }
 
-.single-input input {
-    width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #bbb;
-}
-
 button {
     width: 100%;
-    margin-top: 22px;
+    margin-top: 18px;
     padding: 14px;
-    font-size: 18px;
+    font-size: 17px;
     background: #1abc9c;
     color: white;
     border: none;
@@ -75,12 +68,11 @@ button:hover {
     background: #16a085;
 }
 
-.result {
-    margin-top: 20px;
-    padding: 16px;
+.summary {
+    margin-top: 18px;
+    padding: 14px;
     border-radius: 12px;
     font-size: 16px;
-    line-height: 1.6;
 }
 
 .ok {
@@ -91,12 +83,54 @@ button:hover {
     background: #fdecea;
     color: #c0392b;
 }
+
+.list {
+    margin-top: 16px;
+}
+
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    border-bottom: 1px dashed #ccc;
+    background: #fff;
+}
+
+.drag {
+    cursor: grab;
+    font-size: 18px;
+    padding: 0 8px;
+    color: #555;
+}
+
+.drag:active {
+    cursor: grabbing;
+}
+
+.delete {
+    color: #c0392b;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.dragging {
+    opacity: 0.5;
+}
 </style>
 </head>
 
 <body>
 <div class="container">
-    <h1>🏊 游泳課程時間計算器</h1>
+    <h1>🏊 游泳課程時間規劃器</h1>
+
+    <div class="section single">
+        <div class="label">課堂總時間（分鐘）</div>
+        <input type="number" id="classTime" placeholder="例如：60">
+    </div>
+
+    <hr>
 
     <div class="section">
         <div class="label">每趟時間</div>
@@ -106,14 +140,14 @@ button:hover {
         </div>
     </div>
 
-    <div class="section single-input">
+    <div class="section single">
         <div class="label">每組幾趟</div>
-        <input type="number" id="lapsPerSet" placeholder="例如：4">
+        <input type="number" id="lapsPerSet">
     </div>
 
-    <div class="section single-input">
-        <div class="label">總組數</div>
-        <input type="number" id="sets" placeholder="例如：6">
+    <div class="section single">
+        <div class="label">組數</div>
+        <input type="number" id="sets">
     </div>
 
     <div class="section">
@@ -124,56 +158,97 @@ button:hover {
         </div>
     </div>
 
-    <div class="section single-input">
-        <div class="label">課堂總時間（分鐘）</div>
-        <input type="number" id="classTime" placeholder="例如：60">
+    <button onclick="addItem()">➕ 加入訓練項目</button>
+
+    <div id="summary" class="summary ok">
+        ⏳ 剩餘時間：尚未計算
     </div>
 
-    <button onclick="calculate()">計算課程時間</button>
-
-    <div id="result"></div>
+    <div class="list" id="list"></div>
 </div>
 
 <script>
-function calculate() {
-    const lapMin = Number(document.getElementById("lapMin").value) || 0;
-    const lapSec = Number(document.getElementById("lapSec").value) || 0;
-    const lapsPerSet = Number(document.getElementById("lapsPerSet").value);
-    const sets = Number(document.getElementById("sets").value);
+let remainingSeconds = null;
+let items = [];
+let dragIndex = null;
 
-    const restMin = Number(document.getElementById("restMin").value) || 0;
-    const restSec = Number(document.getElementById("restSec").value) || 0;
+const format = s => `${Math.floor(s / 60)} 分 ${s % 60} 秒`;
 
-    const classTime = Number(document.getElementById("classTime").value);
-
-    const lapSeconds = lapMin * 60 + lapSec;
-    const swimSeconds = lapSeconds * lapsPerSet * sets;
-
-    const restSecondsPerSet = restMin * 60 + restSec;
-    const totalRestSeconds = restSecondsPerSet * Math.max(sets - 1, 0);
-
-    const totalTrainingSeconds = swimSeconds + totalRestSeconds;
-    const classSeconds = classTime * 60;
-    const diff = classSeconds - totalTrainingSeconds;
-
-    const format = s => `${Math.floor(s / 60)} 分 ${s % 60} 秒`;
-
-    let html = `
-        <strong>🏊‍♂️ 游泳時間：</strong>${format(swimSeconds)}<br>
-        <strong>☕ 休息時間：</strong>${format(totalRestSeconds)}<br>
-        <strong>📘 合計時間：</strong>${format(totalTrainingSeconds)}<br><br>
-    `;
-
-    if (diff >= 0) {
-        html += `<strong>⏳ 剩餘時間：</strong>${format(diff)}`;
-        result.className = "result ok";
-    } else {
-        html += `<strong>⚠️ 超過課堂時間：</strong>${format(Math.abs(diff))}`;
-        result.className = "result over";
+function addItem() {
+    if (remainingSeconds === null) {
+        remainingSeconds = (Number(classTime.value) || 0) * 60;
     }
 
-    result.innerHTML = html;
+    const lapSeconds = (Number(lapMin.value) || 0) * 60 + (Number(lapSec.value) || 0);
+    const swim = lapSeconds * (Number(lapsPerSet.value) || 0) * (Number(sets.value) || 0);
+    const rest = ((Number(restMin.value) || 0) * 60 + (Number(restSec.value) || 0)) * Math.max((Number(sets.value) || 0) - 1, 0);
+
+    const total = swim + rest;
+    remainingSeconds -= total;
+
+    items.push(total);
+    render();
 }
+
+function deleteItem(i) {
+    remainingSeconds += items[i];
+    items.splice(i, 1);
+    render();
+}
+
+function render() {
+    list.innerHTML = "";
+
+    items.forEach((sec, i) => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.draggable = true;
+
+        div.ondragstart = () => {
+            dragIndex = i;
+            div.classList.add("dragging");
+        };
+
+        div.ondragend = () => {
+            dragIndex = null;
+            div.classList.remove("dragging");
+        };
+
+        div.ondragover = e => e.preventDefault();
+
+        div.ondrop = () => {
+            if (dragIndex === null || dragIndex === i) return;
+            const moved = items.splice(dragIndex, 1)[0];
+            items.splice(i, 0, moved);
+            render();
+        };
+
+        div.innerHTML = `
+            <span class="drag">≡</span>
+            <span>第 ${i + 1} 項：${format(sec)}</span>
+            <span class="delete" onclick="deleteItem(${i})">✕</span>
+        `;
+
+        list.appendChild(div);
+    });
+
+    if (remainingSeconds >= 0) {
+        summary.className = "summary ok";
+        summary.innerHTML = `⏳ 剩餘時間：${format(remainingSeconds)}`;
+    } else {
+        summary.className = "summary over";
+        summary.innerHTML = `⚠️ 超過課堂時間：${format(Math.abs(remainingSeconds))}`;
+    }
+}
+
+// input 快取
+const classTime = document.getElementById("classTime");
+const lapMin = document.getElementById("lapMin");
+const lapSec = document.getElementById("lapSec");
+const lapsPerSet = document.getElementById("lapsPerSet");
+const sets = document.getElementById("sets");
+const restMin = document.getElementById("restMin");
+const restSec = document.getElementById("restSec");
 </script>
 </body>
 </html>
