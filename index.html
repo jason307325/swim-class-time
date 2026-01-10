@@ -146,7 +146,7 @@ button.action:active {
 }
 
 .numpad button {
-    font-size: 18px;
+    font-size: 24px; /* 字體加大 */
     padding: 12px 0;
     border-radius: 12px;
     background: linear-gradient(145deg,#fff,#ddeeff);
@@ -195,6 +195,7 @@ button.action:active {
 </div>
 
 <button class="action" onclick="addItem()">➕ 加入課程項目</button>
+<button class="action" onclick="clearAll()">🗑 一鍵全部刪除</button>
 
 <div id="summary" class="summary ok">⏳ 尚未計算</div>
 <div id="list" class="list"></div>
@@ -283,6 +284,13 @@ function swap(i){
 function del(i){
     remainingSeconds+=items[i];
     items.splice(i,1);
+    render();
+}
+
+/* ===== 一鍵全部刪除 ===== */
+function clearAll(){
+    items=[];
+    remainingSeconds=(classTime.value||0)*60;
     render();
 }
 </script>
