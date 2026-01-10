@@ -2,198 +2,215 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>游泳課程時間規劃器 - 專業純淨版</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>游泳教練專用 - 時間規劃器</title>
 <style>
-/* 關鍵修正 2: 全域停用雙點縮放，優化點擊反應速度 */
-* { 
-  box-sizing: border-box; 
-  margin: 0; 
-  padding: 0; 
-  touch-action: manipulation; 
-}
+* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 
 html, body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #eaf6ff;
-  height: 100%;
+  background: #f0f7ff;
+  height: 100vh;
   overflow: hidden;
-  /* 禁止使用者選取文字，避免長按彈出系統選單 */
   -webkit-user-select: none;
   user-select: none;
 }
 
 .app { display: flex; flex-direction: column; height: 100vh; }
 
-.main {
+/* 儀表板 - 固定頂部 */
+.dashboard {
+  background: linear-gradient(135deg, #074799, #2196f3);
+  color: white;
+  padding: 16px;
+  padding-top: env(safe-area-inset-top, 16px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1001;
+}
+
+.dash-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.dash-item { flex: 1; text-align: center; }
+.dash-label { font-size: 12px; opacity: 0.8; margin-bottom: 2px; }
+.dash-value { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+.dash-value.warn { color: #ffeb3b; text-shadow: 0 0 10px rgba(255,235,59,0.5); }
+
+/* 總時間輸入格特別樣式 */
+.dash-input {
+  width: 80px;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 6px;
+  color: white;
+  padding: 4px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+.dash-input.active-focus {
+  background: rgba(255,255,255,0.3);
+  border-color: #fff;
+  box-shadow: 0 0 8px #fff;
+  outline: none;
+}
+
+/* 主滾動區 */
+.main-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  padding-bottom: 35vh; /* 確保內容不被 1/3 鍵盤遮擋 */
+  padding: 12px;
+  padding-bottom: 35vh; /* 確保內容不會被鍵盤擋住 */
 }
 
-.container { max-width: 480px; margin: auto; }
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
 
-h1 { text-align: center; font-size: 20px; color: #0b5394; margin-bottom: 16px; }
+.input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.label { font-size: 13px; font-weight: 700; color: #444; margin-bottom: 6px; display: block; }
 
-.section { margin-bottom: 12px; }
-.label { font-weight: 600; font-size: 14px; margin-bottom: 4px; display: block; color: #444; }
-
-.input-card { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-
-/* 關鍵修正 3: Input 樣式優化 */
 input {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   font-size: 20px;
-  border-radius: 10px;
-  border: 2px solid #bbb;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
   text-align: center;
-  background: #fff;
-  transition: all 0.2s;
-  /* 確保完全不會閃爍游標 */
-  caret-color: transparent;
+  background: #fafafa;
+  caret-color: transparent; /* 隱藏游標 */
 }
 
-/* 當前選中的輸入框樣式 */
 input.active-focus {
+  border-color: #2196f3;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.15);
   outline: none;
-  border-color: #1abc9c;
-  background: #f0fffd;
-  box-shadow: 0 0 8px rgba(26,188,156,0.2);
 }
 
-.btn-group { display: flex; gap: 8px; margin-top: 10px; }
-button.action {
-  flex: 1;
-  padding: 14px;
-  font-size: 16px;
+.btn-add {
+  width: 100%;
+  padding: 15px;
+  background: #00b894;
+  color: white;
   border: none;
   border-radius: 10px;
-  color: #fff;
   font-weight: bold;
+  margin-top: 15px;
+  font-size: 17px;
+  box-shadow: 0 4px 0 #008f72;
 }
-.btn-add { background: linear-gradient(145deg, #1abc9c, #16a085); }
-.btn-clear { background: #95a5a6; }
+.btn-add:active { transform: translateY(2px); box-shadow: 0 2px 0 #008f72; }
 
-.summary {
-  padding: 12px;
-  border-radius: 12px;
-  font-weight: bold;
-  margin: 15px 0;
-  text-align: center;
-}
-.ok { background: #d1f2eb; color: #16a085; }
-.over { background: #fadbd8; color: #c0392b; }
-
-.item {
+/* 課程項目清單 */
+.course-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
-  margin-bottom: 8px;
-  border-radius: 10px;
   background: #fff;
-  border-left: 5px solid #3498db;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border-left: 5px solid #2196f3;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
-.delete { color: #e74c3c; font-weight: bold; padding: 5px; }
+.item-info { flex: 1; }
+.item-info b { color: #074799; font-size: 16px; }
+.item-time { color: #666; font-size: 14px; margin-top: 2px; }
+.del-btn { color: #ff5252; font-size: 20px; padding-left: 15px; }
 
-/* 虛擬鍵盤 - 佔據螢幕 1/3 */
+/* 虛擬鍵盤 - 嚴格 1/3 高度 */
 .numpad {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   height: 33.33vh;
-  background: #d4e6f1;
+  background: #cfd8dc;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(4, 1fr);
-  gap: 4px;
-  padding: 6px;
-  z-index: 1000;
+  gap: 2px;
+  padding: 4px;
+  z-index: 1002;
 }
 
 .numpad button {
   border: none;
-  border-radius: 8px;
+  background: #fff;
   font-size: 24px;
   font-weight: bold;
-  background: #fff;
-  color: #2c3e50;
+  color: #263238;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 0 #bdc3c7;
 }
+.numpad button:active { background: #b0bec5; }
+.btn-util { background: #eceff1 !important; color: #546e7a !important; font-size: 18px !important; }
+.btn-del { color: #d32f2f !important; }
 
-.numpad button:active {
-  background: #ebf5fb;
-  transform: translateY(2px);
-  box-shadow: none;
-}
-
-.btn-util { color: #e67e22 !important; }
-.btn-del { color: #c0392b !important; }
 </style>
 </head>
 <body>
 
 <div class="app">
-  <div class="main">
-    <div class="container">
-      <h1>🏊 游泳課程規劃器</h1>
-
-      <div class="section">
-        <span class="label">課堂總時間（分鐘）</span>
-        <input id="classTime" readonly placeholder="點擊輸入">
+  <div class="dashboard">
+    <div class="dash-row">
+      <div class="dash-item" style="border-right: 1px solid rgba(255,255,255,0.2);">
+        <div class="dash-label">課堂總長 (分)</div>
+        <input id="classTime" readonly class="dash-input" placeholder="0">
       </div>
+      <div class="dash-item">
+        <div id="statusLabel" class="dash-label">剩餘可用時間</div>
+        <div id="remainingText" class="dash-value">0分0秒</div>
+      </div>
+    </div>
+  </div>
 
-      <div class="section">
-        <span class="label">單趟時間</span>
-        <div class="input-card">
-          <input id="lapMin" readonly placeholder="分">
-          <input id="lapSec" readonly placeholder="秒">
+  <div class="main-content">
+    <div class="card">
+      <div class="input-grid">
+        <div>
+          <span class="label">單趟 (分 / 秒)</span>
+          <div style="display:flex; gap:6px;">
+            <input id="lapMin" readonly placeholder="分">
+            <input id="lapSec" readonly placeholder="秒">
+          </div>
+        </div>
+        <div>
+          <span class="label">結構 (趟 / 組)</span>
+          <div style="display:flex; gap:6px;">
+            <input id="lapsPerSet" readonly placeholder="趟">
+            <input id="sets" readonly placeholder="組">
+          </div>
         </div>
       </div>
-
-      <div class="section">
-        <span class="label">結構：趟數 / 組數</span>
-        <div class="input-card">
-          <input id="lapsPerSet" readonly placeholder="趟數">
-          <input id="sets" readonly placeholder="組數">
-        </div>
-      </div>
-
-      <div class="section">
-        <span class="label">組間休息</span>
-        <div class="input-card">
+      <div style="margin-top:12px;">
+        <span class="label">組間休息 (分 / 秒)</span>
+        <div style="display:flex; gap:8px;">
           <input id="restMin" readonly placeholder="分">
           <input id="restSec" readonly placeholder="秒">
         </div>
       </div>
-
-      <div class="btn-group">
-        <button class="action btn-add" onclick="addItem()">➕ 加入課程</button>
-        <button class="action btn-clear" onclick="clearAll()">🗑 重置</button>
-      </div>
-
-      <div id="summary" class="summary ok">請設定時間</div>
-      <div id="list" class="list"></div>
+      <button class="btn-add" onclick="addItem()">＋ 加入此訓練項目</button>
     </div>
+
+    <div style="display:flex; justify-content:space-between; padding:0 5px 10px;">
+      <span style="font-weight:bold; color:#546e7a;">課程明細</span>
+      <span onclick="clearAll()" style="color:#d32f2f; font-size:14px; font-weight:bold;">全部重置</span>
+    </div>
+    
+    <div id="list"></div>
   </div>
 
   <div class="numpad">
-    <button onclick="num(7)">7</button>
-    <button onclick="num(8)">8</button>
-    <button onclick="num(9)">9</button>
-    <button onclick="num(4)">4</button>
-    <button onclick="num(5)">5</button>
-    <button onclick="num(6)">6</button>
-    <button onclick="num(1)">1</button>
-    <button onclick="num(2)">2</button>
-    <button onclick="num(3)">3</button>
+    <button onclick="num(7)">7</button><button onclick="num(8)">8</button><button onclick="num(9)">9</button>
+    <button onclick="num(4)">4</button><button onclick="num(5)">5</button><button onclick="num(6)">6</button>
+    <button onclick="num(1)">1</button><button onclick="num(2)">2</button><button onclick="num(3)">3</button>
     <button class="btn-util" onclick="clearInput()">AC</button>
     <button onclick="num(0)">0</button>
-    <button class="btn-del" onclick="back()">⌫</button>
+    <button class="btn-util btn-del" onclick="back()">⌫</button>
   </div>
 </div>
 
@@ -201,57 +218,80 @@ button.action {
 let activeInput = null;
 let items = [];
 
+// 格式化時間（處理正負值）
 const formatTime = s => {
-  const m = Math.floor(Math.abs(s) / 60);
-  const sec = Math.abs(s) % 60;
-  return `${m}分${sec}秒`;
+  const isNeg = s < 0;
+  const abs = Math.abs(s);
+  const m = Math.floor(abs / 60);
+  const sec = abs % 60;
+  return (isNeg ? "-" : "") + `${m}分${sec}秒`;
 };
 
-// 修正 4: 改用 readonly + 自定義點擊事件，徹底封鎖原生鍵盤
+// 點擊事件：綁定輸入框
 document.querySelectorAll("input").forEach(input => {
-  input.addEventListener("click", function() {
-    // 移除其他所有輸入框的高亮
+  input.addEventListener("click", function(e) {
+    e.stopPropagation();
     document.querySelectorAll("input").forEach(el => el.classList.remove("active-focus"));
-    // 高亮當前
     this.classList.add("active-focus");
     activeInput = this;
   });
 });
 
-function num(n) { 
-  if(activeInput) {
-    activeInput.value += n; 
-    render();
+// 點擊空白處取消聚焦
+document.addEventListener("click", (e) => {
+  if (!e.target.closest('input') && !e.target.closest('.numpad')) {
+    document.querySelectorAll("input").forEach(el => el.classList.remove("active-focus"));
+    activeInput = null;
   }
+});
+
+function num(n) { 
+  if(activeInput) { 
+    // 防止總分鐘數過大
+    if(activeInput.id === 'classTime' && activeInput.value.length >= 3) return;
+    activeInput.value += n; 
+    render(); 
+  } 
 }
 
 function back() { 
-  if(activeInput) {
+  if(activeInput) { 
     activeInput.value = activeInput.value.slice(0,-1); 
-    render();
-  }
+    render(); 
+  } 
 }
 
 function clearInput() { 
-  if(activeInput) {
+  if(activeInput) { 
     activeInput.value = ''; 
-    render();
-  }
+    render(); 
+  } 
 }
 
 function addItem() {
-  const lapTime = (+document.getElementById("lapMin").value || 0) * 60 + (+document.getElementById("lapSec").value || 0);
-  const laps = (+document.getElementById("lapsPerSet").value || 0);
-  const setsNum = (+document.getElementById("sets").value || 0);
-  const restTime = ((+document.getElementById("restMin").value || 0) * 60 + (+document.getElementById("restSec").value || 0)) * Math.max(setsNum - 1, 0);
-  
-  const total = (lapTime * laps * setsNum) + restTime;
-  
-  if(total <= 0) return alert("請輸入有效內容");
+  const lm = +document.getElementById("lapMin").value || 0;
+  const ls = +document.getElementById("lapSec").value || 0;
+  const lps = +document.getElementById("lapsPerSet").value || 0;
+  const st = +document.getElementById("sets").value || 0;
+  const rm = +document.getElementById("restMin").value || 0;
+  const rs = +document.getElementById("restSec").value || 0;
 
-  items.push({ desc: `${laps}趟 x ${setsNum}組`, seconds: total });
+  const singleLap = (lm * 60) + ls;
+  const restTime = ((rm * 60) + rs) * Math.max(st - 1, 0);
+  const total = (singleLap * lps * st) + restTime;
   
-  // 清除除了總時間外的欄位
+  if(total <= 0 || st <= 0) {
+    alert("請輸入完整的趟數與組數");
+    return;
+  }
+
+  items.push({ 
+    desc: `${lps}趟 x ${st}組`, 
+    sub: `(每趟${formatTime(singleLap)}, 休息${formatTime((rm*60)+rs)})`,
+    seconds: total 
+  });
+  
+  // 清除輸入欄位
   ["lapMin", "lapSec", "lapsPerSet", "sets", "restMin", "restSec"].forEach(id => {
     document.getElementById(id).value = "";
   });
@@ -259,31 +299,45 @@ function addItem() {
 }
 
 function render() {
-  const totalLimit = (+document.getElementById("classTime").value || 0) * 60;
+  const classTimeVal = +document.getElementById("classTime").value || 0;
+  const totalLimit = classTimeVal * 60;
   const usedSeconds = items.reduce((sum, item) => sum + item.seconds, 0);
   const remaining = totalLimit - usedSeconds;
 
+  const remainingText = document.getElementById("remainingText");
+  const statusLabel = document.getElementById("statusLabel");
+  
+  // 更新儀表板
+  if (totalLimit === 0 && items.length === 0) {
+    statusLabel.innerText = "請先設定總時間";
+    remainingText.innerText = "0分0秒";
+    remainingText.classList.remove("warn");
+  } else {
+    remainingText.innerText = formatTime(remaining);
+    if (remaining >= 0) {
+      statusLabel.innerText = "剩餘可用時間";
+      remainingText.classList.remove("warn");
+    } else {
+      statusLabel.innerText = "⚠️ 已超出預算";
+      remainingText.classList.add("warn");
+    }
+  }
+
+  // 更新清單
   const listEl = document.getElementById("list");
   listEl.innerHTML = "";
-  
   items.forEach((item, i) => {
     const d = document.createElement("div");
-    d.className = "item";
+    d.className = "course-item";
     d.innerHTML = `
-      <div><strong>#${i+1}</strong> ${item.desc}</div>
-      <div>${formatTime(item.seconds)} <span class="delete" onclick="del(${i})">✕</span></div>
+      <div class="item-info">
+        <b>#${i+1} ${item.desc}</b>
+        <div class="item-time">總時長: ${formatTime(item.seconds)} ${item.sub}</div>
+      </div>
+      <div class="del-btn" onclick="del(${i})">✕</div>
     `;
     listEl.appendChild(d);
   });
-
-  const summaryEl = document.getElementById("summary");
-  if(totalLimit === 0) {
-    summaryEl.className = "summary ok";
-    summaryEl.innerHTML = "請先設定課堂總時間";
-  } else {
-    summaryEl.className = "summary " + (remaining >= 0 ? "ok" : "over");
-    summaryEl.innerHTML = (remaining >= 0 ? "⏳ 剩餘：" : "⚠️ 超出：") + formatTime(remaining);
-  }
 }
 
 function del(i) {
@@ -292,11 +346,15 @@ function del(i) {
 }
 
 function clearAll() {
-  if(confirm("確定重置？")) {
+  if(confirm("確定要重置所有教學進度嗎？")) {
     items = [];
+    document.querySelectorAll("input").forEach(i => i.value = "");
     render();
   }
 }
+
+// 初始執行一次
+render();
 </script>
 
 </body>
