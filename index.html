@@ -2,34 +2,49 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>游泳課程時間規劃器</title>
 
 <style>
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
     background: #eaf6ff;
-    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+    touch-action: manipulation; /* 防雙點放大，保留雙指 */
+}
+
+body {
+    padding:
+        env(safe-area-inset-top)
+        env(safe-area-inset-right)
+        env(safe-area-inset-bottom)
+        env(safe-area-inset-left);
 }
 
 .container {
-    max-width: 460px;
+    max-width: 480px;
     margin: auto;
-    background: #ffffff;
-    padding: 22px;
+    background: #fff;
+    padding: 16px;
     border-radius: 16px;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 16px rgba(0,0,0,.15);
 }
 
 h1 {
     text-align: center;
-    font-size: 22px;
+    font-size: 20px;
     color: #0b5394;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .section {
-    margin-top: 14px;
+    margin-top: 12px;
 }
 
 .label {
@@ -37,218 +52,159 @@ h1 {
     margin-bottom: 6px;
 }
 
-.time-row {
-    display: flex;
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
 }
 
-.time-row input,
-.single input {
-    flex: 1;
+input {
+    width: 100%;
     padding: 10px;
     font-size: 16px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1px solid #bbb;
     text-align: center;
 }
 
 button {
     width: 100%;
-    margin-top: 18px;
+    margin-top: 14px;
     padding: 14px;
     font-size: 17px;
     background: #1abc9c;
-    color: white;
+    color: #fff;
     border: none;
     border-radius: 12px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #16a085;
 }
 
 .summary {
-    margin-top: 18px;
-    padding: 14px;
+    margin-top: 14px;
+    padding: 12px;
     border-radius: 12px;
-    font-size: 16px;
 }
 
-.ok {
-    background: #e8f8f5;
+.ok { background: #e8f8f5; }
+.over { background: #fdecea; color: #c0392b; }
+
+/* ===== 九宮格鍵盤 ===== */
+.numpad {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: env(safe-area-inset-bottom);
+    background: #f8f9fa;
+    padding: 10px;
+    display: none;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
 }
 
-.over {
-    background: #fdecea;
-    color: #c0392b;
-}
-
-.list {
-    margin-top: 16px;
-}
-
-.item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px;
-    border-bottom: 1px dashed #ccc;
+.numpad button {
+    font-size: 20px;
+    padding: 14px 0;
+    border-radius: 10px;
     background: #fff;
-}
-
-.drag {
-    cursor: grab;
-    font-size: 18px;
-    padding: 0 8px;
-    color: #555;
-}
-
-.drag:active {
-    cursor: grabbing;
-}
-
-.delete {
-    color: #c0392b;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 4px 8px;
-}
-
-.dragging {
-    opacity: 0.5;
+    border: 1px solid #ccc;
 }
 </style>
 </head>
 
 <body>
+
 <div class="container">
-    <h1>🏊 游泳課程時間規劃器</h1>
+    <h1>🏊 課程時間規劃器</h1>
 
-    <div class="section single">
+    <div class="section">
         <div class="label">課堂總時間（分鐘）</div>
-        <input type="number" id="classTime" placeholder="例如：60">
+        <input data-num id="classTime">
     </div>
-
-    <hr>
 
     <div class="section">
         <div class="label">每趟時間</div>
-        <div class="time-row">
-            <input type="number" id="lapMin" placeholder="分">
-            <input type="number" id="lapSec" placeholder="秒">
+        <div class="grid-2">
+            <input data-num id="lapMin" placeholder="分">
+            <input data-num id="lapSec" placeholder="秒">
         </div>
     </div>
 
-    <div class="section single">
-        <div class="label">每組幾趟</div>
-        <input type="number" id="lapsPerSet">
-    </div>
-
-    <div class="section single">
-        <div class="label">組數</div>
-        <input type="number" id="sets">
+    <div class="section grid-2">
+        <input data-num id="lapsPerSet" placeholder="每組幾趟">
+        <input data-num id="sets" placeholder="組數">
     </div>
 
     <div class="section">
-        <div class="label">每組休息時間（可不填）</div>
-        <div class="time-row">
-            <input type="number" id="restMin" placeholder="分">
-            <input type="number" id="restSec" placeholder="秒">
+        <div class="label">每組休息</div>
+        <div class="grid-2">
+            <input data-num id="restMin" placeholder="分">
+            <input data-num id="restSec" placeholder="秒">
         </div>
     </div>
 
-    <button onclick="addItem()">➕ 加入訓練項目</button>
+    <button onclick="addItem()">➕ 加入課程</button>
 
-    <div id="summary" class="summary ok">
-        ⏳ 剩餘時間：尚未計算
-    </div>
+    <div id="summary" class="summary ok">⏳ 尚未計算</div>
+    <div id="list"></div>
+</div>
 
-    <div class="list" id="list"></div>
+<!-- 九宮格鍵盤 -->
+<div class="numpad" id="numpad">
+    <button onclick="num(7)">7</button>
+    <button onclick="num(8)">8</button>
+    <button onclick="num(9)">9</button>
+    <button onclick="num(4)">4</button>
+    <button onclick="num(5)">5</button>
+    <button onclick="num(6)">6</button>
+    <button onclick="num(1)">1</button>
+    <button onclick="num(2)">2</button>
+    <button onclick="num(3)">3</button>
+    <button onclick="num(0)">0</button>
+    <button onclick="back()">⌫</button>
+    <button onclick="hide()">✔</button>
 </div>
 
 <script>
-let remainingSeconds = null;
+let focusInput = null;
+let remaining = null;
 let items = [];
-let dragIndex = null;
 
-const format = s => `${Math.floor(s / 60)} 分 ${s % 60} 秒`;
+document.querySelectorAll("[data-num]").forEach(i => {
+    i.addEventListener("focus", () => {
+        focusInput = i;
+        numpad.style.display = "grid";
+    });
+});
+
+function num(n) {
+    if (focusInput) focusInput.value += n;
+}
+function back() {
+    if (focusInput)
+        focusInput.value = focusInput.value.slice(0, -1);
+}
+function hide() {
+    numpad.style.display = "none";
+}
+
+const f = s => `${Math.floor(s/60)} 分 ${s%60} 秒`;
 
 function addItem() {
-    if (remainingSeconds === null) {
-        remainingSeconds = (Number(classTime.value) || 0) * 60;
-    }
+    if (remaining === null)
+        remaining = (classTime.value || 0) * 60;
 
-    const lapSeconds = (Number(lapMin.value) || 0) * 60 + (Number(lapSec.value) || 0);
-    const swim = lapSeconds * (Number(lapsPerSet.value) || 0) * (Number(sets.value) || 0);
-    const rest = ((Number(restMin.value) || 0) * 60 + (Number(restSec.value) || 0)) * Math.max((Number(sets.value) || 0) - 1, 0);
-
+    const lap = lapMin.value*60 + +lapSec.value;
+    const swim = lap * lapsPerSet.value * sets.value;
+    const rest = (restMin.value*60 + +restSec.value) * Math.max(sets.value-1,0);
     const total = swim + rest;
-    remainingSeconds -= total;
 
+    remaining -= total;
     items.push(total);
-    render();
+
+    summary.className = "summary " + (remaining>=0?"ok":"over");
+    summary.innerHTML = remaining>=0
+        ? `⏳ 剩餘：${f(remaining)}`
+        : `⚠️ 超過：${f(-remaining)}`;
 }
-
-function deleteItem(i) {
-    remainingSeconds += items[i];
-    items.splice(i, 1);
-    render();
-}
-
-function render() {
-    list.innerHTML = "";
-
-    items.forEach((sec, i) => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.draggable = true;
-
-        div.ondragstart = () => {
-            dragIndex = i;
-            div.classList.add("dragging");
-        };
-
-        div.ondragend = () => {
-            dragIndex = null;
-            div.classList.remove("dragging");
-        };
-
-        div.ondragover = e => e.preventDefault();
-
-        div.ondrop = () => {
-            if (dragIndex === null || dragIndex === i) return;
-            const moved = items.splice(dragIndex, 1)[0];
-            items.splice(i, 0, moved);
-            render();
-        };
-
-        div.innerHTML = `
-            <span class="drag">≡</span>
-            <span>第 ${i + 1} 項：${format(sec)}</span>
-            <span class="delete" onclick="deleteItem(${i})">✕</span>
-        `;
-
-        list.appendChild(div);
-    });
-
-    if (remainingSeconds >= 0) {
-        summary.className = "summary ok";
-        summary.innerHTML = `⏳ 剩餘時間：${format(remainingSeconds)}`;
-    } else {
-        summary.className = "summary over";
-        summary.innerHTML = `⚠️ 超過課堂時間：${format(Math.abs(remainingSeconds))}`;
-    }
-}
-
-// input 快取
-const classTime = document.getElementById("classTime");
-const lapMin = document.getElementById("lapMin");
-const lapSec = document.getElementById("lapSec");
-const lapsPerSet = document.getElementById("lapsPerSet");
-const sets = document.getElementById("sets");
-const restMin = document.getElementById("restMin");
-const restSec = document.getElementById("restSec");
 </script>
 </body>
 </html>
