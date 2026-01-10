@@ -32,7 +32,7 @@ html, body {
     flex: 1;
     overflow-y: auto;
     padding: 16px;
-    padding-bottom: 200px;
+    padding-bottom: 220px; /* 預留鍵盤高度 */
 }
 
 .container {
@@ -74,26 +74,34 @@ input {
     caret-color: transparent;
 }
 
+/* ===== 按鈕 ===== */
 button.action {
     width: 100%;
     margin-top: 14px;
     padding: 14px;
     font-size: 17px;
-    background: #1abc9c;
+    background: linear-gradient(145deg,#1abc9c,#16a085);
     color: white;
     border: none;
     border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,.2);
+    transition: all 0.1s ease;
+}
+button.action:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
 }
 
+/* ===== 課程清單 ===== */
 .summary {
     margin-top: 14px;
     padding: 12px;
     border-radius: 12px;
+    font-weight: 500;
 }
 .ok { background: #e8f8f5; }
 .over { background: #fdecea; color: #c0392b; }
 
-/* ===== 課程清單 ===== */
 .list {
     margin-top: 12px;
     font-size: 15px;
@@ -103,49 +111,57 @@ button.action {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    margin-bottom: 6px;
-    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 12px;
     background: #f4f9ff;
     border: 1px dashed #aac;
     cursor: grab;
+    transition: all 0.15s ease;
 }
-
 .item.dragging {
-    opacity: 0.4;
+    opacity: 0.5;
+    transform: scale(1.02);
 }
 
 .delete {
     color: #c0392b;
     font-weight: bold;
-    margin-left: 10px;
     cursor: pointer;
 }
 
-/* ===== 九宮格鍵盤 ===== */
+/* ===== 虛擬鍵盤 ===== */
 .numpad {
     position: sticky;
     bottom: 0;
-    background: #f8f9fa;
-    padding: 8px;
+    background: linear-gradient(145deg,#e0f0ff,#cce6ff);
+    padding: 10px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 6px;
-    border-top: 1px solid #ccc;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -4px 12px rgba(0,0,0,.15);
+    z-index: 10;
 }
 
 .numpad button {
     font-size: 18px;
     padding: 12px 0;
-    border-radius: 10px;
-    background: #fff;
-    border: 1px solid #ccc;
+    border-radius: 12px;
+    background: linear-gradient(145deg,#fff,#ddeeff);
+    border: 1px solid #aac;
+    box-shadow: 0 2px 4px rgba(0,0,0,.15);
+    transition: all 0.1s ease;
+}
+.numpad button:active {
+    transform: scale(0.95);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.2);
 }
 </style>
 </head>
 
 <body>
-
 <div class="app">
 
 <div class="main">
@@ -212,8 +228,8 @@ let dragIndex = null;
 
 const f = s => `${Math.floor(s/60)} 分 ${s%60} 秒`;
 
-document.querySelectorAll("[data-num]").forEach(i => {
-    i.addEventListener("pointerdown", () => activeInput = i);
+document.querySelectorAll("[data-num]").forEach(i=>{
+    i.addEventListener("pointerdown",()=>activeInput=i);
 });
 
 function num(n){ if(activeInput) activeInput.value+=n; }
