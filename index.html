@@ -19,12 +19,24 @@ html, body {
     touch-action: manipulation; /* 防雙點放大，保留雙指 */
 }
 
-body {
+/* 整體 App 容器 */
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
     padding:
         env(safe-area-inset-top)
         env(safe-area-inset-right)
         env(safe-area-inset-bottom)
         env(safe-area-inset-left);
+}
+
+/* ===== 上方可滾動內容 ===== */
+.main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    padding-bottom: 220px; /* 預留鍵盤高度 */
 }
 
 .container {
@@ -60,22 +72,36 @@ h1 {
 
 input {
     width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 10px;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 12px;
     border: 1px solid #bbb;
     text-align: center;
 }
 
-button {
-    width: 100%;
-    margin-top: 14px;
-    padding: 14px;
-    font-size: 17px;
-    background: #1abc9c;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
+/* 禁止系統鍵盤 */
+input {
+    caret-color: transparent;
+}
+
+/* ===== 九宮格鍵盤 ===== */
+.numpad {
+    position: sticky;
+    bottom: 0;
+    background: #f8f9fa;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    border-top: 1px solid #ccc;
+}
+
+.numpad button {
+    font-size: 22px;
+    padding: 16px 0;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #ccc;
 }
 
 .summary {
@@ -86,125 +112,91 @@ button {
 
 .ok { background: #e8f8f5; }
 .over { background: #fdecea; color: #c0392b; }
-
-/* ===== 九宮格鍵盤 ===== */
-.numpad {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: env(safe-area-inset-bottom);
-    background: #f8f9fa;
-    padding: 10px;
-    display: none;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-}
-
-.numpad button {
-    font-size: 20px;
-    padding: 14px 0;
-    border-radius: 10px;
-    background: #fff;
-    border: 1px solid #ccc;
-}
 </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h1>🏊 課程時間規劃器</h1>
+<div class="app">
 
-    <div class="section">
-        <div class="label">課堂總時間（分鐘）</div>
-        <input data-num id="classTime">
-    </div>
+    <!-- 上方主內容 -->
+    <div class="main">
+        <div class="container">
+            <h1>🏊 課程時間規劃器</h1>
 
-    <div class="section">
-        <div class="label">每趟時間</div>
-        <div class="grid-2">
-            <input data-num id="lapMin" placeholder="分">
-            <input data-num id="lapSec" placeholder="秒">
+            <div class="section">
+                <div class="label">課堂總時間（分鐘）</div>
+                <input readonly data-num id="classTime">
+            </div>
+
+            <div class="section">
+                <div class="label">每趟時間</div>
+                <div class="grid-2">
+                    <input readonly data-num id="lapMin" placeholder="分">
+                    <input readonly data-num id="lapSec" placeholder="秒">
+                </div>
+            </div>
+
+            <div class="section grid-2">
+                <input readonly data-num id="lapsPerSet" placeholder="每組幾趟">
+                <input readonly data-num id="sets" placeholder="組數">
+            </div>
+
+            <div class="section">
+                <div class="label">每組休息</div>
+                <div class="grid-2">
+                    <input readonly data-num id="restMin" placeholder="分">
+                    <input readonly data-num id="restSec" placeholder="秒">
+                </div>
+            </div>
+
+            <div class="summary ok" id="summary">⏳ 尚未計算</div>
         </div>
     </div>
 
-    <div class="section grid-2">
-        <input data-num id="lapsPerSet" placeholder="每組幾趟">
-        <input data-num id="sets" placeholder="組數">
+    <!-- 九宮格鍵盤（固定在底部） -->
+    <div class="numpad">
+        <button onclick="num(7)">7</button>
+        <button onclick="num(8)">8</button>
+        <button onclick="num(9)">9</button>
+        <button onclick="num(4)">4</button>
+        <button onclick="num(5)">5</button>
+        <button onclick="num(6)">6</button>
+        <button onclick="num(1)">1</button>
+        <button onclick="num(2)">2</button>
+        <button onclick="num(3)">3</button>
+        <button onclick="num(0)">0</button>
+        <button onclick="back()">⌫</button>
+        <button onclick="clearInput()">C</button>
     </div>
 
-    <div class="section">
-        <div class="label">每組休息</div>
-        <div class="grid-2">
-            <input data-num id="restMin" placeholder="分">
-            <input data-num id="restSec" placeholder="秒">
-        </div>
-    </div>
-
-    <button onclick="addItem()">➕ 加入課程</button>
-
-    <div id="summary" class="summary ok">⏳ 尚未計算</div>
-    <div id="list"></div>
-</div>
-
-<!-- 九宮格鍵盤 -->
-<div class="numpad" id="numpad">
-    <button onclick="num(7)">7</button>
-    <button onclick="num(8)">8</button>
-    <button onclick="num(9)">9</button>
-    <button onclick="num(4)">4</button>
-    <button onclick="num(5)">5</button>
-    <button onclick="num(6)">6</button>
-    <button onclick="num(1)">1</button>
-    <button onclick="num(2)">2</button>
-    <button onclick="num(3)">3</button>
-    <button onclick="num(0)">0</button>
-    <button onclick="back()">⌫</button>
-    <button onclick="hide()">✔</button>
 </div>
 
 <script>
-let focusInput = null;
-let remaining = null;
-let items = [];
+let activeInput = null;
 
-document.querySelectorAll("[data-num]").forEach(i => {
-    i.addEventListener("focus", () => {
-        focusInput = i;
-        numpad.style.display = "grid";
+/* 指定目前輸入框（不用 focus，避免系統鍵盤） */
+document.querySelectorAll("[data-num]").forEach(input => {
+    input.addEventListener("pointerdown", () => {
+        activeInput = input;
     });
 });
 
 function num(n) {
-    if (focusInput) focusInput.value += n;
+    if (!activeInput) return;
+    activeInput.value += n;
 }
+
 function back() {
-    if (focusInput)
-        focusInput.value = focusInput.value.slice(0, -1);
-}
-function hide() {
-    numpad.style.display = "none";
+    if (!activeInput) return;
+    activeInput.value = activeInput.value.slice(0, -1);
 }
 
-const f = s => `${Math.floor(s/60)} 分 ${s%60} 秒`;
-
-function addItem() {
-    if (remaining === null)
-        remaining = (classTime.value || 0) * 60;
-
-    const lap = lapMin.value*60 + +lapSec.value;
-    const swim = lap * lapsPerSet.value * sets.value;
-    const rest = (restMin.value*60 + +restSec.value) * Math.max(sets.value-1,0);
-    const total = swim + rest;
-
-    remaining -= total;
-    items.push(total);
-
-    summary.className = "summary " + (remaining>=0?"ok":"over");
-    summary.innerHTML = remaining>=0
-        ? `⏳ 剩餘：${f(remaining)}`
-        : `⚠️ 超過：${f(-remaining)}`;
+function clearInput() {
+    if (!activeInput) return;
+    activeInput.value = "";
 }
 </script>
+
 </body>
 </html>
