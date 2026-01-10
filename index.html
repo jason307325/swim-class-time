@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>游泳課程時間計算器</title>
+
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+    background: #eaf6ff;
+    padding: 20px;
+}
+
+.container {
+    max-width: 420px;
+    margin: auto;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+h1 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #0b5394;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 600;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #bbb;
+}
+
+button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    font-size: 18px;
+    background: #1abc9c;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #16a085;
+}
+
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.ok {
+    background: #e8f8f5;
+}
+
+.over {
+    background: #fdecea;
+    color: #c0392b;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h1>🏊 游泳課程時間計算器</h1>
+
+    <label>每趟分鐘</label>
+    <input type="number" id="lapMin" placeholder="例如：0">
+
+    <label>每趟秒數</label>
+    <input type="number" id="lapSec" placeholder="例如：40">
+
+    <label>每組幾趟</label>
+    <input type="number" id="lapsPerSet" placeholder="例如：4">
+
+    <label>總組數</label>
+    <input type="number" id="sets" placeholder="例如：6">
+
+    <label>課堂總時間（分鐘）</label>
+    <input type="number" id="classTime" placeholder="例如：60">
+
+    <button onclick="calculate()">計算課程時間</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+function calculate() {
+    const lapMin = Number(document.getElementById("lapMin").value);
+    const lapSec = Number(document.getElementById("lapSec").value);
+    const lapsPerSet = Number(document.getElementById("lapsPerSet").value);
+    const sets = Number(document.getElementById("sets").value);
+    const classTime = Number(document.getElementById("classTime").value);
+
+    const oneLapSeconds = lapMin * 60 + lapSec;
+    const trainingSeconds = oneLapSeconds * lapsPerSet * sets;
+    const classSeconds = classTime * 60;
+    const diff = classSeconds - trainingSeconds;
+
+    const trainMin = Math.floor(trainingSeconds / 60);
+    const trainSec = trainingSeconds % 60;
+
+    let html = `
+        <strong>📘 總訓練時間：</strong><br>
+        ${trainMin} 分 ${trainSec} 秒<br><br>
+    `;
+
+    if (diff >= 0) {
+        const rMin = Math.floor(diff / 60);
+        const rSec = diff % 60;
+        html += `<strong>⏳ 剩餘時間：</strong><br>${rMin} 分 ${rSec} 秒`;
+        document.getElementById("result").className = "result ok";
+    } else {
+        const oMin = Math.floor(Math.abs(diff) / 60);
+        const oSec = Math.abs(diff) % 60;
+        html += `<strong>⚠️ 超過課堂時間：</strong><br>${oMin} 分 ${oSec} 秒`;
+        document.getElementById("result").className = "result over";
+    }
+
+    document.getElementById("result").innerHTML = html;
+}
+</script>
+</body>
+</html>
