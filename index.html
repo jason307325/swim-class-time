@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳規劃大師 Pro v11.8</title>
+<title>游泳規劃大師 Pro v12.0</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -18,7 +18,6 @@ body {
   padding-top: env(safe-area-inset-top, 20px); 
 }
 
-/* HUD 佈局 */
 .hud-container { padding: 10px 15px; background: #05070a; border-bottom: 1px solid #1a2028; flex-shrink: 0; }
 .hud-labels { display: flex; justify-content: space-between; margin-bottom: 4px; }
 .hud-inputs { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -27,7 +26,6 @@ body {
 #remText { font-size: 22px; font-weight: 900; color: var(--neon-green); }
 #totalDist { font-size: 20px; font-weight: 900; color: var(--neon-blue); }
 
-/* 輸入框設計 */
 .glass-box {
   background: #090c10; border-radius: 6px; border: 1.5px solid #1a2028;
   display: flex; align-items: center; height: 38px; width: 100%; transition: 0.2s;
@@ -37,7 +35,6 @@ body {
 .glass-box input { width: 100%; background: transparent; border: none; color: #fff; font-size: 16px; font-weight: 800; text-align: right; pointer-events: none; }
 .inner-label { font-size: 9px; color: #555; white-space: nowrap; font-weight: bold; }
 
-/* 標籤網格 */
 .zone-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 8px 12px 4px; }
 .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 0 12px 8px; }
 .tag-btn { font-size: 9px; padding: 6px 0; text-align: center; border-radius: 4px; font-weight: 900; color: #000; opacity: 0.2; transition: 0.2s; border: 1.2px solid transparent; }
@@ -45,13 +42,11 @@ body {
 .cat-btn { background: var(--cat-bg); color: #fff; opacity: 0.3; }
 .cat-btn.active { opacity: 1; background: #555; }
 
-/* 面板 */
 .panel { margin: 0 12px 8px; padding: 10px; border-radius: 12px; background: #161b22; border: 1px solid #30363d; flex-shrink: 0; }
 .row { display: flex; gap: 6px; margin-bottom: 6px; }
 .text-input-box { width: 100%; height: 36px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 6px; color: #fff; padding: 0 10px; font-size: 14px; margin-bottom: 6px; -webkit-user-select: text; user-select: text; }
 .btn-slim { width: 100%; height: 34px; background: var(--neon-blue); border: none; border-radius: 17px; color: #fff; font-weight: 900; font-size: 13px; margin-top: 4px; }
 
-/* 明細列表 */
 .list-area { flex: 1; overflow-y: auto; padding: 5px 12px; }
 .course-card { 
   background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; margin-bottom: 6px; 
@@ -62,7 +57,6 @@ body {
 .card-content b { font-size: 13px; }
 .card-content p { font-size: 10px; color: #777; margin-top: 2px; }
 
-/* 頁尾 */
 .fixed-footer { background: #0a0d12; padding: 6px 10px calc(env(safe-area-inset-bottom, 10px) + 5px); border-top: 1px solid #1a2028; }
 .footer-tips { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
@@ -101,19 +95,19 @@ body {
   </div>
 
   <div class="panel">
-    <input type="text" id="courseNote" class="text-input-box" placeholder="輸入項目內容 (如: 50 自由式)..." onfocus="currentFocus='none'">
+    <input type="text" id="courseNote" class="text-input-box" placeholder="項目內容 (如: 100 自由式)..." onfocus="currentFocus='none'">
     
     <div class="row">
-      <div style="flex:1"><div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')"><span class="inner-label">每趟/分</span><input id="lapMin" readonly placeholder="0"></div></div>
-      <div style="flex:1"><div class="glass-box" id="box-lapSec" onclick="setFocus('lapSec')"><span class="inner-label">每趟/秒</span><input id="lapSec" readonly placeholder="0"></div></div>
+      <div style="flex:1"><div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')"><span class="inner-label">趟/分</span><input id="lapMin" readonly placeholder="0"></div></div>
+      <div style="flex:1"><div class="glass-box" id="box-lapSec" onclick="setFocus('lapSec')"><span class="inner-label">趟/秒</span><input id="lapSec" readonly placeholder="0"></div></div>
       <div style="flex:0.8"><div class="glass-box" id="box-laps" onclick="setFocus('laps')"><span class="inner-label">趟數</span><input id="laps" readonly placeholder="0"></div></div>
       <div style="flex:0.8"><div class="glass-box" id="box-sets" onclick="setFocus('sets')"><span class="inner-label">組數</span><input id="sets" readonly placeholder="0"></div></div>
     </div>
     
     <div class="row">
       <div style="flex:1.6"><div class="glass-box" id="box-dist" onclick="setFocus('dist')"><span class="inner-label">距離/m</span><input id="dist" readonly placeholder="0"></div></div>
-      <div style="flex:1"><div class="glass-box" id="box-resMin" onclick="setFocus('resMin')"><span class="inner-label">休息/分</span><input id="resMin" readonly placeholder="0"></div></div>
-      <div style="flex:1"><div class="glass-box" id="box-resSec" onclick="setFocus('resSec')"><span class="inner-label">休息/秒</span><input id="resSec" readonly placeholder="0"></div></div>
+      <div style="flex:1"><div class="glass-box" id="box-resMin" onclick="setFocus('resMin')"><span class="inner-label">休/分</span><input id="resMin" readonly placeholder="0"></div></div>
+      <div style="flex:1"><div class="glass-box" id="box-resSec" onclick="setFocus('resSec')"><span class="inner-label">休/秒</span><input id="resSec" readonly placeholder="0"></div></div>
     </div>
 
     <button onclick="addItem()" class="btn-slim">加入訓練項目 (+)</button>
@@ -123,10 +117,10 @@ body {
 
   <footer class="fixed-footer">
     <div class="footer-tips">
-        <span style="font-size:10px; color:#555">💡 拖曳可排序 | 長按項目 0.7s 刪除</span>
+        <span style="font-size:10px; color:#555">💡 自動跳格開啟 | 長按 1.0s 刪除</span>
         <div style="display:flex; gap:10px">
-          <button onclick="copyToClipboard()" style="background:#222; color:#fff; border:none; padding:4px 12px; border-radius:15px; font-size:11px">📋 複製課表</button>
-          <button onclick="resetAll()" style="color:var(--neon-red); background:none; border:none; font-size:11px; font-weight:bold">全部清空</button>
+          <button onclick="copyToClipboard()" style="background:#222; color:#fff; border:none; padding:4px 12px; border-radius:15px; font-size:11px">📋 複製</button>
+          <button onclick="resetAll()" style="color:var(--neon-red); background:none; border:none; font-size:11px; font-weight:bold">清空</button>
         </div>
     </div>
     <div class="numpad">
@@ -143,58 +137,39 @@ let items = JSON.parse(localStorage.getItem('swim_v11_items')) || [];
 let selectedZones = []; 
 let selectedCats = [];  
 
-// 初始化拖曳功能
-const sortable = new Sortable(document.getElementById('listArea'), {
-    animation: 150,
-    handle: '.drag-handle',
-    onEnd: function () {
-        const rows = document.querySelectorAll('.course-card');
-        let newItems = [];
-        rows.forEach(row => newItems.push(items[row.dataset.index]));
-        items = newItems;
-        updateList();
-        renderHUD();
-    }
-});
-
-function toggleZone(id, name) {
-  const btn = document.getElementById('btn-z' + id);
-  const index = selectedZones.findIndex(z => z.id === id);
-  if (index > -1) {
-    selectedZones.splice(index, 1);
-    btn.classList.remove('active');
-  } else {
-    selectedZones.push({id, name});
-    btn.classList.add('active');
-  }
-}
-
-function toggleCat(domId, name) {
-  const btn = document.getElementById('cat-' + domId);
-  const index = selectedCats.indexOf(name);
-  if (index > -1) {
-    selectedCats.splice(index, 1);
-    btn.classList.remove('active');
-  } else {
-    selectedCats.push(name);
-    btn.classList.add('active');
-  }
-}
+// 定義跳格順序
+const focusOrder = ['lapMin', 'lapSec', 'laps', 'sets', 'dist', 'resMin', 'resSec'];
+// 定義跳格限制 (滿幾位跳格)
+const jumpLimits = {
+  classTime: 4, lapMin: 4, lapSec: 2, laps: 2, sets: 2, dist: 4, resMin: 4, resSec: 2
+};
 
 function setFocus(id) {
   currentFocus = id;
   document.querySelectorAll('.glass-box').forEach(b => b.classList.remove('active-blue'));
-  document.getElementById('box-' + id).classList.add('active-blue');
+  const targetBox = document.getElementById('box-' + id);
+  if (targetBox) targetBox.classList.add('active-blue');
 }
 
 function press(n) {
   if (currentFocus === 'none') return;
   const input = document.getElementById(currentFocus);
-  if (input.value.length < 4) {
+  const limit = jumpLimits[currentFocus] || 4;
+
+  if (input.value.length < limit) {
     input.value = (input.value === "0") ? n : input.value + n;
     renderHUD();
+    
+    // 自動跳格邏輯
+    if (input.value.length === limit) {
+      const currentIndex = focusOrder.indexOf(currentFocus);
+      if (currentIndex !== -1 && currentIndex < focusOrder.length - 1) {
+        setFocus(focusOrder[currentIndex + 1]);
+      }
+    }
   }
 }
+
 function del() { if (currentFocus!=='none') { document.getElementById(currentFocus).value = document.getElementById(currentFocus).value.slice(0, -1); renderHUD(); } }
 function cls() { if (currentFocus!=='none') { document.getElementById(currentFocus).value = ""; renderHUD(); } }
 
@@ -202,14 +177,16 @@ function addItem() {
   const g = id => parseInt(document.getElementById(id).value) || 0;
   const note = document.getElementById('courseNote').value || "訓練項目";
   
-  const lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec'), d = g('dist');
-  const lp = parseInt(document.getElementById('laps').value) || 1;
-  const st = parseInt(document.getElementById('sets').value) || 1;
+  // 獲取原始值
+  let lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec'), d = g('dist');
+  let lp = parseInt(document.getElementById('laps').value) || 1;
+  let st = parseInt(document.getElementById('sets').value) || 1;
+
+  // 專業秒數轉換進位邏輯 (超過60秒自動轉為分)
+  if (ls >= 60) { lm += Math.floor(ls / 60); ls = ls % 60; }
+  if (rs >= 60) { rm += Math.floor(rs / 60); rs = rs % 60; }
   
-  // 修正後的組間休息邏輯 (簡單總合計算)
   const totalSec = ((lm * 60 + ls) + (rm * 60 + rs)) * lp * st; 
-  
-  // 處理標籤顯示
   const zoneStr = selectedZones.map(z => `[${z.name}]`).join('');
   const catStr = selectedCats.map(c => `[${c}]`).join('');
   const primaryColor = selectedZones.length > 0 ? getComputedStyle(document.getElementById('btn-z'+selectedZones[0].id)).backgroundColor : 'transparent';
@@ -219,17 +196,17 @@ function addItem() {
     dist: d * lp * st, 
     title: note,
     tags: `${catStr}${zoneStr}`,
-    desc: `${d > 0 ? d+'m ' : ''}× ${lp}趟 × ${st}組 (休${rm}分${rs.toString().padStart(2,'0')}秒)`,
+    desc: `${d > 0 ? d+'m ' : ''}× ${lp}趟 × ${st}組 (休 ${rm}:${ls.toString().padStart(2,'0')})`,
     color: primaryColor
   });
   
-  // 重置輸入與標籤
-  ['lapMin','lapSec','resMin','resSec','dist','laps','sets'].forEach(id => document.getElementById(id).value = "");
+  // 重置
+  focusOrder.forEach(id => document.getElementById(id).value = "");
   document.getElementById('courseNote').value = "";
   selectedZones = []; selectedCats = [];
   document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
   
-  updateList(); renderHUD();
+  updateList(); renderHUD(); setFocus('lapMin');
 }
 
 function updateList() {
@@ -271,9 +248,35 @@ function startPress(i) {
       items.splice(i, 1);
       updateList(); renderHUD();
     }
-  }, 700);
+  }, 1000); // 改為 1.0 秒
 }
 function endPress() { clearTimeout(pressTimer); }
+
+// 初始化拖曳
+const sortable = new Sortable(document.getElementById('listArea'), {
+    animation: 150, handle: '.drag-handle',
+    onEnd: function () {
+        const rows = document.querySelectorAll('.course-card');
+        let newItems = [];
+        rows.forEach(row => newItems.push(items[row.dataset.index]));
+        items = newItems;
+        updateList(); renderHUD();
+    }
+});
+
+function toggleZone(id, name) {
+  const btn = document.getElementById('btn-z' + id);
+  const index = selectedZones.findIndex(z => z.id === id);
+  if (index > -1) { selectedZones.splice(index, 1); btn.classList.remove('active'); }
+  else { selectedZones.push({id, name}); btn.classList.add('active'); }
+}
+
+function toggleCat(domId, name) {
+  const btn = document.getElementById('cat-' + domId);
+  const index = selectedCats.indexOf(name);
+  if (index > -1) { selectedCats.splice(index, 1); btn.classList.remove('active'); }
+  else { selectedCats.push(name); btn.classList.add('active'); }
+}
 
 function resetAll() { if(confirm("確定清空所有數據？")) { items = []; document.getElementById('classTime').value=""; updateList(); renderHUD(); } }
 
@@ -283,7 +286,7 @@ function copyToClipboard() {
     txt += `${idx+1}. ${item.tags} ${item.title}: ${item.desc} (${Math.floor(item.seconds/60)}分${item.seconds%60}秒)\n`; 
   });
   const el = document.createElement('textarea'); el.value = txt; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-  alert("課表已複製到剪貼簿！");
+  alert("課表已複製！");
 }
 
 window.onload = () => {
