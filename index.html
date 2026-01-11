@@ -4,126 +4,338 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>游泳規劃器 CYBERPUNK</title>
+<title>游泳規劃器 ULTIMATE</title>
 <style>
-/* ===== 基礎重置 ===== */
-* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+/* ===== 基礎設定與變數 ===== */
 :root {
-  --primary: #00f0ff;
-  --success: #4cf078;
-  --warn: #ff2e54;
-  --bg-dark: #0b0d17;
-  --panel-bg: #121426;
-  --input-bg: #0d101c;
-  --button-bg: linear-gradient(145deg, #0ff, #00a2ff);
+  --bg-dark: #0d1117;
+  --panel-grad: linear-gradient(180deg, #1e242e 0%, #141820 100%);
+  --neon-blue: #00a2ff;
+  --neon-green: #4cd964;
+  --neon-red: #ff3b30;
+  --shadow-black: rgba(0, 0, 0, 0.8);
 }
-html, body { font-family: "SF Pro Text","PingFang TC",sans-serif; background: #0b0d17; color: #e0e0e0; height:100dvh; overflow:hidden; }
-.app { display:flex; flex-direction:column; height:100dvh; }
 
-/* ===== Header ===== */
-.fixed-header { flex-shrink:0; padding-top:max(15px, env(safe-area-inset-top)); background:#0b0d17; border-bottom:1px solid #222; }
-.header-hud { display:flex; justify-content:space-between; align-items:flex-end; padding:10px 15px; gap:10px; }
-.input-box { background: var(--input-bg); border: 1px solid #333; border-radius:8px; padding:5px; flex:1; text-align:center; }
-.input-box.active { border-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
-.val-group input { width:100%; background:transparent; border:none; color:#fff; font-size:18px; font-weight:800; text-align:center; outline:none; }
-.unit { font-size:10px; color:#555; margin-left:2px; }
-.time-overlay { display:flex; flex-direction:column; align-items:flex-end; border-left:1px solid #333; padding-left:10px; gap:2px; min-width:90px; }
-.time-overlay .main-number { font-size:20px; font-weight:900; }
-.time-overlay .bg-number { font-size:36px; color:#222; position:absolute; opacity:0.5; right:15px; top:8px; }
+* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 
-/* ===== Input Section ===== */
-.input-section { padding:10px 15px; display:flex; flex-direction:column; gap:6px; border-bottom:1px solid #222; }
-.row { display:flex; gap:6px; align-items:flex-end; }
-.rest-and-add { display:flex; gap:6px; align-items:center; }
-.btn-add { flex:1; background:var(--button-bg); color:#fff; border:none; border-radius:8px; font-weight:900; font-size:14px; padding:8px; }
-.btn-add:active { transform:scale(0.97); }
+body {
+  font-family: -apple-system, "SF Pro Text", sans-serif;
+  background-color: var(--bg-dark);
+  background-image: radial-gradient(circle at 50% 20%, #1c222d 0%, #0d1117 100%);
+  color: #fff; height: 100dvh; overflow: hidden;
+}
 
-/* ===== Main Content ===== */
-.main-content { flex:1; overflow-y:auto; padding:10px 15px; background:#0b0d17; -webkit-overflow-scrolling: touch; }
-.course-item { background:#121426; padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--primary); margin-bottom:6px; }
-.item-info b { font-size:13px; color:#fff; }
-.item-info p { font-size:10px; color:#888; }
-.item-time { font-size:16px; font-weight:800; color:#fff; }
+.app {
+  display: flex; flex-direction: column; height: 100dvh;
+  padding-top: env(safe-area-inset-top, 20px);
+}
 
-/* ===== Footer ===== */
-.fixed-footer { flex-shrink:0; background:#0b0d17; border-top:1px solid #222; padding-bottom:max(10px, env(safe-area-inset-bottom)); }
-.footer-ctrl { display:flex; justify-content:space-between; padding:5px 15px; }
-.btn-reset { background:#222; border:1px solid var(--warn); color:var(--warn); padding:4px 10px; border-radius:6px; font-size:10px; font-weight:bold; }
-.numpad { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:5px 15px; }
-.numpad button { border:none; border-radius:8px; padding:10px 0; font-size:22px; font-weight:800; color:#fff; background:#121426; }
-.numpad button:active { background:#0f111b; }
-.btn-util { color:#666; font-size:14px; }
-.warn { color:var(--warn); }
+header {
+  text-align: center; padding: 10px 0; font-size: 18px; font-weight: 700;
+  color: #ddd; letter-spacing: 1px; flex-shrink: 0;
+}
+
+/* ===== HUD 數據區 ===== */
+.hud-container {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  padding: 10px 15px; flex-shrink: 0;
+}
+
+.label-sm { font-size: 11px; color: #888; font-weight: 600; margin-bottom: 5px; display: block; }
+
+.glass-box {
+  background: #090c10; border-radius: 8px; border: 2px solid #1a2028;
+  box-shadow: inset 0 2px 10px #000, 0 1px 1px rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center; transition: 0.2s;
+}
+
+/* 發光外框顏色 */
+.glass-box.active-blue { border-color: var(--neon-blue); box-shadow: 0 0 12px rgba(0,162,255,0.5), inset 0 0 8px rgba(0,162,255,0.3); }
+.glass-box.active-green { border-color: var(--neon-green); box-shadow: 0 0 12px rgba(76,217,100,0.5), inset 0 0 8px rgba(76,217,100,0.3); }
+
+.glass-box input {
+  width: 100%; background: transparent; border: none; color: #fff;
+  font-size: 22px; font-weight: 800; text-align: center; outline: none; pointer-events: none;
+}
+.unit { font-size: 10px; color: #666; font-weight: bold; margin-left: 2px; padding-right: 5px; }
+
+/* 剩餘可用 HUD */
+.remaining-hud { position: relative; text-align: right; min-width: 130px; }
+.bg-number {
+  position: absolute; right: 0; bottom: -8px; font-size: 52px; font-weight: 900;
+  color: #1c222d; opacity: 0.7; z-index: 1; transform: scaleX(1.3); pointer-events: none;
+}
+.main-number {
+  position: relative; z-index: 2; font-size: 26px; font-weight: 900;
+  color: var(--neon-green); text-shadow: 0 0 15px rgba(76, 217, 100, 0.6);
+}
+
+/* ===== 輸入面板區 ===== */
+.panel {
+  margin: 5px 15px; padding: 12px; border-radius: 12px;
+  background: var(--panel-grad); border: 1px solid #2a323d;
+  box-shadow: 0 8px 15px var(--shadow-black); flex-shrink: 0;
+}
+
+.row { display: flex; gap: 10px; }
+.col { flex: 1; }
+
+/* 加入按鈕水晶質感 */
+.btn-add {
+  flex: 1; height: 45px; margin-top: 15px;
+  background: linear-gradient(180deg, #007aff 0%, #004a99 100%);
+  border: 1px solid var(--neon-blue); border-radius: 8px;
+  color: white; font-weight: 800; font-size: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.4);
+}
+.btn-add:active { transform: scale(0.98); opacity: 0.9; }
+
+/* ===== 課程明細區 (中間自動撐開) ===== */
+.list-area {
+  flex: 1; overflow-y: auto; padding: 10px 15px;
+  -webkit-overflow-scrolling: touch;
+}
+.course-card {
+  background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px;
+  margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+  border-left: 4px solid var(--neon-blue); border: 1px solid #222;
+}
+.course-card b { font-size: 14px; }
+.course-card p { font-size: 11px; color: #777; }
+
+/* ===== 底部鍵盤區 ===== */
+.fixed-footer {
+  background: #0a0d12; border-top: 1px solid #222;
+  padding-bottom: env(safe-area-inset-bottom, 15px); flex-shrink: 0;
+}
+.footer-ctrl { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; }
+
+.btn-reset {
+  background: linear-gradient(180deg, #ff3b30 0%, #a31009 100%);
+  border: 1px solid #ff6b64; color: white; padding: 5px 12px;
+  border-radius: 5px; font-size: 11px; font-weight: 800;
+}
+
+.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px 10px; }
+.num-btn {
+  height: 52px; background: linear-gradient(145deg, #232a35, #141920);
+  border: 1px solid #2d3644; border-radius: 10px;
+  font-size: 24px; font-weight: 600; color: white;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 4px 4px 10px #050505, -1px -1px 3px rgba(255,255,255,0.05);
+}
+.num-btn:active { background: #0d1117; box-shadow: inset 4px 4px 10px #000; transform: translateY(1px); }
+
+.warn { color: var(--neon-red) !important; text-shadow: 0 0 15px rgba(255, 59, 48, 0.6) !important; }
 </style>
 </head>
 <body>
+
 <div class="app">
-  <header class="fixed-header">
-    <div class="header-hud">
-      <div style="flex:1; display:flex; flex-direction:column; gap:2px;">
-        <span style="font-size:10px;color:#888;">總長度 (分)</span>
-        <div class="input-box" id="box-classTime"><div class="val-group"><input id="classTime" placeholder="0"></div></div>
-      </div>
-      <div class="time-overlay">
-        <span style="font-size:10px;color:#888;">剩餘可用</span>
-        <div id="remainingText" class="main-number">0分00秒</div>
+  <header>游泳規劃器 ULTIMATE</header>
+
+  <div class="hud-container">
+    <div class="col">
+      <span class="label-sm">總長度 (分)</span>
+      <div class="glass-box" id="box-classTime" onclick="setFocus('classTime')" style="width: 100px; height: 45px;">
+        <input id="classTime" readonly value="60">
       </div>
     </div>
-    <section class="input-section">
-      <div class="row">
-        <div style="flex:1; display:flex; gap:6px;">
-          <div style="flex:1; display:flex; flex-direction:column;"><span style="font-size:10px;color:#888;">單趟時間</span><div class="input-box" id="box-lapMin"><div class="val-group"><input id="lapMin" placeholder="0"><span class="unit">分</span></div></div></div>
-          <div style="flex:1; display:flex; flex-direction:column;"><span style="font-size:10px;color:#888;"> </span><div class="input-box" id="box-lapSec"><div class="val-group"><input id="lapSec" placeholder="0"><span class="unit">秒</span></div></div></div>
-        </div>
-        <div style="flex:1; display:flex; gap:6px;">
-          <div style="flex:1; display:flex; flex-direction:column;"><span style="font-size:10px;color:#888;">訓練結構</span><div class="input-box" id="box-lapsPerSet"><div class="val-group"><input id="lapsPerSet" placeholder="0"><span class="unit">趟</span></div></div></div>
-          <div style="flex:1; display:flex; flex-direction:column;"><span style="font-size:10px;color:#888;"> </span><div class="input-box" id="box-sets"><div class="val-group"><input id="sets" placeholder="0"><span class="unit">組</span></div></div></div>
-        </div>
-      </div>
-      <div class="row rest-and-add">
-        <div style="flex:2; display:flex; gap:6px;">
-          <div style="flex:1; display:flex; flex-direction:column;"><span style="font-size:10px;color:#888;">組間休息</span><div class="input-box" id="box-restMin"><div class="val-group"><input id="restMin" placeholder="0"><span class="unit">分</span></div></div></div>
-          <div style="flex:1; display:flex; flex-direction:column;"><span style="font-size:10px;color:#888;"> </span><div class="input-box" id="box-restSec"><div class="val-group"><input id="restSec" placeholder="0"><span class="unit">秒</span></div></div></div>
-        </div>
-        <button class="btn-add" onclick="addItem()">加入項目 (+)</button>
-      </div>
-    </section>
-  </header>
+    <div class="remaining-hud">
+      <span class="label-sm">剩餘可用</span>
+      <div class="bg-number" id="bgNum">60</div>
+      <div class="main-number" id="remText">60分00秒</div>
+    </div>
+  </div>
 
-  <main id="scrollArea" class="main-content">
-    <div id="listContainer"></div>
-  </main>
+  <div class="panel">
+    <span class="label-sm">單趟時間</span>
+    <div class="row">
+      <div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')" style="flex:1; height:40px;">
+        <input id="lapMin" readonly placeholder="0"><span class="unit">分</span>
+      </div>
+      <div class="glass-box" id="box-lapSec" onclick="setFocus('lapSec')" style="flex:1; height:40px;">
+        <input id="lapSec" readonly placeholder="0"><span class="unit">秒</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <span class="label-sm">訓練結構</span>
+    <div class="row">
+      <div class="glass-box" id="box-laps" onclick="setFocus('laps')" style="flex:1; height:40px;">
+        <input id="laps" readonly placeholder="0"><span class="unit">趟</span>
+      </div>
+      <div class="glass-box" id="box-sets" onclick="setFocus('sets')" style="flex:1; height:40px;">
+        <input id="sets" readonly placeholder="0"><span class="unit">組</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="row" style="align-items: flex-end;">
+      <div style="flex: 1.5;">
+        <span class="label-sm">組間休息</span>
+        <div class="row">
+          <div class="glass-box" id="box-restMin" onclick="setFocus('restMin')" style="flex:1; height:40px;">
+            <input id="restMin" readonly placeholder="0"><span class="unit">分</span>
+          </div>
+          <div class="glass-box" id="box-restSec" onclick="setFocus('restSec')" style="flex:1; height:40px;">
+            <input id="restSec" readonly placeholder="0"><span class="unit">秒</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-add" onclick="addItem()">加入項目 (+)</button>
+    </div>
+  </div>
+
+  <div class="list-area" id="listArea">
+    </div>
 
   <footer class="fixed-footer">
     <div class="footer-ctrl">
-      <span style="font-size:9px;color:#444;font-weight:bold;">LONG PRESS TO DELETE</span>
-      <button class="btn-reset" onclick="clearAll()">重置資料</button>
+      <span style="font-size: 10px; color: #444; font-weight: bold;">LONG PRESS TO DELETE</span>
+      <button class="btn-reset" onclick="resetAll()">重置所有數據</button>
     </div>
     <div class="numpad">
-      <button onclick="num(7)">7</button><button onclick="num(8)">8</button><button onclick="num(9)">9</button>
-      <button onclick="num(4)">4</button><button onclick="num(5)">5</button><button onclick="num(6)">6</button>
-      <button onclick="num(1)">1</button><button onclick="num(2)">2</button><button onclick="num(3)">3</button>
-      <button class="btn-util" onclick="clearInput()">AC</button>
-      <button onclick="num(0)">0</button>
-      <button class="btn-util" style="color:var(--warn);" onclick="back()">⌫</button>
+      <div class="num-btn" onclick="press(7)">7</div>
+      <div class="num-btn" onclick="press(8)">8</div>
+      <div class="num-btn" onclick="press(9)">9</div>
+      <div class="num-btn" onclick="press(4)">4</div>
+      <div class="num-btn" onclick="press(5)">5</div>
+      <div class="num-btn" onclick="press(6)">6</div>
+      <div class="num-btn" onclick="press(1)">1</div>
+      <div class="num-btn" onclick="press(2)">2</div>
+      <div class="num-btn" onclick="press(3)">3</div>
+      <div class="num-btn" style="color:#888; font-size:16px;" onclick="cls()">AC</div>
+      <div class="num-btn" onclick="press(0)">0</div>
+      <div class="num-btn" style="color:var(--neon-red); font-size:16px;" onclick="del()">⌫</div>
     </div>
   </footer>
 </div>
+
 <script>
-let activeInput=document.getElementById("classTime");
-let items=[];let pressTimer=null;
-const vibrate=ms=>{if(navigator.vibrate)navigator.vibrate(ms);};
-const formatTimeCH=s=>`${Math.floor(s/60)}分${(s%60).toString().padStart(2,'0')}秒`;
-function updateFocusUI(el){document.querySelectorAll('.input-box').forEach(b=>b.classList.remove('active'));let p=el.closest('.input-box');if(p)p.classList.add('active');}
-document.querySelectorAll("input").forEach(input=>input.addEventListener("click",e=>{activeInput=input;updateFocusUI(input);e.stopPropagation();}));
-function num(n){if(!activeInput)return;if(activeInput.value.length>=3)return;activeInput.value+=n;vibrate(10);render();}
-function back(){if(activeInput&&activeInput.value.length>0){activeInput.value=activeInput.value.slice(0,-1);render();}}
-function clearInput(){if(activeInput){activeInput.value='';render();}}
-function addItem(){const getVal=id=>+document.getElementById(id).value||0;const lm=getVal("lapMin"),ls=getVal("lapSec"),lps=getVal("lapsPerSet"),st=getVal("sets"),rm=getVal("restMin"),rs=getVal("restSec");if(st<=0||lps<=0){vibrate([50,50]);return;}const total=((lm*60+ls)*lps*st)+((rm*60+rs)*(st>1?st-1:0));items.push({id:Date.now(),desc:`${lps}趟 x ${st}組`,seconds:total});["lapMin","lapSec","lapsPerSet","sets","restMin","restSec"].forEach(id=>document.getElementById(id).value='');activeInput=document.getElementById("lapMin");updateFocusUI(activeInput);render();const sa=document.getElementById("scrollArea");setTimeout(()=>sa.scrollTo({top:sa.scrollHeight,behavior:'smooth'}),100);}
-function render(){const classVal=+document.getElementById("classTime").value||0;document.getElementById("remainingText").innerText=formatTimeCH(classVal*60-items.reduce((sum,it)=>sum+it.seconds,0));const container=document.getElementById("listContainer");container.innerHTML="";items.forEach((item,index)=>{const div=document.createElement("div");div.className="course-item";div.innerHTML=`<div class="item-info"><b>項目 #${index+1}</b><p>${item.desc}</p></div><div class="item-time">${formatTimeCH(item.seconds)}</div>`;div.ontouchstart=()=>{pressTimer=setTimeout(()=>{vibrate(50);if(confirm("刪除此項目？")){items.splice(index,1);render();}},600);};div.ontouchend=()=>clearTimeout(pressTimer);container.appendChild(div);});}
-function clearAll(){if(confirm("確定清空所有數據？")){items=[];document.getElementById("classTime").value="";render();vibrate(60);}}
-updateFocusUI(activeInput);render();
+let currentFocus = 'classTime';
+let items = [];
+let pressTimer = null;
+
+const vibrate = ms => { if(navigator.vibrate) navigator.vibrate(ms); };
+
+// 聚焦與外框顏色切換
+function setFocus(id) {
+  currentFocus = id;
+  document.querySelectorAll('.glass-box').forEach(b => b.classList.remove('active-blue', 'active-green'));
+  
+  const targetBox = document.getElementById('box-' + id);
+  if (id === 'laps' || id === 'sets') {
+    // 訓練結構面板使用綠色
+    document.getElementById('box-laps').classList.add('active-green');
+    document.getElementById('box-sets').classList.add('active-green');
+  } else {
+    targetBox.classList.add('active-blue');
+  }
+}
+
+// 虛擬鍵盤功能
+function press(n) {
+  const input = document.getElementById(currentFocus);
+  if (input.value.length < 3) {
+    input.value = (input.value === "0") ? n : input.value + n;
+    vibrate(10);
+    renderHUD();
+  }
+}
+
+function del() {
+  const input = document.getElementById(currentFocus);
+  input.value = input.value.slice(0, -1);
+  vibrate(5);
+  renderHUD();
+}
+
+function cls() {
+  document.getElementById(currentFocus).value = "";
+  vibrate(20);
+  renderHUD();
+}
+
+// 計算並更新 HUD
+function renderHUD() {
+  const totalMin = parseInt(document.getElementById('classTime').value) || 0;
+  document.getElementById('bgNum').innerText = totalMin;
+  
+  const usedSeconds = items.reduce((sum, i) => sum + i.seconds, 0);
+  const remainingSeconds = (totalMin * 60) - usedSeconds;
+  
+  const absSec = Math.abs(remainingSeconds);
+  const m = Math.floor(absSec / 60);
+  const s = absSec % 60;
+  
+  const textEl = document.getElementById('remText');
+  textEl.innerText = (remainingSeconds < 0 ? "-" : "") + m + "分" + s.toString().padStart(2, '0') + "秒";
+  textEl.classList.toggle('warn', remainingSeconds < 0);
+}
+
+// 加入課程項目
+function addItem() {
+  const getVal = id => parseInt(document.getElementById(id).value) || 0;
+  const lm = getVal('lapMin'), ls = getVal('lapSec'), lp = getVal('laps'), st = getVal('sets'), rm = getVal('restMin'), rs = getVal('restSec');
+
+  if (lp === 0 || st === 0) { vibrate([50, 50]); return; }
+
+  const total = ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * (st > 1 ? st - 1 : 0));
+  items.push({ seconds: total, desc: `${lp}趟 x ${st}組` });
+
+  // 清空輸入欄位
+  ['lapMin','lapSec','laps','sets','restMin','restSec'].forEach(id => document.getElementById(id).value = "");
+  
+  setFocus('lapMin');
+  updateList();
+  renderHUD();
+  vibrate(30);
+}
+
+// 更新中間明細列表
+function updateList() {
+  const container = document.getElementById('listArea');
+  container.innerHTML = "";
+  items.forEach((item, index) => {
+    const div = document.createElement('div');
+    div.className = 'course-card';
+    div.innerHTML = `<div><b>項目 #${index+1}</b><p>${item.desc}</p></div>
+                     <div style="font-weight:800;">${Math.floor(item.seconds/60)}分${(item.seconds%60).toString().padStart(2,'0')}秒</div>`;
+    
+    // 長按刪除項目
+    div.addEventListener('touchstart', () => {
+      pressTimer = setTimeout(() => {
+        vibrate(60);
+        if(confirm("確定刪除此訓練項目？")) {
+          items.splice(index, 1);
+          updateList();
+          renderHUD();
+        }
+      }, 600);
+    });
+    div.addEventListener('touchend', () => clearTimeout(pressTimer));
+    container.appendChild(div);
+  });
+  // 自動捲動到最新項目
+  container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+}
+
+function resetAll() {
+  if(confirm("重置所有數據？")) {
+    items = [];
+    ['classTime','lapMin','lapSec','laps','sets','restMin','restSec'].forEach(id => document.getElementById(id).value = (id==='classTime'?'60':''));
+    updateList();
+    renderHUD();
+    setFocus('classTime');
+  }
+}
+
+// 初始化聚焦總長度
+setFocus('classTime');
+renderHUD();
 </script>
 </body>
 </html>
