@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳規劃大師 Pro v11.5</title>
+<title>游泳規劃大師 Pro v11.7</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
   --bg-dark: #0d1117; --neon-blue: #00a2ff; --neon-green: #4cd964; --neon-red: #ff3b30;
-  --z1: #4ae3ff; --z2: #4cda64; --z3: #ffcc00; --z4: #ff9500; --z5: #ff3b30; --z6: #af52de;
+  --z1: #4ae3ff; --z2: #4cda64; --z3: #ffcc00; --z4: #ff9500; --z56: #ff3b30;
   --cat-bg: #30363d;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-user-select: none; }
@@ -37,12 +37,13 @@ body {
 .glass-box input { width: 100%; background: transparent; border: none; color: #fff; font-size: 16px; font-weight: 800; text-align: right; pointer-events: none; }
 .inner-label { font-size: 9px; color: #555; white-space: nowrap; font-weight: bold; }
 
-/* Tags */
-.zone-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px; margin: 8px 12px 4px; }
+/* Tags Grid */
+.zone-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 8px 12px 4px; }
 .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 0 12px 8px; }
-.tag-btn { font-size: 9px; padding: 6px 0; text-align: center; border-radius: 4px; font-weight: 900; color: #000; opacity: 0.25; transition: 0.2s; }
-.tag-btn.active { opacity: 1; transform: scale(1.05); border: 1px solid #fff; }
-.cat-btn { background: var(--cat-bg); color: #fff; opacity: 0.4; }
+.tag-btn { font-size: 9px; padding: 6px 0; text-align: center; border-radius: 4px; font-weight: 900; color: #000; opacity: 0.2; transition: 0.2s; border: 1.2px solid transparent; }
+.tag-btn.active { opacity: 1; transform: scale(1.05); border-color: #fff; }
+.cat-btn { background: var(--cat-bg); color: #fff; opacity: 0.3; }
+.cat-btn.active { opacity: 1; background: #555; }
 
 /* Panel */
 .panel { margin: 0 12px 8px; padding: 10px; border-radius: 12px; background: #161b22; border: 1px solid #30363d; flex-shrink: 0; }
@@ -50,15 +51,13 @@ body {
 .text-input-box { width: 100%; height: 36px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 6px; color: #fff; padding: 0 10px; font-size: 14px; margin-bottom: 6px; -webkit-user-select: text; user-select: text; }
 .btn-slim { width: 100%; height: 34px; background: var(--neon-blue); border: none; border-radius: 17px; color: #fff; font-weight: 900; font-size: 13px; margin-top: 4px; }
 
-/* List & Cards */
+/* List */
 .list-area { flex: 1; overflow-y: auto; padding: 5px 12px; }
 .course-card { 
   background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; margin-bottom: 6px; 
-  display: flex; align-items: center; border-left: 4px solid #333; border: 1px solid #222;
-  cursor: grab;
+  display: flex; align-items: center; border-left: 4px solid transparent; border: 1px solid #222;
 }
-.course-card:active { cursor: grabbing; }
-.drag-handle { color: #444; margin-right: 10px; font-size: 18px; }
+.drag-handle { color: #444; margin-right: 10px; font-size: 18px; cursor: grab; }
 .card-content { flex: 1; }
 .card-content b { font-size: 13px; }
 .card-content p { font-size: 10px; color: #777; margin-top: 2px; }
@@ -68,7 +67,6 @@ body {
 .footer-tips { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
 .num-btn { height: 42px; background: #1c222d; border-radius: 8px; font-size: 20px; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-.sortable-ghost { opacity: 0.3; background: var(--neon-blue) !important; }
 </style>
 </head>
 <body>
@@ -87,24 +85,23 @@ body {
   </div>
 
   <div class="zone-grid">
-    <div id="btn-z1" class="tag-btn" style="background:var(--z1)" onclick="selectZone(1)">Z1恢復</div>
-    <div id="btn-z2" class="tag-btn" style="background:var(--z2)" onclick="selectZone(2)">Z2耐力</div>
-    <div id="btn-z3" class="tag-btn" style="background:var(--z3)" onclick="selectZone(3)">Z3閾值</div>
-    <div id="btn-z4" class="tag-btn" style="background:var(--z4)" onclick="selectZone(4)">Z4氧量</div>
-    <div id="btn-z5" class="tag-btn" style="background:var(--z5)" onclick="selectZone(5)">Z5衝刺</div>
-    <div id="btn-z6" class="tag-btn" style="background:var(--z6)" onclick="selectZone(6)">Z6競賽</div>
+    <div id="btn-z1" class="tag-btn" style="background:var(--z1)" onclick="toggleZone(1, 'Z1')">Z1恢復</div>
+    <div id="btn-z2" class="tag-btn" style="background:var(--z2)" onclick="toggleZone(2, 'Z2')">Z2耐力</div>
+    <div id="btn-z3" class="tag-btn" style="background:var(--z3)" onclick="toggleZone(3, 'Z3')">Z3閾值</div>
+    <div id="btn-z4" class="tag-btn" style="background:var(--z4)" onclick="toggleZone(4, 'Z4')">Z4氧量</div>
+    <div id="btn-z56" class="tag-btn" style="background:var(--z56)" onclick="toggleZone(56, 'Z5/6')">Z5/6衝刺</div>
   </div>
 
   <div class="category-grid">
-    <div id="cat-warmup" class="tag-btn cat-btn" onclick="selectCat('warmup', 'Warm Up')">暖身</div>
-    <div id="cat-drill" class="tag-btn cat-btn" onclick="selectCat('drill', 'Drill')">技術</div>
-    <div id="cat-main" class="tag-btn cat-btn" onclick="selectCat('main', 'Main Set')">主課表</div>
-    <div id="cat-cool" class="tag-btn cat-btn" onclick="selectCat('cool', 'Cool Down')">緩放</div>
-    <div id="cat-bonus" class="tag-btn cat-btn" onclick="selectCat('bonus', 'Bonus')">獎勵</div>
+    <div id="cat-warmup" class="tag-btn cat-btn" onclick="toggleCat('warmup', 'Warm Up')">Warm Up</div>
+    <div id="cat-drill" class="tag-btn cat-btn" onclick="toggleCat('drill', 'Drill')">Drill</div>
+    <div id="cat-main" class="tag-btn cat-btn" onclick="toggleCat('main', 'Main Set')">Main Set</div>
+    <div id="cat-cool" class="tag-btn cat-btn" onclick="toggleCat('cool', 'Cool Down')">Cool Down</div>
+    <div id="cat-bonus" class="tag-btn cat-btn" onclick="toggleCat('bonus', 'Bonus')">Bonus</div>
   </div>
 
   <div class="panel">
-    <input type="text" id="courseNote" class="text-input-box" placeholder="輸入課程內容 (如: 50 自由式)..." onfocus="currentFocus='none'">
+    <input type="text" id="courseNote" class="text-input-box" placeholder="項目內容 (如: 50 Backstroke)..." onfocus="currentFocus='none'">
     
     <div class="row">
       <div style="flex:1"><div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')"><span class="inner-label">每趟/分</span><input id="lapMin" readonly placeholder="0"></div></div>
@@ -119,17 +116,17 @@ body {
       <div style="flex:1"><div class="glass-box" id="box-resSec" onclick="setFocus('resSec')"><span class="inner-label">休息/秒</span><input id="resSec" readonly placeholder="0"></div></div>
     </div>
 
-    <button onclick="addItem()" class="btn-slim">加入訓練項目 (+)</button>
+    <button onclick="addItem()" class="btn-slim">ADD TO LIST (+)</button>
   </div>
 
   <div class="list-area" id="listArea"></div>
 
   <footer class="fixed-footer">
     <div class="footer-tips">
-        <span style="font-size:10px; color:#555">💡 拖曳可排序 | 長按刪除</span>
+        <span style="font-size:10px; color:#555">💡 Hold card to delete | Drag handle to reorder</span>
         <div style="display:flex; gap:10px">
-          <button onclick="copyToClipboard()" style="background:#222; color:#fff; border:none; padding:4px 12px; border-radius:15px; font-size:11px">📋 複製課表</button>
-          <button onclick="resetAll()" style="color:var(--neon-red); background:none; border:none; font-size:11px; font-weight:bold">全部清空</button>
+          <button onclick="copyToClipboard()" style="background:#222; color:#fff; border:none; padding:4px 12px; border-radius:15px; font-size:11px">📋 COPY</button>
+          <button onclick="resetAll()" style="color:var(--neon-red); background:none; border:none; font-size:11px; font-weight:bold">CLEAR ALL</button>
         </div>
     </div>
     <div class="numpad">
@@ -143,41 +140,43 @@ body {
 <script>
 let currentFocus = 'classTime';
 let items = JSON.parse(localStorage.getItem('swim_v11_items')) || [];
-const zoneNames = [null, "恢復", "耐力", "閾值", "氧量", "衝刺", "競賽"];
-const zoneColors = [null, '#4ae3ff', '#4cda64', '#ffcc00', '#ff9500', '#ff3b30', '#af52de'];
-let selectedZoneId = null;
-let selectedCat = { id: null, name: '' };
+let selectedZones = []; // 儲存多個 Zone
+let selectedCats = [];  // 儲存多個 Category
 
-// 初始化拖曳功能
 const sortable = new Sortable(document.getElementById('listArea'), {
     animation: 150,
-    ghostClass: 'sortable-ghost',
-    onEnd: function (evt) {
-        const item = items.splice(evt.oldIndex, 1)[0];
-        items.splice(evt.newIndex, 0, item);
-        renderHUD(); // 重新計算與儲存
+    handle: '.drag-handle',
+    onEnd: function () {
+        const rows = document.querySelectorAll('.course-card');
+        let newItems = [];
+        rows.forEach(row => newItems.push(items[row.dataset.index]));
+        items = newItems;
+        updateList();
+        renderHUD();
     }
 });
 
-function selectZone(id) {
-  if (selectedZoneId === id) {
-    selectedZoneId = null;
-    document.querySelectorAll('.zone-grid .tag-btn').forEach(b => b.classList.remove('active'));
+function toggleZone(id, name) {
+  const btn = document.getElementById('btn-z' + id);
+  const index = selectedZones.findIndex(z => z.id === id);
+  if (index > -1) {
+    selectedZones.splice(index, 1);
+    btn.classList.remove('active');
   } else {
-    selectedZoneId = id;
-    document.querySelectorAll('.zone-grid .tag-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('btn-z' + id).classList.add('active');
+    selectedZones.push({id, name});
+    btn.classList.add('active');
   }
 }
 
-function selectCat(domId, name) {
-  if (selectedCat.id === domId) {
-    selectedCat = { id: null, name: '' };
-    document.querySelectorAll('.category-grid .tag-btn').forEach(b => b.classList.remove('active'));
+function toggleCat(domId, name) {
+  const btn = document.getElementById('cat-' + domId);
+  const index = selectedCats.indexOf(name);
+  if (index > -1) {
+    selectedCats.splice(index, 1);
+    btn.classList.remove('active');
   } else {
-    selectedCat = { id: domId, name: name };
-    document.querySelectorAll('.category-grid .tag-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('cat-' + domId).classList.add('active');
+    selectedCats.push(name);
+    btn.classList.add('active');
   }
 }
 
@@ -200,48 +199,46 @@ function cls() { if (currentFocus!=='none') { document.getElementById(currentFoc
 
 function addItem() {
   const g = id => parseInt(document.getElementById(id).value) || 0;
-  const note = document.getElementById('courseNote').value || "訓練項目";
+  const note = document.getElementById('courseNote').value || "Swimming Item";
   
   const lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec'), d = g('dist');
   const lp = parseInt(document.getElementById('laps').value) || 1;
   const st = parseInt(document.getElementById('sets').value) || 1;
   
-  // 組間休息邏輯修正:
-  // 總秒數 = ((單趟時間 + 趟間休息) * 趟數 - 最後一趟休息) * 組數 + (組間休息 * (組數-1))
-  // 簡化版邏輯 (假設目前的 rm/rs 同時作為趟間與組間休息參考):
-  const restTime = rm * 60 + rs;
-  const lapTime = lm * 60 + ls;
-  const totalSec = ((lapTime + restTime) * lp * st); 
+  const totalSec = ((lm * 60 + ls) + (rm * 60 + rs)) * lp * st; 
   
-  const zoneInfo = selectedZoneId ? 
-    { id: selectedZoneId, color: zoneColors[selectedZoneId], name: zoneNames[selectedZoneId] } : 
-    { id: '', color: '#333', name: '' };
+  // 處理多個標籤的顯示字串
+  const zoneStr = selectedZones.map(z => `[${z.name}]`).join('');
+  const catStr = selectedCats.map(c => `[${c}]`).join('');
+  const primaryColor = selectedZones.length > 0 ? getComputedStyle(document.getElementById('btn-z'+selectedZones[0].id)).backgroundColor : 'transparent';
 
   items.push({
     seconds: totalSec, 
     dist: d * lp * st, 
     title: note,
-    category: selectedCat.name,
-    desc: `${d > 0 ? d+'m ' : ''}× ${lp}趟 × ${st}組 (休${rm}分${rs}秒)`,
-    zone: zoneInfo
+    tags: `${catStr}${zoneStr}`,
+    desc: `${d > 0 ? d+'m ' : ''}× ${lp}趟 × ${st}組 (Rest ${rm}:${rs.toString().padStart(2,'0')})`,
+    color: primaryColor
   });
   
+  // 重置
   ['lapMin','lapSec','resMin','resSec','dist','laps','sets'].forEach(id => document.getElementById(id).value = "");
   document.getElementById('courseNote').value = "";
+  selectedZones = []; selectedCats = [];
+  document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
+  
   updateList(); renderHUD();
 }
 
 function updateList() {
   const container = document.getElementById('listArea');
   container.innerHTML = items.map((item, index) => `
-    <div class="course-card" style="border-left-color:${item.zone.color}" 
+    <div class="course-card" data-index="${index}" style="border-left-color:${item.color}" 
          onpointerdown="startPress(${index})" onpointerup="endPress()" onpointerleave="endPress()">
       <div class="drag-handle">☰</div>
       <div class="card-content">
-        <b style="color:${item.zone.id ? item.zone.color : '#fff'}">
-          ${item.category ? `[${item.category}] ` : ''}${item.zone.id ? `[Z${item.zone.id}] ` : ''}${item.title}
-        </b>
-        <p>${item.desc} | 用時: ${Math.floor(item.seconds/60)}分${(item.seconds%60).toString().padStart(2,'0')}秒</p>
+        <b>${item.tags} ${item.title}</b>
+        <p>${item.desc} | Time: ${Math.floor(item.seconds/60)}m ${(item.seconds%60).toString().padStart(2,'0')}s</p>
       </div>
       ${item.dist > 0 ? `<div style="font-size:13px; font-weight:900; color:var(--neon-blue)">${item.dist}m</div>` : ''}
     </div>
@@ -268,7 +265,7 @@ function save() {
 let pressTimer;
 function startPress(i) {
   pressTimer = setTimeout(() => {
-    if(confirm("確定要刪除這項訓練嗎？")) {
+    if(confirm("Delete this item?")) {
       items.splice(i, 1);
       updateList(); renderHUD();
     }
@@ -276,17 +273,15 @@ function startPress(i) {
 }
 function endPress() { clearTimeout(pressTimer); }
 
-function resetAll() { if(confirm("確定清空所有數據？")) { items = []; document.getElementById('classTime').value=""; updateList(); renderHUD(); } }
+function resetAll() { if(confirm("Clear everything?")) { items = []; document.getElementById('classTime').value=""; updateList(); renderHUD(); } }
 
 function copyToClipboard() {
-  let txt = `🏊‍♂️ 游泳課表 (總距離:${document.getElementById('totalDist').innerText})\n---\n`;
+  let txt = `🏊‍♂️ Swimming WOD (Total:${document.getElementById('totalDist').innerText})\n---\n`;
   items.forEach((item, idx) => { 
-    const cStr = item.category ? `[${item.category}]` : '';
-    const zStr = item.zone.id ? `[Z${item.zone.id}]` : '';
-    txt += `${idx+1}. ${cStr}${zStr} ${item.title}: ${item.desc} (${Math.floor(item.seconds/60)}分${item.seconds%60}秒)\n`; 
+    txt += `${idx+1}. ${item.tags} ${item.title}: ${item.desc} (${Math.floor(item.seconds/60)}m ${item.seconds%60}s)\n`; 
   });
   const el = document.createElement('textarea'); el.value = txt; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-  alert("已複製到剪貼簿！");
+  alert("Copied to clipboard!");
 }
 
 window.onload = () => {
