@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳規劃大師 Pro v10</title>
+<title>游泳規劃大師 Pro v10.1</title>
 <style>
 :root {
   --bg-dark: #0d1117; --neon-blue: #00a2ff; --neon-green: #4cd964; --neon-red: #ff3b30;
@@ -12,58 +12,40 @@
 * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-user-select: none; }
 body { font-family: -apple-system, "PingFang TC", sans-serif; background: var(--bg-dark); color: #fff; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
-/* HUD 佈局 - 水平標籤 + 下方輸入框 */
-.hud-container {
-  padding: 12px 15px; background: #05070a; border-bottom: 1px solid #1a2028; flex-shrink: 0;
-}
-.hud-labels { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+/* HUD 佈局 - 文字標籤與輸入格分層 */
+.hud-container { padding: 12px 15px; background: #05070a; border-bottom: 1px solid #1a2028; flex-shrink: 0; }
+.hud-labels { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .hud-inputs { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .hud-item { flex: 1; display: flex; flex-direction: column; align-items: center; }
 
-.label-sm { font-size: 12px; color: #888; font-weight: 900; letter-spacing: 1px; }
-#remText { font-size: 24px; font-weight: 900; color: var(--neon-green); text-align: center; }
+.label-sm { font-size: 11px; color: #888; font-weight: 900; text-transform: uppercase; }
+#remText { font-size: 24px; font-weight: 900; color: var(--neon-green); }
 #totalDist { font-size: 20px; font-weight: 900; color: var(--neon-blue); }
 
-/* 輸入格強化 */
 .glass-box {
   background: #090c10; border-radius: 8px; border: 2px solid #1a2028;
-  display: flex; align-items: center; justify-content: center; height: 48px; width: 100%; transition: 0.2s;
+  display: flex; align-items: center; justify-content: center; height: 44px; width: 100%; transition: 0.2s;
 }
 .glass-box.active-blue { border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0,162,255,0.2); }
 .glass-box input { width: 100%; background: transparent; border: none; color: #fff; font-size: 20px; font-weight: 800; text-align: center; pointer-events: none; }
 
 /* Zone 標籤 */
 .zone-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin: 8px 0; }
-.zone-tag-btn { 
-  font-size: 9px; padding: 6px 0; text-align: center; border-radius: 4px; 
-  font-weight: 900; color: #000; opacity: 0.3; transition: 0.2s;
-}
-.zone-tag-btn.active { opacity: 1; transform: scale(1.05); border: 1.5px solid #fff; }
+.zone-tag-btn { font-size: 9px; padding: 6px 0; text-align: center; border-radius: 4px; font-weight: 900; color: #000; opacity: 0.3; }
+.zone-tag-btn.active { opacity: 1; outline: 1.5px solid #fff; }
 
-/* 面板與細長按鈕 */
+/* 面板 */
 .panel { margin: 5px 12px; padding: 12px; border-radius: 12px; background: #161b22; border: 1px solid #30363d; flex-shrink: 0; }
 .row { display: flex; gap: 8px; margin-bottom: 8px; }
-.text-input-box { 
-  width: 100%; height: 40px; background: rgba(0,0,0,0.5); border: 1px solid #333; 
-  border-radius: 8px; color: #fff; padding: 0 12px; font-size: 15px; margin-bottom: 8px; 
-  -webkit-user-select: text; user-select: text;
-}
-.btn-slim {
-  width: 100%; height: 36px; background: var(--neon-blue); border: none; border-radius: 18px; 
-  color: #fff; font-weight: 900; font-size: 14px; box-shadow: 0 4px 10px rgba(0,162,255,0.2);
-}
+.text-input-box { width: 100%; height: 40px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 8px; color: #fff; padding: 0 12px; font-size: 15px; margin-bottom: 8px; -webkit-user-select: text; user-select: text; }
+.btn-slim { width: 100%; height: 38px; background: var(--neon-blue); border: none; border-radius: 19px; color: #fff; font-weight: 900; font-size: 14px; }
 
-/* 課程明細區塊 - 強制保留空間 */
-.list-area { flex: 1; overflow-y: auto; padding: 10px 12px; background: #0d1117; }
-.course-card { 
-  background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; 
-  margin-bottom: 8px; display: flex; align-items: center; border-left: 5px solid transparent; border: 1px solid #222;
-}
+/* 課程明細區 */
+.list-area { flex: 1; overflow-y: auto; padding: 10px 12px; }
+.course-card { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; border-left: 5px solid transparent; border: 1px solid #222; }
 .card-content { flex: 1; }
 .card-content b { font-size: 14px; display: block; }
 .card-content p { font-size: 11px; color: #888; margin-top: 2px; }
-
-/* 排序與頁尾 */
 .card-order-btns { display: flex; flex-direction: column; gap: 4px; margin-left: 10px; }
 .order-btn { width: 30px; height: 26px; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
 
@@ -81,15 +63,9 @@ body { font-family: -apple-system, "PingFang TC", sans-serif; background: var(--
       <div class="hud-item"><span class="label-sm">總長度</span></div>
     </div>
     <div class="hud-inputs">
-      <div class="hud-item">
-        <div class="glass-box" id="box-classTime" onclick="setFocus('classTime')"><input id="classTime" readonly placeholder="0"></div>
-      </div>
-      <div class="hud-item">
-        <div id="remText">0分00秒</div>
-      </div>
-      <div class="hud-item">
-        <div id="totalDist">0m</div>
-      </div>
+      <div class="hud-item"><div class="glass-box" id="box-classTime" onclick="setFocus('classTime')"><input id="classTime" readonly placeholder="0"></div></div>
+      <div class="hud-item"><div id="remText">0分00秒</div></div>
+      <div class="hud-item"><div id="totalDist">0m</div></div>
     </div>
   </div>
 
@@ -103,7 +79,7 @@ body { font-family: -apple-system, "PingFang TC", sans-serif; background: var(--
       <div id="btn-z6" class="zone-tag-btn" style="background:var(--z6)" onclick="selectZone(6)">Z6競賽</div>
     </div>
 
-    <input type="text" id="courseNote" class="text-input-box" placeholder="輸入課程內容..." onfocus="currentFocus='none'">
+    <input type="text" id="courseNote" class="text-input-box" placeholder="輸入課程內容 (如：踩水)..." onfocus="currentFocus='none'">
     
     <div class="row">
       <div style="flex:1"><span class="label-sm">趟時間/分</span><div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')"><input id="lapMin" readonly placeholder="0"></div></div>
@@ -112,7 +88,7 @@ body { font-family: -apple-system, "PingFang TC", sans-serif; background: var(--
     </div>
     
     <div class="row">
-      <div style="flex:1"><span class="label-sm">距離/m</span><div class="glass-box" id="box-dist" onclick="setFocus('dist')"><input id="dist" readonly placeholder="0"></div></div>
+      <div style="flex:1"><span class="label-sm">距離/m (可不填)</span><div class="glass-box" id="box-dist" onclick="setFocus('dist')"><input id="dist" readonly placeholder="0"></div></div>
       <div style="flex:1"><span class="label-sm">趟數</span><div class="glass-box" id="box-laps" onclick="setFocus('laps')"><input id="laps" readonly placeholder="0"></div></div>
       <div style="flex:1"><span class="label-sm">組數</span><div class="glass-box" id="box-sets" onclick="setFocus('sets')"><input id="sets" readonly placeholder="0"></div></div>
     </div>
@@ -172,14 +148,13 @@ function addItem() {
   
   if (lm === 0 && ls === 0) return;
   
-  // 休息時間計算：(單趟時間 + 休息) * 趟數 * 組數
   const totalSec = ((lm * 60 + ls) + rest) * lp * st;
 
   items.push({
     seconds: totalSec,
     dist: d * lp * st,
     title: note,
-    desc: `${d}m × ${lp}趟 × ${st}組 (休${rest}s)`,
+    desc: d > 0 ? `${d}m × ${lp}趟 × ${st}組 (休${rest}s)` : `${lp}趟 × ${st}組 (休${rest}s, 純計時)`,
     zone: { id: selectedZoneId, color: zoneColors[selectedZoneId], name: zoneNames[selectedZoneId] }
   });
   
@@ -196,7 +171,7 @@ function updateList() {
         <b style="color:${item.zone.color}">[Z${item.zone.id} ${item.zone.name}] ${item.title}</b>
         <p>${item.desc} | 耗時: ${Math.floor(item.seconds/60)}分${(item.seconds%60).toString().padStart(2,'0')}秒</p>
       </div>
-      <div style="font-size:14px; font-weight:900; color:var(--neon-blue)">${item.dist}m</div>
+      ${item.dist > 0 ? `<div style="font-size:14px; font-weight:900; color:var(--neon-blue)">${item.dist}m</div>` : ''}
       <div class="card-order-btns">
         <div class="order-btn" onclick="event.stopPropagation(); moveItem(${index}, -1)">▲</div>
         <div class="order-btn" onclick="event.stopPropagation(); moveItem(${index}, 1)">▼</div>
