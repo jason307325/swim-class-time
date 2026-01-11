@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳規劃器 - 長按防誤觸版</title>
+<title>游泳規劃器 - 專業優化版</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 
@@ -18,182 +18,113 @@ html, body {
 
 .app { display: flex; flex-direction: column; height: 100vh; }
 
-/* 頂部儀表板 */
+/* 固定頂部區域 */
+.fixed-top { flex-shrink: 0; z-index: 2000; background: #f4f7f9; }
+
 .dashboard {
   background: linear-gradient(180deg, #000 0%, #1a1a1a 100%);
   color: white;
-  padding: calc(env(safe-area-inset-top, 20px) + 15px) 20px 20px 20px;
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
-  z-index: 2000;
+  padding: calc(env(safe-area-inset-top, 20px) + 10px) 20px 10px 20px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
 }
 
-.dash-horizontal {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
+.dash-horizontal { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
 .dash-box { flex: 1; display: flex; flex-direction: column; }
-
 .dash-input {
-  width: 100%;
-  max-width: 90px;
-  background: #fff;
-  border: none;
-  border-radius: 10px;
-  color: #000;
-  padding: 8px;
-  text-align: center;
-  font-size: 24px;
-  font-weight: 900;
+  width: 100%; max-width: 80px; background: #fff; border: none; border-radius: 8px;
+  color: #000; padding: 5px; text-align: center; font-size: 20px; font-weight: 900;
 }
+.dash-label { font-size: 10px; opacity: 0.6; margin-bottom: 2px; font-weight: bold; }
+.dash-value { font-size: 26px; font-weight: 900; color: #4caf50; text-align: right; transition: color 0.3s; }
+.dash-value.warn { color: #ff5252; text-shadow: 0 0 10px rgba(255,82,82,0.3); }
 
-.dash-label { font-size: 11px; opacity: 0.5; margin-bottom: 5px; font-weight: bold; }
-.dash-value {
-  font-size: 34px; 
-  font-weight: 900;
-  color: #4caf50;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-.dash-value.warn { color: #ff5252; }
-
-/* 內容區 */
-.main-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 15px;
-  padding-bottom: 35vh; 
-}
-
+/* 輸入卡片區 */
 .card {
-  background: white;
-  border-radius: 20px;
-  padding: 15px;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  background: white; margin: 10px; padding: 10px; border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
-
-.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
-.label { font-size: 11px; font-weight: 800; color: #777; margin-bottom: 5px; display: block; }
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.label { font-size: 10px; font-weight: 800; color: #777; margin-bottom: 3px; display: block; }
 
 input {
-  width: 100%;
-  padding: 10px;
-  font-size: 17px;
-  border: 1.5px solid #eee;
-  border-radius: 10px;
-  text-align: center;
-  background: #fbfcfd;
-  caret-color: transparent;
+  width: 100%; padding: 8px; font-size: 16px; border: 1.5px solid #eee;
+  border-radius: 8px; text-align: center; background: #fbfcfd; outline: none;
 }
-input.active-focus { border-color: #2196f3; background: #fff; outline: none; }
+input.active-focus { border-color: #2196f3; background: #fff; box-shadow: 0 0 0 2px rgba(33,150,243,0.1); }
 
 .btn-add {
-  width: 100%;
-  padding: 12px;
-  background: #2196f3;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 15px;
-  margin-top: 5px;
+  width: 100%; padding: 12px; background: #2196f3; color: white;
+  border: none; border-radius: 10px; font-weight: 800; font-size: 14px;
 }
 
-/* 明細項目 - 優化長按回饋 */
+/* 中間捲動區 */
+.main-content {
+  flex: 1; overflow-y: auto; padding: 0 15px; -webkit-overflow-scrolling: touch;
+}
+.list-header {
+  display: flex; justify-content: space-between; padding: 10px 5px;
+  position: sticky; top: 0; background: #f4f7f9; z-index: 10;
+}
+
 .course-item {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  padding: 14px 18px;
-  margin-bottom: 10px;
-  border-radius: 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-  border-left: 5px solid #2196f3;
-  transition: transform 0.2s, background-color 0.2s;
-  position: relative;
-  overflow: hidden;
+  display: flex; align-items: center; background: #fff; padding: 12px 15px;
+  margin-bottom: 8px; border-radius: 12px; border-left: 5px solid #2196f3;
+  transition: transform 0.1s;
 }
-
-/* 被長按時的縮小效果 */
-.course-item:active {
-  transform: scale(0.96);
-  background-color: #fff0f0;
-}
-
+.course-item:active { transform: scale(0.97); background-color: #fff0f0; }
 .item-body { flex: 1; }
-.item-title { font-weight: 800; color: #333; font-size: 16px; }
-.item-sub { color: #999; font-size: 12px; margin-top: 2px; }
+.item-title { font-weight: 800; color: #333; font-size: 14px; }
+.item-sub { color: #999; font-size: 11px; }
+.long-press-tip { font-size: 9px; color: #ccc; }
 
-/* 提示文字 */
-.long-press-tip {
-  font-size: 10px;
-  color: #ccc;
-  text-align: right;
-}
-
-/* 鍵盤 */
+/* 底部鍵盤 */
 .numpad {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: 32vh;
-  background: #111;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(4, 1fr);
-  gap: 3px;
-  padding: 10px;
-  padding-bottom: env(safe-area-inset-bottom, 10px);
-  z-index: 3000;
+  flex-shrink: 0; height: 26vh; background: #111;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  padding: 8px; padding-bottom: calc(env(safe-area-inset-bottom, 8px) + 5px);
 }
-
 .numpad button {
-  border: none;
-  background: #2d2d2d;
-  font-size: 28px;
-  font-weight: bold;
-  color: white;
-  border-radius: 16px;
+  border: none; background: #2d2d2d; font-size: 24px;
+  font-weight: bold; color: white; border-radius: 10px;
 }
 .numpad button:active { background: #444; }
-.btn-util { background: #3d3d3d !important; color: #aaa !important; font-size: 18px !important; }
+.btn-util { background: #3d3d3d !important; color: #aaa !important; font-size: 16px !important; }
 .btn-del { color: #ff5252 !important; }
 </style>
 </head>
 <body>
 
 <div class="app">
-  <div class="dashboard">
-    <div class="dash-horizontal">
-      <div class="dash-box">
-        <span class="dash-label">課程總長 (分)</span>
-        <input id="classTime" readonly class="dash-input" placeholder="0">
+  <div class="fixed-top">
+    <div class="dashboard">
+      <div class="dash-horizontal">
+        <div class="dash-box">
+          <span class="dash-label">課程總長 (分)</span>
+          <input id="classTime" readonly class="dash-input" data-next="lapMin" placeholder="0">
+        </div>
+        <div class="dash-box" style="align-items: flex-end;">
+          <span id="statusLabel" class="dash-label">剩餘可用時間</span>
+          <div id="remainingText" class="dash-value">0分0秒</div>
+        </div>
       </div>
-      <div class="dash-box" style="align-items: flex-end;">
-        <span id="statusLabel" class="dash-label">剩餘可用時間</span>
-        <div id="remainingText" class="dash-value">0分0秒</div>
+    </div>
+
+    <div class="card">
+      <div class="input-row">
+        <div><span class="label">單趟 (分/秒)</span><div style="display:flex; gap:5px;"><input id="lapMin" readonly placeholder="分" data-next="lapSec"><input id="lapSec" readonly placeholder="秒" data-next="lapsPerSet"></div></div>
+        <div><span class="label">結構 (趟/組)</span><div style="display:flex; gap:5px;"><input id="lapsPerSet" readonly placeholder="趟" data-next="sets"><input id="sets" readonly placeholder="組" data-next="restMin"></div></div>
       </div>
+      <div class="input-row"><div style="grid-column: span 2;"><span class="label">組間休息 (分/秒)</span><div style="display:flex; gap:5px;"><input id="restMin" readonly placeholder="分" data-next="restSec"><input id="restSec" readonly placeholder="秒"></div></div></div>
+      <button class="btn-add" onclick="addItem()">加入訓練項目</button>
     </div>
   </div>
 
   <div id="scrollArea" class="main-content">
-    <div class="card">
-      <div class="input-row">
-        <div><span class="label">單趟 (分/秒)</span><div style="display:flex; gap:6px;"><input id="lapMin" readonly placeholder="分"><input id="lapSec" readonly placeholder="秒"></div></div>
-        <div><span class="label">結構 (趟/組)</span><div style="display:flex; gap:6px;"><input id="lapsPerSet" readonly placeholder="趟"><input id="sets" readonly placeholder="組"></div></div>
-      </div>
-      <div class="input-row"><div style="grid-column: span 2;"><span class="label">組間休息 (分/秒)</span><div style="display:flex; gap:8px;"><input id="restMin" readonly placeholder="分"><input id="restSec" readonly placeholder="秒"></div></div></div>
-      <button class="btn-add" onclick="addItem()">加入訓練項目</button>
+    <div class="list-header">
+      <span style="font-size:12px; font-weight:bold; color:#8e9aaf;">課程明細 (長按項目刪除)</span>
+      <span onclick="clearAll()" style="color:#ff5252; font-size:12px; font-weight:bold;">重置全部</span>
     </div>
-
-    <div style="display:flex; justify-content:space-between; margin: 5px 8px 12px;">
-      <span style="font-size:13px; font-weight:bold; color:#8e9aaf;">課程明細 (長按項目刪除)</span>
-      <span onclick="clearAll()" style="color:#ff5252; font-size:13px; font-weight:bold;">重置全部</span>
-    </div>
-
     <div id="listContainer"></div>
   </div>
 
@@ -212,12 +143,16 @@ let activeInput = null;
 let items = [];
 let pressTimer = null;
 
+// 觸覺回饋封裝
+const vibrate = (ms = 50) => { if ("vibrate" in navigator) navigator.vibrate(ms); };
+
 const formatTime = s => {
   const isNeg = s < 0;
   const abs = Math.abs(s);
   return (isNeg ? "-" : "") + `${Math.floor(abs/60)}分${abs%60}秒`;
 };
 
+// 初始化輸入框點擊事件
 document.querySelectorAll("input").forEach(input => {
   input.addEventListener("click", function() {
     document.querySelectorAll("input").forEach(el => el.classList.remove("active-focus"));
@@ -226,8 +161,32 @@ document.querySelectorAll("input").forEach(input => {
   });
 });
 
-function num(n) { if(activeInput) { if(activeInput.id === 'classTime' && activeInput.value.length >= 4) return; activeInput.value += n; render(); } }
-function back() { if(activeInput) { activeInput.value = activeInput.value.slice(0,-1); render(); } }
+// 數字鍵盤輸入邏輯（含自動跳轉）
+function num(n) {
+  if(!activeInput) return;
+  
+  // 限制長度防止排版崩潰
+  if(activeInput.value.length >= 3) return;
+  
+  activeInput.value += n;
+  vibrate(20);
+  render();
+
+  // 自動跳轉邏輯：輸入兩位數後跳到下一個欄位
+  if(activeInput.value.length === 2 && activeInput.dataset.next) {
+    const nextId = activeInput.dataset.next;
+    setTimeout(() => {
+      const nextEl = document.getElementById(nextId);
+      if(nextEl) {
+        document.querySelectorAll("input").forEach(el => el.classList.remove("active-focus"));
+        nextEl.classList.add("active-focus");
+        activeInput = nextEl;
+      }
+    }, 100);
+  }
+}
+
+function back() { if(activeInput) { activeInput.value = activeInput.value.slice(0,-1); vibrate(10); render(); } }
 function clearInput() { if(activeInput) { activeInput.value = ''; render(); } }
 
 function addItem() {
@@ -237,13 +196,27 @@ function addItem() {
   const st = +document.getElementById("sets").value || 0;
   const rm = +document.getElementById("restMin").value || 0;
   const rs = +document.getElementById("restSec").value || 0;
-  if (st <= 0 || lps <= 0) return;
-  const total = ((lm * 60 + ls) * lps * st) + ((rm * 60 + rs) * (st - 1));
+
+  if (st <= 0 || lps <= 0) { alert("請輸入趟數與組數"); return; }
+
+  // 休息次數為組數減一，若僅有一組則為 0
+  const restCount = st > 1 ? st - 1 : 0;
+  const total = ((lm * 60 + ls) * lps * st) + ((rm * 60 + rs) * restCount);
+
+  if (total <= 0) return;
+
   items.push({ id: Date.now(), desc: `${lps}趟 x ${st}組`, seconds: total });
+  vibrate(40);
+  
+  // 重置輸入區
   ["lapMin", "lapSec", "lapsPerSet", "sets", "restMin", "restSec"].forEach(id => document.getElementById(id).value = "");
+  activeInput = null;
+  document.querySelectorAll("input").forEach(el => el.classList.remove("active-focus"));
+  
   render();
+  
   const sa = document.getElementById("scrollArea");
-  setTimeout(() => sa.scrollTo({ top: sa.scrollHeight, behavior: 'smooth' }), 50);
+  setTimeout(() => sa.scrollTo({ top: sa.scrollHeight, behavior: 'smooth' }), 100);
 }
 
 function render() {
@@ -254,7 +227,7 @@ function render() {
   const rText = document.getElementById("remainingText");
   rText.innerText = formatTime(remaining);
   rText.className = "dash-value " + (remaining < 0 ? "warn" : "");
-  document.getElementById("statusLabel").innerText = remaining < 0 ? "⚠️ 時間已用盡" : "剩餘可用時間";
+  document.getElementById("statusLabel").innerText = remaining < 0 ? "⚠️ 時間已滿" : "剩餘可用時間";
 
   const container = document.getElementById("listContainer");
   container.innerHTML = "";
@@ -269,29 +242,27 @@ function render() {
       <div class="long-press-tip">長按刪除</div>
     `;
 
-    // --- 長按刪除邏輯 ---
     const startPress = () => {
       pressTimer = setTimeout(() => {
-        if(confirm(`確定要刪除第 ${index+1} 項課程嗎？`)) {
+        vibrate(60); // 長按成功震動
+        if(confirm(`確定刪除第 ${index+1} 項嗎？`)) {
           items.splice(index, 1);
           render();
         }
-      }, 800); // 800毫秒視為長按
+      }, 600); // 縮短長按時間至 0.6 秒提高靈敏度
     };
+    const cancelPress = () => clearTimeout(pressTimer);
 
-    const cancelPress = () => { clearTimeout(pressTimer); };
-
-    div.addEventListener("mousedown", startPress);
     div.addEventListener("touchstart", startPress);
-    div.addEventListener("mouseup", cancelPress);
-    div.addEventListener("mouseleave", cancelPress);
     div.addEventListener("touchend", cancelPress);
-
+    div.addEventListener("mousedown", startPress);
+    div.addEventListener("mouseup", cancelPress);
     container.appendChild(div);
   });
 }
 
-function clearAll() { if(confirm("確定重置所有資料？")) { items = []; document.querySelectorAll("input").forEach(i => i.value = ""); render(); } }
+function clearAll() { if(confirm("確定要清除所有課程明細嗎？")) { items = []; render(); vibrate(100); } }
+
 render();
 </script>
 </body>
