@@ -20,139 +20,122 @@
   --metal-dark: rgba(0,0,0,0.4);
 }
 
+/* ===== html & body ===== */
 html, body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", sans-serif;
-  background: #000;
+  font-family: "SF Pro Text", "Helvetica Neue", "PingFang TC", sans-serif;
+  background: linear-gradient(180deg, #0b0f1a 0%, #0a0d14 100%);
   color: #e0e0e0;
   height: 100dvh;
   overflow: hidden;
 }
 
-.app { display: flex; flex-direction: column; height: 100dvh; background: var(--bg-dark); }
+.app { display: flex; flex-direction: column; height: 100dvh; }
 
 /* ===== Header & 靈動島安全區 ===== */
 .fixed-header { 
   flex-shrink: 0; 
   background: #0c0f18;
   border-bottom: 1px solid var(--metal-light);
-  padding-top: env(safe-area-inset-top, 20px);
+  padding-top: max(15px, env(safe-area-inset-top));
   box-shadow: 0 4px 15px var(--metal-dark);
 }
 
 .header-hud {
-  display: flex; justify-content: space-between; align-items: flex-end;
-  padding: 10px 15px;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 15px 6px;
+  border-bottom: 1px solid var(--metal-light);
 }
 
-.time-overlay { 
-  position: relative;
-  display: flex; flex-direction: column; align-items: flex-end; 
-  min-width: 130px; padding: 6px 10px;
-  background: var(--input-bg); border: 1px solid var(--metal-light); border-radius: 8px;
-}
-.time-overlay .main-number { position: relative; z-index: 2; font-size: 22px; font-weight: 900; color: var(--success); }
-.time-overlay .bg-number { position: absolute; right: 8px; bottom: -2px; font-size: 38px; font-weight: 900; color: #1a1d23; opacity: 0.6; transform: scaleX(1.3); pointer-events: none; z-index: 1; }
+/* 總長度與剩餘時間 */
+.time-box { display: flex; gap:10px; align-items: center; }
+.input-box, .time-overlay { border-radius: 6px; padding:6px 10px; background: var(--input-bg); border:1px solid var(--metal-light); box-shadow: inset 0 1px 3px var(--metal-dark); }
+.input-box.active, .time-overlay.active { border-color: var(--primary); }
+
+.time-overlay { flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; min-width:120px; text-align:right; }
+.time-overlay span.label-sm { font-size:9px; color:#888; }
+.time-overlay .main-number { font-size:20px; font-weight:900; color: var(--success); }
+.time-overlay .bg-number { position:absolute; right:10px; bottom:0; font-size:36px; font-weight:900; color:#111; opacity:0.5; transform:scaleX(1.3); pointer-events:none; z-index:0; }
 
 /* ===== 輸入區 ===== */
-.input-section { padding: 8px 15px 12px; display: flex; flex-direction: column; gap: 8px; background: #0c0f18; }
-.label-sm { font-size: 10px; color: #888; font-weight: 800; margin-bottom: 2px; display: block; letter-spacing: 0.5px; }
-.row { display: flex; gap: 8px; align-items: flex-end; }
+.input-section { padding:10px 15px; display:flex; flex-direction:column; gap:8px; }
 
-.input-box { 
-  flex: 1; background: var(--input-bg); border: 1px solid #333; border-radius: 8px; padding: 6px; 
-  box-shadow: inset 0 1px 3px var(--metal-dark); transition: 0.15s; 
-}
-.input-box.active { border-color: var(--primary); box-shadow: 0 0 10px rgba(0,162,255,0.3); }
+.label-sm { font-size:10px; color:#888; font-weight:800; margin-bottom:2px; display:block; letter-spacing:0.5px; }
+.row { display:flex; gap:8px; align-items:flex-end; }
 
-.val-group { display: flex; align-items: baseline; justify-content: center; }
-.val-group input { width: 100%; background: transparent; border: none; color: #fff; font-size: 20px; font-weight: 800; text-align: center; outline: none; pointer-events: none; }
-.unit { font-size: 9px; color: #555; font-weight: bold; margin-left: 2px; }
+.input-box { flex:1; background:var(--input-bg); border:1px solid var(--metal-light); border-radius:8px; padding:5px; box-shadow: inset 0 1px 3px var(--metal-dark); transition:0.15s; }
+.input-box.active { border-color: var(--primary); box-shadow: 0 0 8px var(--metal-light), inset 0 0 5px var(--metal-dark); }
+.val-group { display:flex; align-items:baseline; justify-content:center; }
+.val-group input { width:100%; background:transparent; border:none; color:#fff; font-size:18px; font-weight:800; text-align:center; outline:none; autocomplete="off"; autocorrect="off"; spellcheck="false"; }
+.unit { font-size:9px; color:#555; font-weight:bold; margin-left:2px; }
 
-/* 休息時間 + 加入按鈕 */
-.rest-add-row { display: flex; gap: 8px; align-items: flex-end; }
-.btn-add { 
-  background: linear-gradient(145deg, #007aff, #005bb5); color: #fff; 
-  border-radius: 8px; padding: 10px 15px; font-weight: 900; font-size: 14px; 
-  border: 1px solid var(--primary); flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-}
-.btn-add:active { transform: scale(0.96); opacity: 0.9; }
+/* ===== 休息時間 + 加入按鈕同列 ===== */
+.rest-add-row { display:flex; gap:6px; align-items:flex-end; }
+.btn-add { background:linear-gradient(145deg,#007aff,#005bb5); color:#fff; border-radius:6px; padding:6px 10px; font-weight:900; font-size:14px; border:1px solid var(--primary); flex-shrink:0; }
+.btn-add:active { transform:translateY(1px); }
 
 /* ===== 主內容區 ===== */
-.main-content { 
-  flex: 1; overflow-y: auto; padding: 10px 15px; 
-  background: rgba(0,0,0,0.2); -webkit-overflow-scrolling: touch; 
-}
-.course-item { 
-  background: linear-gradient(145deg, #1a1f27, #10131a); padding: 12px; border-radius: 10px; 
-  margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; 
-  border-left: 4px solid var(--primary); border: 1px solid #222;
-}
-.item-info b { font-size: 14px; color: #fff; }
-.item-info p { font-size: 11px; color: #777; }
-.item-time { font-size: 16px; font-weight: 900; color: #fff; }
+.main-content { flex:1; overflow-y:auto; padding:10px 15px; -webkit-overflow-scrolling:touch; }
+.course-item { background: linear-gradient(145deg,#1a1f27,#10131a); padding:10px; border-radius:8px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; border-left:4px solid var(--primary); box-shadow: inset 0 1px 3px var(--metal-dark); }
+.item-info b { font-size:13px; color:#fff; }
+.item-info p { font-size:10px; color:#777; }
+.item-time { font-size:15px; font-weight:900; color:#fff; }
 
 /* ===== Footer & 虛擬鍵盤 ===== */
-.fixed-footer { flex-shrink: 0; background: #0c0f18; border-top: 1px solid var(--metal-light); padding-bottom: env(safe-area-inset-bottom, 15px); }
-.footer-ctrl { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; }
-.btn-reset { background: #1a1d23; color: var(--warn); border: 1px solid var(--warn); padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; }
+.fixed-footer { flex-shrink:0; background:#0c0f18; border-top:1px solid var(--metal-light); padding-bottom:max(10px,env(safe-area-inset-bottom)); }
+.footer-ctrl { display:flex; justify-content:space-between; align-items:center; padding:6px 15px; }
+.btn-reset { background:#1a1d23; color:var(--warn); border:1px solid var(--warn); padding:3px 10px; border-radius:5px; font-size:10px; font-weight:bold; }
 
-.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 15px 10px; }
-.numpad button { 
-  border: 1px solid #333; background: linear-gradient(145deg, #23272e, #1a1d23); 
-  font-size: 24px; font-weight: 600; color: white; border-radius: 10px; padding: 12px 0; 
-}
-.numpad button:active { background: #000; box-shadow: inset 0 2px 10px #000; transform: translateY(1px); }
-.btn-util { color: #888 !important; font-size: 16px !important; }
+.numpad { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:5px 15px; }
+.numpad button { border:1px solid #333; background: linear-gradient(145deg,#23272e,#1a1d23); font-size:22px; font-weight:600; color:white; border-radius:8px; padding:10px 0; box-shadow: inset 0 1px 2px var(--metal-dark); }
+.numpad button:active { background:#111; box-shadow: inset 0 1px 5px #000; }
+.btn-util { color:#666!important; font-size:14px!important; }
 
-.warn { color: var(--warn) !important; text-shadow: 0 0 8px rgba(255,59,48,0.5); }
+.warn { color: var(--warn)!important; text-shadow:0 0 8px rgba(255,59,48,0.5); }
 </style>
 </head>
 <body>
 <div class="app">
   <header class="fixed-header">
     <div class="header-hud">
-      <div>
-        <span class="label-sm">總長度 (分)</span>
-        <div class="input-box" id="box-classTime" style="width: 90px;"><div class="val-group"><input id="classTime" readonly placeholder="0"></div></div>
-      </div>
-      <div class="time-overlay">
-        <span class="label-sm">剩餘可用時間</span>
-        <div id="bgTotal" class="bg-number">00</div>
-        <div id="remainingText" class="main-number">0分00秒</div>
-      </div>
-    </div>
-
-    <section class="input-section">
-      <div class="row">
-        <div style="flex: 1.1;">
-          <span class="label-sm">單趟時間</span>
-          <div style="display: flex; gap: 6px;">
-            <div class="input-box" id="box-lapMin"><div class="val-group"><input id="lapMin" readonly placeholder="0" data-next="lapSec"><span class="unit">分</span></div></div>
-            <div class="input-box" id="box-lapSec"><div class="val-group"><input id="lapSec" readonly placeholder="0" data-next="lapsPerSet"><span class="unit">秒</span></div></div>
-          </div>
+      <div class="time-box">
+        <div>
+          <span class="label-sm">總長度 (分)</span>
+          <div class="input-box" id="box-classTime"><div class="val-group"><input id="classTime" readonly placeholder="0"></div></div>
         </div>
-        <div style="flex: 1;">
-          <span class="label-sm">訓練結構</span>
-          <div style="display: flex; gap: 6px;">
-            <div class="input-box" id="box-lapsPerSet"><div class="val-group"><input id="lapsPerSet" readonly placeholder="0" data-next="sets"><span class="unit">趟</span></div></div>
-            <div class="input-box" id="box-sets"><div class="val-group"><input id="sets" readonly placeholder="0" data-next="restMin"><span class="unit">組</span></div></div>
-          </div>
+        <div class="time-overlay">
+          <span class="label-sm">剩餘可用</span>
+          <div id="bgTotal" class="bg-number">00</div>
+          <div id="remainingText" class="main-number">0分00秒</div>
         </div>
       </div>
 
-      <div class="rest-add-row">
-        <div style="display: flex; gap: 6px; flex: 1;">
-          <div style="flex: 1;">
-            <span class="label-sm">組間休息</span>
-            <div style="display: flex; gap: 4px;">
-              <div class="input-box" id="box-restMin"><div class="val-group"><input id="restMin" readonly placeholder="0" data-next="restSec"><span class="unit">分</span></div></div>
-              <div class="input-box" id="box-restSec"><div class="val-group"><input id="restSec" readonly placeholder="0"><span class="unit">秒</span></div></div>
+      <section class="input-section">
+        <div class="row">
+          <div style="flex:1.1;">
+            <span class="label-sm">單趟時間</span>
+            <div style="display:flex; gap:6px;">
+              <div class="input-box" id="box-lapMin"><div class="val-group"><input id="lapMin" readonly placeholder="0" data-next="lapSec"><span class="unit">分</span></div></div>
+              <div class="input-box" id="box-lapSec"><div class="val-group"><input id="lapSec" readonly placeholder="0" data-next="lapsPerSet"><span class="unit">秒</span></div></div>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <span class="label-sm">訓練結構</span>
+            <div style="display:flex; gap:6px;">
+              <div class="input-box" id="box-lapsPerSet"><div class="val-group"><input id="lapsPerSet" readonly placeholder="0" data-next="sets"><span class="unit">趟</span></div></div>
+              <div class="input-box" id="box-sets"><div class="val-group"><input id="sets" readonly placeholder="0" data-next="restMin"><span class="unit">組</span></div></div>
             </div>
           </div>
         </div>
-        <button class="btn-add" onclick="addItem()">加入項目 (+)</button>
-      </div>
-    </section>
+
+        <div class="rest-add-row">
+          <div style="display:flex; gap:6px; flex:1;">
+            <div class="input-box" id="box-restMin"><div class="val-group"><input id="restMin" readonly placeholder="0" data-next="restSec"><span class="unit">分</span></div></div>
+            <div class="input-box" id="box-restSec"><div class="val-group"><input id="restSec" readonly placeholder="0"><span class="unit">秒</span></div></div>
+          </div>
+          <button class="btn-add" onclick="addItem()">加入項目 (+)</button>
+        </div>
+      </section>
+    </div>
   </header>
 
   <main id="scrollArea" class="main-content">
@@ -161,7 +144,7 @@ html, body {
 
   <footer class="fixed-footer">
     <div class="footer-ctrl">
-      <span style="font-size: 9px; color: #555; font-weight: bold;">LONG PRESS TO DELETE</span>
+      <span style="font-size:9px;color:#444;font-weight:bold;">LONG PRESS TO DELETE</span>
       <button class="btn-reset" onclick="clearAll()">重置資料</button>
     </div>
     <div class="numpad">
@@ -179,117 +162,50 @@ html, body {
 let activeInput = document.getElementById("classTime");
 let items = [];
 let pressTimer = null;
-
 const vibrate = ms => { if(navigator.vibrate) navigator.vibrate(ms); };
-const formatTimeCH = s => { 
-  const isNeg = s < 0; 
-  const abs = Math.abs(s); 
-  return (isNeg ? "-" : "") + `${Math.floor(abs/60)}分${(abs%60).toString().padStart(2,'0')}秒`; 
-};
-
-function updateFocusUI(el){
-  document.querySelectorAll('.input-box').forEach(b => b.classList.remove('active')); 
-  el.closest('.input-box')?.classList.add('active');
-}
-
-document.querySelectorAll(".input-box").forEach(box => {
-  box.addEventListener("click", () => {
-    const input = box.querySelector("input");
-    activeInput = input;
-    updateFocusUI(input);
-  });
-});
+const formatTimeCH = s => { const isNeg=s<0; const abs=Math.abs(s); return (isNeg?"-":"")+`${Math.floor(abs/60)}分${(abs%60).toString().padStart(2,'0')}秒`; };
+function updateFocusUI(el){document.querySelectorAll('.input-box').forEach(b=>b.classList.remove('active')); el.closest('.input-box')?.classList.add('active');}
+document.querySelectorAll("input").forEach(input=>input.addEventListener("click",e=>{activeInput=input; updateFocusUI(input); e.stopPropagation();}));
 
 function num(n){
-  if(!activeInput) return;
-  if(activeInput.value.length >= 3) return;
-  activeInput.value += n; 
-  vibrate(10); 
-  render();
-  if(activeInput.value.length === 2 && activeInput.dataset.next){
-    let next = document.getElementById(activeInput.dataset.next);
-    if(next && next.value === ""){
-      activeInput = next; 
-      updateFocusUI(next);
-    }
-  }
+  if(!activeInput)return;
+  if(activeInput.value.length>=3)return;
+  activeInput.value+=n; vibrate(10); render();
+  if(activeInput.value.length===2 && activeInput.dataset.next){ let next=document.getElementById(activeInput.dataset.next); if(next && next.value===""){activeInput=next; updateFocusUI(next);}}
 }
 
-function back(){ if(activeInput) activeInput.value = activeInput.value.slice(0,-1); render(); vibrate(5); }
-function clearInput(){ if(activeInput) activeInput.value = ""; render(); vibrate(5); }
+function back(){if(activeInput)activeInput.value=activeInput.value.slice(0,-1); render();}
+function clearInput(){if(activeInput)activeInput.value=""; render();}
 
 function addItem(){
-  const getVal = id => +document.getElementById(id).value || 0;
-  const lm = getVal("lapMin"), ls = getVal("lapSec"), lps = getVal("lapsPerSet"), st = getVal("sets"), rm = getVal("restMin"), rs = getVal("restSec");
-  
-  if(st <= 0 || lps <= 0){ vibrate([50, 50]); return; }
-  
-  const total = ((lm * 60 + ls) * lps * st) + ((rm * 60 + rs) * (st > 1 ? st - 1 : 0));
-  items.push({ id: Date.now(), desc: `${lps}趟 x ${st}組`, seconds: total });
-  
-  ["lapMin","lapSec","lapsPerSet","sets","restMin","restSec"].forEach(id => document.getElementById(id).value = "");
-  
-  activeInput = document.getElementById("lapMin"); 
-  updateFocusUI(activeInput); 
-  render();
-  vibrate(20);
-
-  setTimeout(() => {
-    const scroller = document.getElementById("scrollArea");
-    scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
-  }, 100);
+  const getVal=id=>+document.getElementById(id).value||0;
+  const lm=getVal("lapMin"), ls=getVal("lapSec"), lps=getVal("lapsPerSet"), st=getVal("sets"), rm=getVal("restMin"), rs=getVal("restSec");
+  if(st<=0||lps<=0){vibrate([50,50]); return;}
+  const total=((lm*60+ls)*lps*st)+((rm*60+rs)*(st>1?st-1:0));
+  items.push({id:Date.now(), desc:`${lps}趟 x ${st}組`, seconds:total});
+  ["lapMin","lapSec","lapsPerSet","sets","restMin","restSec"].forEach(id=>document.getElementById(id).value="");
+  activeInput=document.getElementById("lapMin"); updateFocusUI(activeInput); render();
+  setTimeout(()=>document.getElementById("scrollArea").scrollTo({top:document.getElementById("scrollArea").scrollHeight, behavior:'smooth'}),100);
 }
 
 function render(){
-  const classVal = +document.getElementById("classTime").value || 0;
-  document.getElementById("bgTotal").innerText = classVal.toString().padStart(2, '0');
-  
-  const used = items.reduce((sum, i) => sum + i.seconds, 0);
-  const remaining = (classVal * 60) - used;
-  const rText = document.getElementById("remainingText");
-  
-  rText.innerText = formatTimeCH(remaining); 
-  rText.classList.toggle("warn", remaining < 0);
-  
-  const container = document.getElementById("listContainer"); 
-  container.innerHTML = "";
-  
-  items.forEach((item, index) => {
-    const div = document.createElement("div"); 
-    div.className = "course-item";
-    div.innerHTML = `
-      <div class="item-info">
-        <b>項目 #${index+1}</b>
-        <p>${item.desc}</p>
-      </div>
-      <div class="item-time">${formatTimeCH(item.seconds)}</div>
-    `;
-    
-    div.addEventListener("touchstart", () => {
-      pressTimer = setTimeout(() => {
-        vibrate(60); 
-        if(confirm("刪除此訓練項目？")){
-          items.splice(index, 1); 
-          render();
-        }
-      }, 600);
-    });
-    div.addEventListener("touchend", () => clearTimeout(pressTimer));
+  const classVal=+document.getElementById("classTime").value||0;
+  document.getElementById("bgTotal").innerText=classVal.toString().padStart(2,'0');
+  const used=items.reduce((sum,i)=>sum+i.seconds,0);
+  const remaining=(classVal*60)-used;
+  const rText=document.getElementById("remainingText"); rText.innerText=formatTimeCH(remaining); rText.classList.toggle("warn",remaining<0);
+  const container=document.getElementById("listContainer"); container.innerHTML="";
+  items.forEach((item,index)=>{
+    const div=document.createElement("div"); div.className="course-item";
+    div.innerHTML=`<div class="item-info"><b>項目 #${index+1}</b><p>${item.desc}</p></div><div class="item-time">${formatTimeCH(item.seconds)}</div>`;
+    div.ontouchstart=()=>{pressTimer=setTimeout(()=>{vibrate(50); if(confirm("刪除此項目？")){items.splice(index,1); render();}},600);}
+    div.ontouchend=()=>clearTimeout(pressTimer);
     container.appendChild(div);
   });
 }
 
-function clearAll(){
-  if(confirm("確定重置所有數據？")){
-    items = []; 
-    document.getElementById("classTime").value = ""; 
-    render(); 
-    vibrate(100);
-  }
-}
-
-updateFocusUI(activeInput); 
-render();
+function clearAll(){if(confirm("確定清空所有數據？")){items=[]; document.getElementById("classTime").value=""; render(); vibrate(60);}}
+updateFocusUI(activeInput); render();
 </script>
 </body>
 </html>
