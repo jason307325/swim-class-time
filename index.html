@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練旗艦工作台 v1.2</title>
+<title>游泳教練旗艦工作台 v1.3</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -38,15 +38,13 @@ body {
 }
 .page.active { display: flex; }
 
-/* --- 外部網站容器 (強制深色化) --- */
+/* --- 外部網站容器 (移除濾鏡，恢復原色) --- */
 .iframe-wrapper {
-  width: 100%; height: 100%; background: #000;
-  /* 智慧反向濾鏡：將淺色網站轉為深色，同時修正圖片顏色 */
-  filter: invert(0.9) hue-rotate(180deg); 
+  width: 100%; height: 100%; background: #fff; /* 外部網站背景通常為白 */
 }
 iframe { width: 100%; height: 100%; border: none; }
 
-/* --- 分頁 1: 課程規劃樣式 (精簡版) --- */
+/* --- 課程規劃樣式 (精準計算版本) --- */
 .hud-container { padding: 10px 15px; background: #05070a; border-bottom: 1px solid #1a2028; flex-shrink: 0; }
 .hud-labels { display: flex; justify-content: space-between; margin-bottom: 4px; }
 .hud-inputs { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -81,7 +79,6 @@ iframe { width: 100%; height: 100%; border: none; }
 .card-title { font-size: 13px; font-weight: 700; color: #eee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-detail-row { font-size: 10px; color: #888; margin-top: 4px; display: flex; gap: 4px; }
 .detail-seg { background: rgba(255,255,255,0.05); padding: 1px 4px; border-radius: 3px; }
-.detail-total { color: var(--neon-green); font-weight: 800; }
 
 .fixed-footer { background: #0a0d12; padding: 6px 12px calc(env(safe-area-inset-bottom, 10px) + 5px); border-top: 1px solid #1a2028; }
 .tool-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
@@ -113,9 +110,9 @@ iframe { width: 100%; height: 100%; border: none; }
           <div class="hud-item"><span class="label-sm">總長度</span></div>
         </div>
         <div class="hud-inputs">
-          <div class="hud-item"><div class="glass-box" id="box-classTime" onclick="setFocus('classTime')"><input id="classTime" readonly placeholder="輸入總時"></div></div>
-          <div class="hud-item"><div id="remText">--分--秒</div></div>
-          <div class="hud-item"><div id="totalDist">0m</div></div>
+          <div class="hud-item"><div class="glass-box" id="box-classTime" onclick="setFocus('classTime')"><input id="classTime" readonly placeholder="設定"></div></div>
+          <div id="remText" class="hud-item">--分--秒</div>
+          <div id="totalDist" class="hud-item" style="font-size: 20px; font-weight: 900; color: var(--neon-blue);">0m</div>
         </div>
       </div>
 
@@ -140,25 +137,25 @@ iframe { width: 100%; height: 100%; border: none; }
         <div class="row">
           <div style="flex:1"><div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')"><span class="inner-label">分</span><input id="lapMin" readonly placeholder="0"></div></div>
           <div style="flex:1"><div class="glass-box" id="box-lapSec" onclick="setFocus('lapSec')"><span class="inner-label">秒</span><input id="lapSec" readonly placeholder="0"></div></div>
-          <div style="flex:0.8"><div class="glass-box" id="box-laps" onclick="setFocus('laps')"><span class="inner-label">趟數</span><input id="laps" readonly placeholder="0"></div></div>
-          <div style="flex:0.8"><div class="glass-box" id="box-sets" onclick="setFocus('sets')"><span class="inner-label">組數</span><input id="sets" readonly placeholder="0"></div></div>
+          <div style="flex:0.8"><div class="glass-box" id="box-laps" onclick="setFocus('laps')"><span class="inner-label">趟</span><input id="laps" readonly placeholder="0"></div></div>
+          <div style="flex:0.8"><div class="glass-box" id="box-sets" onclick="setFocus('sets')"><span class="inner-label">組</span><input id="sets" readonly placeholder="0"></div></div>
         </div>
         <div class="row">
           <div style="flex:1.6"><div class="glass-box" id="box-dist" onclick="setFocus('dist')"><span class="inner-label">距離/m</span><input id="dist" readonly placeholder="0"></div></div>
-          <div style="flex:1"><div class="glass-box" id="box-resMin" onclick="setFocus('resMin')"><span class="inner-label">休/分</span><input id="resMin" readonly placeholder="0"></div></div>
-          <div style="flex:1"><div class="glass-box" id="box-resSec" onclick="setFocus('resSec')"><span class="inner-label">休/秒</span><input id="resSec" readonly placeholder="0"></div></div>
+          <div style="flex:1"><div class="glass-box" id="box-resMin" onclick="setFocus('resMin')"><span class="inner-label">休分</span><input id="resMin" readonly placeholder="0"></div></div>
+          <div style="flex:1"><div class="glass-box" id="box-resSec" onclick="setFocus('resSec')"><span class="inner-label">休秒</span><input id="resSec" readonly placeholder="0"></div></div>
         </div>
-        <button onclick="addItem()" class="btn-slim">加入訓練項目 (+)</button>
+        <button onclick="addItem()" class="btn-slim">加入項目 (+)</button>
       </div>
 
       <div class="list-area" id="listArea"></div>
 
       <footer class="fixed-footer">
         <div class="tool-bar">
-            <span class="footer-tips">💡 ☰ 拖曳 | 長按刪除</span>
+            <span class="footer-tips">💡 ☰ 拖曳 | 長按項目刪除</span>
             <div class="action-btns">
                 <button onclick="copyToClipboard()" class="btn-mini btn-copy-mini">📋 複製</button>
-                <button onclick="resetAll()" class="btn-mini btn-reset-mini">🗑️ 清空</button>
+                <button onclick="resetAll()" class="btn-mini btn-reset-mini">🗑️ 重置</button>
             </div>
         </div>
         <div class="numpad">
@@ -186,19 +183,20 @@ iframe { width: 100%; height: 100%; border: none; }
 
 <script>
 /**
- * 系統核心
+ * 旗艦工作台控制邏輯
  */
 function switchTab(tabName) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    
     document.getElementById('tab-' + tabName).classList.add('active');
     document.getElementById('page-' + tabName).classList.add('active');
 }
 
 let currentFocus = 'classTime';
 let items = [];
+let selectedZones = [], selectedCats = [];
 
+// 初始化與快取讀取
 function initData() {
     try {
         const savedItems = localStorage.getItem('swim_v11_items');
@@ -206,37 +204,38 @@ function initData() {
             items = JSON.parse(savedItems);
         }
     } catch (e) { items = []; }
-    
     const savedTime = localStorage.getItem('swim_v11_class_time');
     document.getElementById('classTime').value = (savedTime && savedTime !== "undefined") ? savedTime : "";
     updateList(); renderHUD();
 }
 
 function setFocus(id) {
-  currentFocus = id;
-  document.querySelectorAll('.glass-box').forEach(b => b.classList.remove('active-blue'));
-  const targetBox = document.getElementById('box-' + id);
-  if (targetBox) targetBox.classList.add('active-blue');
+    currentFocus = id;
+    document.querySelectorAll('.glass-box').forEach(b => b.classList.remove('active-blue'));
+    const targetBox = document.getElementById('box-' + id);
+    if (targetBox) targetBox.classList.add('active-blue');
 }
 
 function press(n) {
-  if (currentFocus === 'none') return;
-  const input = document.getElementById(currentFocus);
-  const limit = (currentFocus === 'dist') ? 4 : (currentFocus === 'classTime' ? 3 : 2);
-  if (input.value.length < limit) {
-    input.value = (input.value === "0") ? n : input.value + n;
-    renderHUD();
-  }
+    if (currentFocus === 'none') return;
+    const input = document.getElementById(currentFocus);
+    const limit = (currentFocus === 'dist') ? 4 : (currentFocus === 'classTime' ? 3 : 2);
+    if (input.value.length < limit) {
+        input.value = (input.value === "0") ? n : input.value + n;
+        renderHUD();
+    }
 }
 
 function del() { if (currentFocus !== 'none') { document.getElementById(currentFocus).value = document.getElementById(currentFocus).value.slice(0, -1); renderHUD(); } }
 function cls() { if (currentFocus !== 'none') { document.getElementById(currentFocus).value = ""; renderHUD(); } }
 
+// 核心計算與 HUD 更新 (修復 80/400 關鍵邏輯)
 function renderHUD() {
     const classInput = document.getElementById('classTime').value;
     const classMinutes = (classInput === "" || isNaN(classInput)) ? 0 : parseInt(classInput);
     let totalUsedSeconds = 0, totalMeters = 0;
     
+    // 每次渲染皆從 items 陣列從頭計算，確保數據純淨
     items.forEach(item => {
         totalUsedSeconds += (parseInt(item.seconds) || 0);
         totalMeters += (parseInt(item.dist) || 0);
@@ -258,13 +257,13 @@ function renderHUD() {
     localStorage.setItem('swim_v11_items', JSON.stringify(items));
 }
 
-let selectedZones = [], selectedCats = [];
 function addItem() {
     const g = id => parseInt(document.getElementById(id).value) || 0;
     const lp = g('laps'), st = g('sets'), d = g('dist');
     if (lp === 0 || st === 0) { alert("請輸入趟數與組數"); return; }
 
     const lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec');
+    // 單項總計時間公式：(配速 * 趟 * 組) + (休息 * 組)
     const itemSec = ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * st); 
     const zoneStr = selectedZones.map(z => `[${z.name}]`).join('');
     const catStr = selectedCats.map(c => `[${c}]`).join('');
@@ -272,10 +271,11 @@ function addItem() {
 
     items.push({
         seconds: itemSec, lapMin: lm, lapSec: ls, resMin: rm, resSec: rs, laps: lp, sets: st,
-        dist: d * lp * st, singleDist: d, title: document.getElementById('courseNote').value.trim() || "項目",
+        dist: d * lp * st, singleDist: d, title: document.getElementById('courseNote').value.trim() || "游泳項目",
         tags: `${catStr}${zoneStr}`, color: primaryColor
     });
     
+    // 清除欄位
     ['lapMin', 'lapSec', 'laps', 'sets', 'dist', 'resMin', 'resSec'].forEach(id => document.getElementById(id).value = "");
     document.getElementById('courseNote').value = "";
     selectedZones = []; selectedCats = [];
@@ -305,6 +305,7 @@ function updateList() {
     }).join('');
 }
 
+// 拖曳排序實作
 new Sortable(document.getElementById('listArea'), {
     animation: 150, handle: '.drag-handle',
     onEnd: function () {
@@ -316,7 +317,7 @@ new Sortable(document.getElementById('listArea'), {
 });
 
 let pressTimer;
-function startPress(i) { pressTimer = setTimeout(() => { if(confirm("確定刪除？")) { items.splice(i, 1); updateList(); renderHUD(); } }, 800); }
+function startPress(i) { pressTimer = setTimeout(() => { if(confirm("確定刪除此項目？")) { items.splice(i, 1); updateList(); renderHUD(); } }, 800); }
 function endPress() { clearTimeout(pressTimer); }
 
 function toggleZone(id, name) {
@@ -333,13 +334,14 @@ function toggleCat(domId, name) {
     else { selectedCats.push(name); btn.classList.add('active'); }
 }
 
-function resetAll() { if(confirm("⚠️ 將抹除所有資料？")) { items = []; localStorage.clear(); document.getElementById('classTime').value = ""; updateList(); renderHUD(); } }
+function resetAll() { if(confirm("⚠️ 將抹除所有規劃資料，確定嗎？")) { items = []; localStorage.clear(); document.getElementById('classTime').value = ""; updateList(); renderHUD(); } }
+
 function copyToClipboard() {
     if (items.length === 0) return;
     let txt = `🏊‍♂️ 游泳課表 (總距離: ${document.getElementById('totalDist').innerText})\n---\n`;
-    items.forEach((item, idx) => txt += `${idx+1}. ${item.title} ${item.singleDist}m x ${item.laps}t x ${item.sets}s\n`);
+    items.forEach((item, idx) => txt += `${idx+1}. ${item.title} (${item.singleDist}m x ${item.laps}t x ${item.sets}s)\n`);
     const el = document.createElement('textarea'); el.value = txt; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-    alert("已複製");
+    alert("已複製到剪貼簿");
 }
 
 window.onload = initData;
