@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練旗艦工作台 v1.4</title>
+<title>游泳教練旗艦工作台 v1.4.1</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -18,7 +18,7 @@ body {
   padding-top: env(safe-area-inset-top, 20px); 
 }
  
-/* --- 頂部導航 (調整為三分頁) --- */
+/* --- 頂部導航 --- */
 .app-header {
   display: flex; background: #05070a; border-bottom: 2px solid #1a2028; flex-shrink: 0;
 }
@@ -94,7 +94,6 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
   </header>
  
   <main class="content-wrapper">
-    
     <div id="page-planner" class="page active">
       <div class="hud-container">
         <div class="hud-inputs">
@@ -156,9 +155,7 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
     </div>
  
     <div id="page-percentage" class="page"><iframe src="https://jason307325.github.io/percentage-time/"></iframe></div>
- 
     <div id="page-timer" class="page"><iframe src="https://jason307325.github.io/sports-timer2/"></iframe></div>
- 
   </main>
  
 <script>
@@ -270,9 +267,9 @@ function copyToClipboard() {
     items.forEach((item, idx) => {
         const m = Math.floor(item.seconds / 60), s = item.seconds % 60;
         txt += `${idx+1}. ${item.tags} ${item.title}\n`;
-        txt += `   🔹 規格: ${item.singleDist}m x ${item.laps}t x ${item.sets}s\n`;
-        txt += `   🔹 設定: 配速 ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')} | 休息 ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n`;
-        txt += `   🔹 小計: ${m}分${s.toString().padStart(2,'0')}秒 | 距離: ${item.dist}m\n\n`;
+        txt += `   規格: ${item.singleDist}m x ${item.laps}t x ${item.sets}s\n`;
+        txt += `   配速 ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')} | 休息 ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n`;
+        txt += `   用時: ${m}分${s.toString().padStart(2,'0')}秒 | 距離: ${item.dist}m\n\n`;
     });
     const el = document.createElement('textarea'); el.value = txt; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
     alert("專業課表已導出至剪貼簿");
