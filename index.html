@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳規劃大師 Pro v12.0</title>
+<title>游泳規劃大師 Pro v12.3</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -33,7 +33,7 @@ body {
 }
 .glass-box.active-blue { border-color: var(--neon-blue); box-shadow: 0 0 8px rgba(0,162,255,0.2); }
 .glass-box input { width: 100%; background: transparent; border: none; color: #fff; font-size: 16px; font-weight: 800; text-align: right; pointer-events: none; }
-.inner-label { font-size: 9px; color: #555; white-space: nowrap; font-weight: bold; }
+.inner-label { font-size: 10px; color: #555; white-space: nowrap; font-weight: bold; }
 
 .zone-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 8px 12px 4px; }
 .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin: 0 12px 8px; }
@@ -95,11 +95,11 @@ body {
   </div>
 
   <div class="panel">
-    <input type="text" id="courseNote" class="text-input-box" placeholder="項目內容 (如: 100 自由式)..." onfocus="currentFocus='none'">
+    <input type="text" id="courseNote" class="text-input-box" placeholder="項目內容 (如: 50 自由式)..." onfocus="currentFocus='none'">
     
     <div class="row">
-      <div style="flex:1"><div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')"><span class="inner-label">趟/分</span><input id="lapMin" readonly placeholder="0"></div></div>
-      <div style="flex:1"><div class="glass-box" id="box-lapSec" onclick="setFocus('lapSec')"><span class="inner-label">趟/秒</span><input id="lapSec" readonly placeholder="0"></div></div>
+      <div style="flex:1"><div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')"><span class="inner-label">分</span><input id="lapMin" readonly placeholder="0"></div></div>
+      <div style="flex:1"><div class="glass-box" id="box-lapSec" onclick="setFocus('lapSec')"><span class="inner-label">秒</span><input id="lapSec" readonly placeholder="0"></div></div>
       <div style="flex:0.8"><div class="glass-box" id="box-laps" onclick="setFocus('laps')"><span class="inner-label">趟數</span><input id="laps" readonly placeholder="0"></div></div>
       <div style="flex:0.8"><div class="glass-box" id="box-sets" onclick="setFocus('sets')"><span class="inner-label">組數</span><input id="sets" readonly placeholder="0"></div></div>
     </div>
@@ -117,7 +117,7 @@ body {
 
   <footer class="fixed-footer">
     <div class="footer-tips">
-        <span style="font-size:10px; color:#555">💡 自動跳格開啟 | 長按 1.0s 刪除</span>
+        <span style="font-size:10px; color:#555">💡 含最後組休息 | 長按 1.0s 刪除</span>
         <div style="display:flex; gap:10px">
           <button onclick="copyToClipboard()" style="background:#222; color:#fff; border:none; padding:4px 12px; border-radius:15px; font-size:11px">📋 複製</button>
           <button onclick="resetAll()" style="color:var(--neon-red); background:none; border:none; font-size:11px; font-weight:bold">清空</button>
@@ -137,12 +137,8 @@ let items = JSON.parse(localStorage.getItem('swim_v11_items')) || [];
 let selectedZones = []; 
 let selectedCats = [];  
 
-// 定義跳格順序
 const focusOrder = ['lapMin', 'lapSec', 'laps', 'sets', 'dist', 'resMin', 'resSec'];
-// 定義跳格限制 (滿幾位跳格)
-const jumpLimits = {
-  classTime: 4, lapMin: 4, lapSec: 2, laps: 2, sets: 2, dist: 4, resMin: 4, resSec: 2
-};
+const jumpLimits = { classTime: 4, lapMin: 4, lapSec: 2, laps: 2, sets: 2, dist: 4, resMin: 4, resSec: 2 };
 
 function setFocus(id) {
   currentFocus = id;
@@ -159,8 +155,6 @@ function press(n) {
   if (input.value.length < limit) {
     input.value = (input.value === "0") ? n : input.value + n;
     renderHUD();
-    
-    // 自動跳格邏輯
     if (input.value.length === limit) {
       const currentIndex = focusOrder.indexOf(currentFocus);
       if (currentIndex !== -1 && currentIndex < focusOrder.length - 1) {
@@ -177,16 +171,16 @@ function addItem() {
   const g = id => parseInt(document.getElementById(id).value) || 0;
   const note = document.getElementById('courseNote').value || "訓練項目";
   
-  // 獲取原始值
   let lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec'), d = g('dist');
   let lp = parseInt(document.getElementById('laps').value) || 1;
   let st = parseInt(document.getElementById('sets').value) || 1;
 
-  // 專業秒數轉換進位邏輯 (超過60秒自動轉為分)
   if (ls >= 60) { lm += Math.floor(ls / 60); ls = ls % 60; }
   if (rs >= 60) { rm += Math.floor(rs / 60); rs = rs % 60; }
   
-  const totalSec = ((lm * 60 + ls) + (rm * 60 + rs)) * lp * st; 
+  const singleCycleSec = ((lm * 60 + ls) * lp) + (rm * 60 + rs);
+  const totalSec = singleCycleSec * st; 
+
   const zoneStr = selectedZones.map(z => `[${z.name}]`).join('');
   const catStr = selectedCats.map(c => `[${c}]`).join('');
   const primaryColor = selectedZones.length > 0 ? getComputedStyle(document.getElementById('btn-z'+selectedZones[0].id)).backgroundColor : 'transparent';
@@ -196,11 +190,10 @@ function addItem() {
     dist: d * lp * st, 
     title: note,
     tags: `${catStr}${zoneStr}`,
-    desc: `${d > 0 ? d+'m ' : ''}× ${lp}趟 × ${st}組 (休 ${rm}:${ls.toString().padStart(2,'0')})`,
+    desc: `${d > 0 ? d+'m ' : ''}× ${lp}趟 × ${st}組 (每組休 ${rm}:${rs.toString().padStart(2,'0')})`,
     color: primaryColor
   });
   
-  // 重置
   focusOrder.forEach(id => document.getElementById(id).value = "");
   document.getElementById('courseNote').value = "";
   selectedZones = []; selectedCats = [];
@@ -248,11 +241,10 @@ function startPress(i) {
       items.splice(i, 1);
       updateList(); renderHUD();
     }
-  }, 1000); // 改為 1.0 秒
+  }, 1000); 
 }
 function endPress() { clearTimeout(pressTimer); }
 
-// 初始化拖曳
 const sortable = new Sortable(document.getElementById('listArea'), {
     animation: 150, handle: '.drag-handle',
     onEnd: function () {
