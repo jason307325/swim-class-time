@@ -97,8 +97,8 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
  
   <header class="app-header">
     <div id="tab-planner" class="tab-btn active" onclick="switchTab('planner')">📝 課程規劃</div>
-    <div id="tab-percentage" class="tab-btn" onclick="switchTab('percentage')">⏱️ 百分比配速</div>
     <div id="tab-timer" class="tab-btn" onclick="switchTab('timer')">⏱️ 計時鐘</div>
+    <div id="tab-percentage" class="tab-btn" onclick="switchTab('percentage')">⏱️ 百分比配速</div>
   </header>
  
   <main class="content-wrapper">
@@ -162,10 +162,8 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
       </footer>
     </div>
  
-    <div id="page-percentage" class="page"><iframe src="https://jason307325.github.io/percentage-time/"></iframe></div>
-    
-    <!-- 計時鐘分頁 -->
     <div id="page-timer" class="page">
+      <h2>分段紀錄表</h2>
       <div class="timer-controls">
         <h2>訓練計時鐘</h2>
         <div id="timerDisplay">00:00</div>
@@ -180,12 +178,13 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
             <select id="resetCourse">
                 <option value="">--選擇課程--</option>
                 <option value="all">所有課程</option>
-                <!-- 使用 JavaScript 動態添加課程選項 -->
             </select>
             <button onclick="resetSelectedCourse()" class="btn-slim">重置選擇的課程</button>
         </div>
       </div>
     </div>
+
+    <div id="page-percentage" class="page"><iframe src="https://jason307325.github.io/percentage-time/"></iframe></div>
   </main>
  
 <script>
@@ -280,7 +279,7 @@ function addItem() {
     renderHUD();
     setFocus('lapMin');
 
-    // 更新重置選擇下拉選單
+    // 更新重置選項
     updateResetOptions();
 }
 
