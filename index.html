@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練旗艦工作台 v3.8</title>
+<title>游泳教練旗艦工作台 v3.9</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -556,6 +556,15 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
         font-size: 10px;
     }
 }
+
+/* 新增：課程卡上的總用時顯示 */
+.card-total-time {
+    font-size: 11px;
+    color: #ff9500;
+    font-weight: bold;
+    margin-top: 4px;
+    text-align: right;
+}
 </style>
 </head>
 <body oncontextmenu="return false;">
@@ -849,6 +858,27 @@ function toggleCat(id, n) {
     }
 }
 
+// 新增：計算單項課程總用時
+function calculateItemTotalTime(item) {
+    // 計算運動時間 (每趟時間 × 趟數 × 組數)
+    const lapTime = item.lapMin * 60 + item.lapSec;
+    const totalWorkTime = lapTime * item.laps * item.sets;
+    
+    // 計算休息時間 (每組休息時間 × (組數-1))
+    const restTime = item.resMin * 60 + item.resSec;
+    const totalRestTime = restTime * (item.sets - 1);
+    
+    // 總時間 = 運動時間 + 休息時間
+    return totalWorkTime + totalRestTime;
+}
+
+// 新增：將秒數轉換為分:秒格式
+function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 function addItem() {
     const g = id => parseInt(document.getElementById(id).value) || 0;
     const lp = g('laps'), st = g('sets') || 1, d = g('dist'), lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec');
@@ -875,11 +905,15 @@ function addItem() {
         }
     }
     
+    // 計算總用時
+    const totalTime = calculateItemTotalTime({ lapMin: lm, lapSec: ls, laps: lp, sets: st, resMin: rm, resSec: rs });
+    
     items.push({ 
         seconds: ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * (st - 1)), 
         lapMin: lm, lapSec: ls, resMin: rm, resSec: rs, laps: lp, sets: st, 
         dist: d * lp * st, singleDist: d, title: document.getElementById('courseNote').value || "訓練項目", tags: allTags, 
-        color: color
+        color: color,
+        totalTime: totalTime  // 新增：儲存總用時
     });
     
     updateList(); 
@@ -902,6 +936,10 @@ function updateList() {
                 <div class="card-info-row">
                     <span>配速: ${it.lapMin}:${it.lapSec.toString().padStart(2,'0')}</span>
                     <span>休息: ${it.resMin}:${it.resSec.toString().padStart(2,'0')}</span>
+                </div>
+                <div class="card-info-row">
+                    <span>總距離: ${it.dist}m</span>
+                    <span class="card-total-time">總用時: ${formatTime(it.totalTime)}</span>
                 </div>
             </div>
         </div>
@@ -998,6 +1036,10 @@ function saveEdit() {
     items[i].resSec = g('editResSec');
     items[i].dist = items[i].singleDist * items[i].laps * items[i].sets;
     items[i].seconds = ((items[i].lapMin * 60 + items[i].lapSec) * items[i].laps * items[i].sets) + ((items[i].resMin * 60 + items[i].resSec) * (items[i].sets - 1));
+    
+    // 更新總用時
+    items[i].totalTime = calculateItemTotalTime(items[i]);
+    
     updateList(); 
     renderHUD(); 
     closeEdit();
@@ -1007,7 +1049,7 @@ function closeEdit() {
     document.getElementById('editModal').classList.remove('active'); 
 }
 
-// 複製課程到剪貼簿
+// 複製課程到剪貼簿 - 增加單項用時資訊
 function copyCoursesToClipboard() {
     if (items.length === 0) {
         alert("沒有課程項目可以複製！");
@@ -1016,7 +1058,13 @@ function copyCoursesToClipboard() {
     
     let exportText = "游泳訓練課程表\n";
     exportText += "總項目數: " + items.length + " 項\n";
-    exportText += "總距離: " + items.reduce((sum, item) => sum + item.dist, 0) + "m\n\n";
+    exportText += "總距離: " + items.reduce((sum, item) => sum + item.dist, 0) + "m\n";
+    
+    // 計算總用時
+    const totalSeconds = items.reduce((sum, item) => sum + item.totalTime, 0);
+    const totalMins = Math.floor(totalSeconds / 60);
+    const totalSecs = totalSeconds % 60;
+    exportText += "總用時: " + totalMins + "分" + totalSecs + "秒\n\n";
     
     items.forEach((item, index) => {
         exportText += `${index + 1}. ${item.title}\n`;
@@ -1025,7 +1073,8 @@ function copyCoursesToClipboard() {
         exportText += `配速: ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')}\n`;
         exportText += `休息: ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n`;
         exportText += `總距離: ${item.dist}m\n`;
-        exportText += "─".repeat(20) + "\n\n";
+        exportText += `單項用時: ${formatTime(item.totalTime)}\n`;
+        exportText += "─".repeat(25) + "\n\n";
     });
     
     // 複製到剪貼簿
@@ -1066,7 +1115,7 @@ function clearInputs() {
     document.querySelectorAll('.tag-btn').forEach(b=>b.classList.remove('active'));
 }
 
-// 計時器功能
+// 計時器功能 - 修復課程導入問題
 function timerStart() { 
     if (!items.length) {
         alert("請先建立課程項目！");
@@ -1098,7 +1147,8 @@ function showCourseSelection() {
             <div style="font-size:11px; color:#aaa;">
                 ${item.tags}<br>
                 ${item.singleDist}m × ${item.laps}趟 × ${item.sets}組<br>
-                總距離: ${item.dist}m
+                總距離: ${item.dist}m<br>
+                單項用時: ${formatTime(item.totalTime)}
             </div>
         `;
         
@@ -1366,6 +1416,24 @@ window.onload = () => {
     window.addEventListener('orientationchange', function() {
         setTimeout(testLandscapeLayout, 300);
     });
+    
+    // 測試：添加一個示例課程
+    setTimeout(() => {
+        if (items.length === 0) {
+            console.log("添加示例課程進行測試...");
+            // 添加一個測試課程
+            items.push({
+                seconds: 600,
+                lapMin: 1, lapSec: 30, resMin: 0, resSec: 30,
+                laps: 4, sets: 2, dist: 200, singleDist: 25,
+                title: "自由式衝刺", tags: "[MainSet] [Z4氧量]",
+                color: "#ff9500",
+                totalTime: 600
+            });
+            updateList();
+            renderHUD();
+        }
+    }, 1500);
 };
 </script>
 </body>
