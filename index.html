@@ -553,4 +553,226 @@ function timerStart() {
     if (!timerState.running) {
         // 第一次開始，詢問要從哪個項目開始
         showCourseSelection();
-    } else if (timerState
+    } else if (timerState.paused) {
+        // 從暫停狀態繼續
+        timerPause();
+    } else {
+        // 已經在運行中，不執行任何操作
+    }
+}
+
+function showCourseSelection() {
+    if (items.length === 0) {
+        alert("沒有課程項目！");
+        return;
+    }
+    
+    selectedCourseIndex = 0;
+    const listElement = document.getElementById('courseSelectList');
+    listElement.innerHTML = '';
+    
+    items.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'select-course-card';
+        card.innerHTML = `
+            <div style="font-weight:bold; margin-bottom:4px;">${index + 1}. ${item.title}</div>
+            <div style="font-size:11px; color:#aaa;">
+                ${item.tags}<br>
+                ${item.singleDist}m × ${item.laps}趟 × ${item.sets}組<br>
+                總距離: ${item.dist}m
+            </div>
+        `;
+        
+        if (index === selectedCourseIndex) {
+            card.classList.add('selected');
+        }
+        
+        card.onclick = () => {
+            document.querySelectorAll('.select-course-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedCourseIndex = index;
+        };
+        
+        listElement.appendChild(card);
+    });
+    
+    document.getElementById('courseSelectModal').classList.add('active');
+}
+
+function confirmCourseSelection() {
+    document.getElementById('courseSelectModal').classList.remove('active');
+    
+    timerState.running = true;
+    timerState.paused = false;
+    timerState.currentItemIndex = selectedCourseIndex;
+    timerState.currentSet = 1;
+    timerState.currentLap = 0;
+    timerState.isResting = false;
+    timerState.timeRemaining = 0;
+    timerState.distRemaining = 0;
+    
+    startStep();
+}
+
+function cancelCourseSelection() {
+    document.getElementById('courseSelectModal').classList.remove('active');
+}
+
+function startStep() {
+    const it = items[timerState.currentItemIndex];
+    if (!it) {
+        timerEnd();
+        alert("沒有訓練項目！");
+        return;
+    }
+    
+    if (timerState.currentLap === 0) { 
+        timerState.currentLap = it.laps; 
+        timerState.distRemaining = it.dist; 
+    }
+    
+    if (timerState.isResting) {
+        timerState.timeRemaining = (it.resMin * 60 + it.resSec);
+        playWhistle('rest');
+    } else {
+        timerState.timeRemaining = (it.lapMin * 60 + it.lapSec);
+        playWhistle('start');
+    }
+    
+    updateTimerUI(); 
+    runTimer();
+}
+
+function runTimer() {
+    clearInterval(timerState.intervalId);
+    timerState.intervalId = setInterval(() => {
+        if (timerState.paused) return;
+        timerState.timeRemaining--;
+        if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) playWhistle('countdown');
+        if (timerState.timeRemaining <= 0) { 
+            clearInterval(timerState.intervalId); 
+            handleStepComplete(); 
+        } else {
+            updateTimerUI();
+        }
+    }, 1000);
+}
+
+function handleStepComplete() {
+    const it = items[timerState.currentItemIndex];
+    if (!timerState.isResting) {
+        timerState.currentLap--; 
+        timerState.distRemaining -= it.singleDist;
+        
+        if (timerState.currentLap > 0) {
+            startStep();
+        } else if (timerState.currentSet < it.sets) { 
+            timerState.isResting = true; 
+            startStep(); 
+        } else {
+            nextItem();
+        }
+    } else { 
+        timerState.isResting = false; 
+        timerState.currentSet++; 
+        timerState.currentLap = it.laps; // 重置趟數
+        startStep(); 
+    }
+}
+
+function nextItem() {
+    timerState.currentItemIndex++;
+    if (timerState.currentItemIndex < items.length) { 
+        timerState.currentSet = 1; 
+        timerState.currentLap = 0; 
+        timerState.isResting = false; 
+        startStep(); 
+    } else { 
+        timerEnd(); 
+        alert("訓練完成！"); 
+    }
+}
+
+function updateTimerUI() {
+    const m = Math.floor(timerState.timeRemaining/60), s = timerState.timeRemaining%60;
+    document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    document.getElementById('timerDisplay').classList.toggle('resting', timerState.isResting);
+    
+    const it = items[timerState.currentItemIndex];
+    if(it) {
+        document.getElementById('clock-tags').innerText = it.tags || "---";
+        document.getElementById('clock-title').innerText = it.title + (timerState.isResting ? " (休息)" : "");
+        document.getElementById('currentLap').innerText = timerState.currentLap;
+        document.getElementById('currentSet').innerText = `${timerState.currentSet}/${it.sets}`;
+        document.getElementById('distRem').innerText = timerState.distRemaining + "m";
+        document.getElementById('restTime').innerText = `${it.resMin}:${it.resSec.toString().padStart(2,'0')}`;
+    }
+}
+
+function timerPause() { 
+    if (!timerState.running) return;
+    
+    timerState.paused = !timerState.paused;
+    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
+    
+    if (timerState.paused) {
+        clearInterval(timerState.intervalId);
+        pauseBtn.textContent = '繼續';
+        pauseBtn.style.background = 'var(--neon-green)';
+    } else {
+        runTimer();
+        pauseBtn.textContent = '暫停';
+        pauseBtn.style.background = 'var(--neon-blue)';
+    }
+}
+
+function timerEnd() { 
+    clearInterval(timerState.intervalId); 
+    timerState = { 
+        running: false, 
+        paused: false, 
+        currentItemIndex: 0, 
+        currentSet: 1, 
+        currentLap: 0, 
+        isResting: false, 
+        timeRemaining: 0, 
+        distRemaining: 0, 
+        intervalId: null 
+    }; 
+    
+    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
+    pauseBtn.textContent = '暫停';
+    pauseBtn.style.background = 'var(--neon-blue)';
+    
+    updateTimerUI(); 
+}
+
+function timerResetSelect() { 
+    // 顯示課程選擇模態框
+    showCourseSelection();
+}
+
+// 初始化 Sortable 拖曳排序
+window.onload = () => { 
+    const listArea = document.getElementById('listArea');
+    new Sortable(listArea, { 
+        handle: '.drag-handle', 
+        animation: 150,
+        onEnd: function(evt) {
+            // 拖曳完成後更新 items 陣列順序
+            const newOrder = [];
+            const cards = listArea.querySelectorAll('.course-card');
+            cards.forEach((card, index) => {
+                const oldIndex = parseInt(card.dataset.index || index);
+                if (items[oldIndex]) {
+                    newOrder.push(items[oldIndex]);
+                }
+            });
+            items = newOrder;
+            updateList();
+        }
+    });
+};
+</script>
+</body>
+</html>
