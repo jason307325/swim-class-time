@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>游泳教練旗艦工作台 v2.5</title>
+<title>游泳教練旗艦工作台 v2.5.1</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -13,7 +13,7 @@
   --z1: #4ae3ff; --z2: #4cda64; --z3: #ffcc00; --z4: #ff9500; --z56: #ff3b30;
   --cat-bg: #30363d;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-backface-visibility: hidden; }
 
 body { 
   font-family: -apple-system, "PingFang TC", sans-serif; background: var(--bg-dark); color: #fff; 
@@ -31,9 +31,8 @@ body.lock-portrait @media (orientation: landscape) { #portrait-lock { display: f
 .content-wrapper { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
 .page { flex: 1; display: none; flex-direction: column; height: 100%; overflow: hidden; }
 .page.active { display: flex; }
-.page iframe { width: 100%; height: 100%; border: none; flex: 1; display: block; }
 
-/* 課程規劃分布 (保留您滿意的設定) */
+/* 課程規劃分布 */
 .planner-container { display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
 .hud-container { padding: 6px 12px; background: #05070a; border-bottom: 1px solid #1a2028; flex-shrink: 0; }
 .hud-inputs { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -74,37 +73,42 @@ body.lock-portrait @media (orientation: landscape) { #portrait-lock { display: f
 .tool-btn { border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; flex-shrink: 0; }
 .hint-text-bottom { font-size: 9px; color: #555; text-align: center; flex: 1; line-height: 1.2; }
 
-/* --- 計時鐘佈局修正 --- */
-.timer-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; }
-.timer-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; }
-.time-main { font-size: 28vw; font-weight: 900; color: var(--neon-red); font-family: 'monospace'; line-height: 1; transition: none; }
+/* --- 計時鐘佈局修正 (解決抖動與溢出) --- */
+.timer-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; overflow: hidden; }
+.timer-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; transition: none; overflow: hidden; }
+.time-main { font-size: 28vw; font-weight: 900; color: var(--neon-red); font-family: 'monospace'; line-height: 1; transition: color 0.2s; }
 .time-main.resting { color: var(--neon-green); }
 
-.timer-current-info { width: 100%; max-width: 500px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; border-left: 5px solid var(--neon-blue); }
+.timer-current-info { width: 100%; max-width: 500px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; border-left: 5px solid var(--neon-blue); transition: none; }
 .timer-title { font-size: 18px; font-weight: 900; color: #fff; margin: 2px 0; }
 .time-sub-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 8px; }
 .sub-box { text-align: center; background: #111; padding: 5px 2px; border-radius: 6px; }
 .sub-val { font-size: 16px; font-weight: 900; color: #ff9500; display: block; }
 .sub-label { font-size: 9px; color: #666; font-weight: bold; }
 
-.timer-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px 15px calc(env(safe-area-inset-bottom, 10px) + 5px); background: #0a0d12; border-top: 1px solid #222; }
+.timer-controls { 
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; 
+    padding: 10px 15px calc(env(safe-area-inset-bottom, 5px) + 5px); 
+    background: #0a0d12; border-top: 1px solid #222; flex-shrink: 0;
+}
 .timer-btn { padding: 12px 0; border-radius: 8px; font-weight: 900; font-size: 16px; border: none; }
 
-/* 橫屏模式特定修正 */
+/* 橫屏模式特定修正：解決按鈕溢出與螢幕抖動 */
 @media (orientation: landscape) {
-  .timer-display { flex-direction: row; justify-content: space-around; padding: 0 20px; }
-  .time-main { font-size: 35vh; flex: 1; text-align: center; margin-right: 20px; }
+  .timer-display { flex-direction: row; justify-content: space-around; padding: 0 20px; flex: 1; }
+  .time-main { font-size: 40vh; flex: 1; text-align: center; margin-right: 15px; }
   .timer-current-info { flex: 1; margin-top: 0; max-width: 45%; }
-  .timer-title { font-size: 20px; }
+  .timer-title { font-size: 18px; }
   .time-sub-grid { grid-template-columns: 1fr 1fr; }
-  .sub-val { font-size: 20px; }
-  /* 按鈕改為 2x2 排列 */
+  /* 按鈕改為 2x2 排列，縮小間距防止溢出 */
   .timer-controls { 
     grid-template-columns: repeat(2, 1fr); 
-    padding: 8px 40px calc(env(safe-area-inset-bottom, 5px) + 5px); 
-    gap: 6px;
+    grid-template-rows: 1fr 1fr;
+    padding: 5px 40px calc(env(safe-area-inset-bottom, 2px) + 2px); 
+    gap: 4px;
+    height: auto;
   }
-  .timer-btn { padding: 8px 0; font-size: 14px; }
+  .timer-btn { padding: 6px 0; font-size: 14px; }
 }
 
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; }
@@ -134,7 +138,6 @@ body.lock-portrait @media (orientation: landscape) { #portrait-lock { display: f
             <div class="hud-item"><span class="label-sm">總距離</span><div id="totalDist">0m</div></div>
           </div>
         </div>
-
         <div class="zone-grid">
             <div id="btn-z1" class="tag-btn" style="background:var(--z1)" onclick="toggleZone(1,'Z1')">Z1恢復</div>
             <div id="btn-z2" class="tag-btn" style="background:var(--z2)" onclick="toggleZone(2,'Z2')">Z2耐力</div>
@@ -149,7 +152,6 @@ body.lock-portrait @media (orientation: landscape) { #portrait-lock { display: f
             <div id="cat-cool" class="tag-btn cat-btn" onclick="toggleCat('cool','Cool Down')">CoolDown</div>
             <div id="cat-bonus" class="tag-btn cat-btn" onclick="toggleCat('bonus','Bonus')">Bonus</div>
         </div>
-
         <div class="panel">
           <input type="text" id="courseNote" class="text-input-box" placeholder="訓練項目名稱..." onfocus="currentFocus='none'">
           <div class="row">
@@ -165,9 +167,7 @@ body.lock-portrait @media (orientation: landscape) { #portrait-lock { display: f
           </div>
           <button onclick="addItem()" class="btn-slim">加入項目 (+)</button>
         </div>
-
         <div class="list-area" id="listArea"></div>
-
         <footer class="fixed-footer">
           <div class="numpad">
             <div class="num-btn" onclick="press(7)">7</div><div class="num-btn" onclick="press(8)">8</div><div class="num-btn" onclick="press(9)">9</div>
@@ -188,7 +188,6 @@ body.lock-portrait @media (orientation: landscape) { #portrait-lock { display: f
       <div class="timer-container">
         <div class="timer-display">
           <div class="time-main" id="timerDisplay">00:00</div>
-          
           <div class="timer-current-info">
             <div id="clock-tags" style="color:var(--neon-blue); font-weight:900; font-size:12px;">-- --</div>
             <div class="timer-title" id="clock-title">請選擇項目</div>
@@ -200,7 +199,6 @@ body.lock-portrait @media (orientation: landscape) { #portrait-lock { display: f
             </div>
           </div>
         </div>
-
         <div class="timer-controls">
           <button class="timer-btn" style="background:var(--neon-green); color:#000;" onclick="timerStart()">開始</button>
           <button class="timer-btn" style="background:var(--neon-blue); color:#fff;" onclick="timerPause()">暫停</button>
@@ -209,19 +207,17 @@ body.lock-portrait @media (orientation: landscape) { #portrait-lock { display: f
         </div>
       </div>
     </div>
-
     <div id="page-percentage" class="page"><iframe src="https://jason307325.github.io/percentage-time/"></iframe></div>
     <div id="page-timer" class="page"><iframe src="https://jason307325.github.io/sports-timer2/"></iframe></div>
   </main>
 
   <div id="resetModal" class="modal"><div class="modal-content">
       <h3 style="text-align:center; margin-bottom:15px; color:var(--neon-blue)">選擇重置項目</h3>
-      <div id="resetItemList" style="max-height:300px; overflow-y:auto;"></div>
+      <div id="resetItemList" style="max-height:250px; overflow-y:auto;"></div>
       <button onclick="closeResetModal()" style="width:100%; padding:12px; margin-top:10px; background:#444; color:#fff; border:none; border-radius:10px;">取消</button>
   </div></div>
 
 <script>
-// 此處保留 v2.4.2 的所有邏輯，僅優化 timerUI 更新效能防止抖動
 let currentFocus = 'classTime', items = [], selectedZones = [], selectedCats = [];
 let timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, distRemaining: 0, intervalId: null };
 
@@ -269,7 +265,7 @@ function renderHUD() {
     const remEl = document.getElementById('remText');
     remEl.innerText = `${rem<0?'-':''}${Math.floor(Math.abs(rem)/60)}:${(Math.abs(rem)%60).toString().padStart(2,'0')}`;
     remEl.style.color = rem < 0 ? 'var(--neon-red)' : 'var(--neon-green)';
-    localStorage.setItem('swim_v2.5', JSON.stringify(items));
+    localStorage.setItem('swim_v2.5.1', JSON.stringify(items));
 }
 
 function addItem() {
@@ -372,12 +368,12 @@ function handleStepComplete() {
 function updateTimerUI() {
     const m = Math.floor(timerState.timeRemaining/60), s = timerState.timeRemaining%60;
     const el = document.getElementById('timerDisplay');
-    el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    if(timerState.isResting) el.classList.add('resting'); else el.classList.remove('resting');
+    if (el) el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    if (timerState.isResting) el.classList.add('resting'); else el.classList.remove('resting');
     const item = items[timerState.currentItemIndex];
     if (item) {
         document.getElementById('clock-tags').innerText = item.tags;
-        document.getElementById('clock-title').innerText = item.title + (timerState.isResting ? " (組休)" : "");
+        document.getElementById('clock-title').innerText = item.title + (timerState.isResting ? " (休)" : "");
         document.getElementById('currentLap').innerText = timerState.currentLap;
         document.getElementById('currentSet').innerText = `${timerState.currentSet}/${item.sets}`;
         document.getElementById('distRem').innerText = timerState.distRemaining + "m";
@@ -408,10 +404,10 @@ function toggleCat(id, n) {
 function resetAll() { if(confirm("清空？")) { items = []; localStorage.clear(); location.reload(); } }
 
 window.onload = () => {
-    const saved = localStorage.getItem('swim_v2.5');
+    const saved = localStorage.getItem('swim_v2.5.1');
     if (saved) items = JSON.parse(saved);
     updateList(); renderHUD();
-    new Sortable(document.getElementById('listArea'), { handle: '.drag-handle', animation: 150, onEnd: () => {
+    new Sortable(document.getElementById('listArea'), { handle: '.drag-handle', animation: 0, onEnd: () => {
         const n = []; document.querySelectorAll('.course-card').forEach(el => n.push(items[parseInt(el.getAttribute('data-index'))]));
         items = n; updateList(); renderHUD();
     }});
