@@ -181,7 +181,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     position: relative;
 }
 
-/* 豎屏模式 */
+/* 豎屏模式 - 預設樣式 */
 .timer-main-area { 
     flex: 1; 
     display: flex; 
@@ -209,9 +209,15 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     border-radius: 15px; 
     border-left: 6px solid var(--neon-blue); 
     margin-top: 10px;
+    align-self: center;
 }
 
-.timer-info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.timer-info-grid { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 6px; 
+    margin-top: 10px; 
+}
 .sub-box { text-align: center; background: #111; padding: 8px 2px; border-radius: 8px; }
 .sub-val { font-size: 18px; font-weight: 900; color: #ff9500; display: block; }
 .sub-label { font-size: 9px; color: #666; }
@@ -223,7 +229,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     padding: 10px 15px calc(env(safe-area-inset-bottom) + 5px); 
     background: #0a0d12; 
     max-width: 600px;
-    margin: 0 auto;
+    margin: 10px auto 0;
     width: 95%;
     flex-shrink: 0;
 }
@@ -276,7 +282,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .select-course-card { background: #222; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 4px solid var(--neon-blue); }
 .select-course-card.selected { background: #333; border-color: var(--neon-green); }
 
-/* 橫屏模式適配 - 簡化版本 */
+/* 橫屏模式適配 - 重新設計計時鐘佈局 */
 @media (orientation: landscape) {
     /* 隱藏原始導航列，顯示橫屏導航列 */
     .app-header { 
@@ -285,6 +291,15 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     
     .landscape-tabs {
         display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: #05070a;
+        padding: 8px;
+        height: 44px;
+        border-bottom: 2px solid #1a2028;
     }
     
     .content-wrapper {
@@ -292,62 +307,102 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
         height: calc(100vh - 44px);
     }
     
-    /* 簡化計時鐘橫屏佈局 */
+    /* 計時鐘頁面橫屏佈局 - 重新設計為更緊湊的佈局 */
     #page-clock {
-        padding: 10px;
+        padding: 5px;
     }
     
     .timer-container {
         flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        gap: 20px;
-        padding: 10px;
+        align-items: stretch;
+        padding: 5px;
+        gap: 10px;
     }
     
     .timer-main-area {
         flex: 1;
-        max-width: 40%;
         justify-content: center;
+        max-width: 45%;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     
     .time-display {
-        font-size: 20vw;
+        font-size: 14vw;
         margin: 0;
+        line-height: 1;
+        padding: 5px 0;
     }
     
     .timer-info-card {
         flex: 1;
-        max-width: 60%;
+        max-width: 55%;
         margin: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 10px;
+        border-radius: 12px;
+    }
+    
+    #clock-tags {
+        font-size: 10px !important;
+        margin-bottom: 5px;
+    }
+    
+    #clock-title {
+        font-size: 16px !important;
+        margin-bottom: 10px;
     }
     
     .timer-info-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+        margin-top: 5px;
+    }
+    
+    .sub-box {
+        padding: 6px 2px;
+    }
+    
+    .sub-val {
+        font-size: 14px;
+    }
+    
+    .sub-label {
+        font-size: 8px;
     }
     
     .timer-controls {
         position: absolute;
-        bottom: 10px;
+        bottom: 5px;
         left: 50%;
         transform: translateX(-50%);
         width: 90%;
         max-width: 500px;
+        margin: 0;
+        padding: 8px 10px;
+        gap: 5px;
+    }
+    
+    .timer-btn {
+        padding: 8px 0;
+        min-height: 36px;
+        font-size: 14px;
+    }
+    
+    /* 確保其他頁面在橫屏時正常 */
+    #page-planner .fixed-footer {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
     }
 }
 
 /* 新增橫屏導航列 */
 .landscape-tabs {
     display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    background: #05070a;
-    padding: 8px;
-    height: 44px;
-    border-bottom: 2px solid #1a2028;
 }
 
 .landscape-tab-btn {
@@ -409,6 +464,97 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 }
 .confirm-no {
     background: #444;
+}
+
+/* 防止橫屏時元素溢出 */
+@media (orientation: landscape) and (max-height: 500px) {
+    .timer-container {
+        gap: 5px;
+        padding: 3px;
+    }
+    
+    .time-display {
+        font-size: 12vw;
+    }
+    
+    .timer-info-card {
+        padding: 8px;
+    }
+    
+    #clock-title {
+        font-size: 14px !important;
+    }
+    
+    .timer-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 3px;
+    }
+    
+    .sub-box {
+        padding: 4px 1px;
+    }
+    
+    .sub-val {
+        font-size: 12px;
+    }
+    
+    .sub-label {
+        font-size: 7px;
+    }
+    
+    .timer-controls {
+        padding: 6px 8px;
+        bottom: 3px;
+    }
+    
+    .timer-btn {
+        padding: 6px 0;
+        min-height: 32px;
+        font-size: 12px;
+    }
+}
+
+/* 極端橫屏情況 */
+@media (orientation: landscape) and (max-height: 400px) {
+    .timer-main-area {
+        max-width: 50%;
+    }
+    
+    .timer-info-card {
+        max-width: 50%;
+    }
+    
+    .time-display {
+        font-size: 10vw;
+    }
+    
+    .timer-info-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2px;
+    }
+    
+    .sub-box {
+        padding: 3px 1px;
+    }
+    
+    .sub-val {
+        font-size: 10px;
+    }
+    
+    .sub-label {
+        font-size: 6px;
+    }
+    
+    .timer-controls {
+        padding: 4px 6px;
+        gap: 3px;
+    }
+    
+    .timer-btn {
+        padding: 4px 0;
+        min-height: 28px;
+        font-size: 10px;
+    }
 }
 </style>
 </head>
@@ -1127,37 +1273,77 @@ function timerResetSelect() {
 function handleOrientationChange() {
     const isLandscape = window.matchMedia("(orientation: landscape)").matches;
     const appHeader = document.querySelector('.app-header');
+    const landscapeTabs = document.querySelector('.landscape-tabs');
     
     if (isLandscape) {
         appHeader.style.display = 'none';
+        landscapeTabs.style.display = 'flex';
     } else {
         appHeader.style.display = 'flex';
+        landscapeTabs.style.display = 'none';
+    }
+}
+
+// 測試橫屏佈局
+function testLandscapeLayout() {
+    console.log("測試橫屏佈局...");
+    
+    // 檢查計時鐘元素是否存在
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerInfoCard = document.getElementById('timerInfoCard');
+    const timerControls = document.querySelector('.timer-controls');
+    
+    if (!timerDisplay || !timerInfoCard || !timerControls) {
+        console.error("計時鐘元素未找到");
+        return;
+    }
+    
+    console.log("計時鐘元素檢查通過");
+    
+    // 測試佈局函數
+    console.log("當前頁面:", document.querySelector('.page.active')?.id);
+    
+    // 檢查CSS是否正確加載
+    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+    console.log("是否橫屏:", isLandscape);
+    
+    if (isLandscape) {
+        console.log("測試橫屏佈局配置:");
+        console.log("- timer-container flex-direction:", getComputedStyle(document.querySelector('.timer-container')).flexDirection);
+        console.log("- timer-main-area width:", getComputedStyle(document.querySelector('.timer-main-area')).width);
+        console.log("- timer-info-card width:", getComputedStyle(timerInfoCard).width);
+        console.log("- time-display font-size:", getComputedStyle(timerDisplay).fontSize);
+        console.log("- clock-title font-size:", getComputedStyle(document.getElementById('clock-title')).fontSize);
+        console.log("- timer-controls position:", getComputedStyle(timerControls).position);
+        console.log("- 視窗高度:", window.innerHeight, "px");
     }
 }
 
 // 初始化 Sortable 拖曳排序
 window.onload = () => { 
     const listArea = document.getElementById('listArea');
-    new Sortable(listArea, { 
-        handle: '.drag-handle', 
-        animation: 150,
-        onStart: function() {
-            isDragging = true;
-        },
-        onEnd: function() {
-            isDragging = false;
-            const newOrder = [];
-            const cards = listArea.querySelectorAll('.course-card');
-            cards.forEach((card, index) => {
-                const oldIndex = parseInt(card.dataset.index || index);
-                if (items[oldIndex]) {
-                    newOrder.push(items[oldIndex]);
-                }
-            });
-            items = newOrder;
-            updateList();
-        }
-    });
+    if (listArea) {
+        new Sortable(listArea, { 
+            handle: '.drag-handle', 
+            animation: 150,
+            onStart: function() {
+                isDragging = true;
+            },
+            onEnd: function() {
+                isDragging = false;
+                const newOrder = [];
+                const cards = listArea.querySelectorAll('.course-card');
+                cards.forEach((card, index) => {
+                    const oldIndex = parseInt(card.dataset.index || index);
+                    if (items[oldIndex]) {
+                        newOrder.push(items[oldIndex]);
+                    }
+                });
+                items = newOrder;
+                updateList();
+            }
+        });
+    }
     
     // 初始方向檢測
     handleOrientationChange();
@@ -1171,6 +1357,14 @@ window.onload = () => {
         btn.addEventListener('touchstart', function(e) {
             e.preventDefault();
         }, { passive: false });
+    });
+    
+    // 執行佈局測試
+    setTimeout(testLandscapeLayout, 1000);
+    
+    // 監聽橫豎屏切換以測試佈局
+    window.addEventListener('orientationchange', function() {
+        setTimeout(testLandscapeLayout, 300);
     });
 };
 </script>
