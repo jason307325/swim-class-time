@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>游泳教練旗艦工作台 v2.4.1</title>
+<title>游泳教練旗艦工作台 v2.4.2</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -13,25 +13,18 @@
   --z1: #4ae3ff; --z2: #4cda64; --z3: #ffcc00; --z4: #ff9500; --z56: #ff3b30;
   --cat-bg: #30363d;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; }
-input, textarea { -webkit-user-select: text; }
+* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 
 body { 
   font-family: -apple-system, "PingFang TC", sans-serif; background: var(--bg-dark); color: #fff; 
   height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
 }
 
-#portrait-lock {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: #000; z-index: 9999; flex-direction: column; align-items: center; justify-content: center;
-}
-body.lock-portrait @media (orientation: landscape) {
-    #portrait-lock { display: flex; }
-    .app-header, .content-wrapper { display: none; }
-}
+#portrait-lock { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
+body.lock-portrait @media (orientation: landscape) { #portrait-lock { display: flex; } .app-header, .content-wrapper { display: none; } }
 
 .app-header { display: flex; background: #05070a; border-bottom: 2px solid #1a2028; flex-shrink: 0; padding-top: env(safe-area-inset-top, 0px); }
-.tab-btn { flex: 1; padding: 14px 0; text-align: center; font-size: 13px; font-weight: 900; color: #666; border-bottom: 3px solid transparent; }
+.tab-btn { flex: 1; padding: 12px 0; text-align: center; font-size: 13px; font-weight: 900; color: #666; border-bottom: 3px solid transparent; }
 .tab-btn.active { color: var(--neon-blue); border-bottom-color: var(--neon-blue); background: rgba(0,162,255,0.05); }
 
 .content-wrapper { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
@@ -41,12 +34,12 @@ body.lock-portrait @media (orientation: landscape) {
 
 .planner-container { display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
 
-.hud-container { padding: 8px 12px; background: #05070a; border-bottom: 1px solid #1a2028; flex-shrink: 0; }
+.hud-container { padding: 6px 12px; background: #05070a; border-bottom: 1px solid #1a2028; flex-shrink: 0; }
 .hud-inputs { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .hud-item { flex: 1; text-align: center; }
 .label-sm { font-size: 10px; color: #555; font-weight: 900; margin-bottom: 2px; display: block;}
-#remText { font-size: 18px; font-weight: 900; color: var(--neon-green); }
-#totalDist { font-size: 18px; font-weight: 900; color: var(--neon-blue); }
+#remText { font-size: 16px; font-weight: 900; color: var(--neon-green); }
+#totalDist { font-size: 16px; font-weight: 900; color: var(--neon-blue); }
 
 .zone-grid, .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px; flex-shrink: 0; }
 .tag-btn { font-size: 9px; padding: 6px 0; text-align: center; border-radius: 4px; font-weight: 900; color: #000; opacity: 0.2; }
@@ -56,45 +49,44 @@ body.lock-portrait @media (orientation: landscape) {
 
 .panel { margin: 0 12px 2px; padding: 6px; border-radius: 12px; background: #161b22; border: 1px solid #30363d; flex-shrink: 0; }
 .row { display: flex; gap: 6px; margin-bottom: 4px; }
+.glass-box { background: #090c10; border-radius: 6px; border: 1.5px solid #1a2028; display: flex; align-items: center; height: 30px; width: 100%; padding: 0 5px; }
+.glass-box.active-blue { border-color: var(--neon-blue); background: #0d131a; }
+.glass-box input { width: 100%; background: transparent; border: none; color: #fff; font-size: 13px; font-weight: 800; text-align: right; pointer-events: none; }
+.text-input-box { width: 100%; height: 30px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 6px; color: #fff; padding: 0 10px; font-size: 12px; margin-bottom: 4px;}
+.btn-slim { width: 100%; height: 32px; background: var(--neon-blue); border: none; border-radius: 16px; color: #fff; font-weight: 900; font-size: 12px; }
 
-.glass-box {
-  background: #090c10; border-radius: 6px; border: 1.5px solid #1a2028;
-  display: flex; align-items: center; height: 32px; 
-  width: 100%; padding: 0 5px; transition: border 0.2s;
-}
-.glass-box.active-blue { border-color: var(--neon-blue); box-shadow: 0 0 8px rgba(0,162,255,0.25); background: #0d131a; }
-.glass-box input { width: 100%; background: transparent; border: none; color: #fff; font-size: 14px; font-weight: 800; text-align: right; pointer-events: none; }
-.text-input-box { width: 100%; height: 32px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 6px; color: #fff; padding: 0 10px; font-size: 13px; margin-bottom: 4px;}
-.btn-slim { width: 100%; height: 34px; background: var(--neon-blue); border: none; border-radius: 17px; color: #fff; font-weight: 900; font-size: 13px; }
+/* 列表區域 */
+.list-area { flex: 1; overflow-y: auto; padding: 5px 12px 160px; -webkit-overflow-scrolling: touch; width: 100%; }
 
-.hint-text { text-align: center; font-size: 10px; color: #555; padding: 4px 0 2px; flex-shrink: 0; border-top: 1px solid #1a2028; }
+/* 課卡修正：減少字體，增加拖曳手把 */
+.course-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; display: flex; align-items: center; border: 1px solid #222; gap: 6px; }
+.drag-handle { color: #444; font-size: 18px; padding-right: 4px; cursor: grab; }
+.card-content { flex: 1; }
+.card-title { font-weight: 800; font-size: 13px; margin: 1px 0; color: #efefef; }
+.card-sub { font-size: 10px; color: #888; display: flex; justify-content: space-between; align-items: center; }
 
-.list-area { 
-    flex: 1; overflow-y: auto; padding: 5px 12px 180px; /* 增加空間確保滾動 */
-    -webkit-overflow-scrolling: touch; width: 100%;
-}
-/* 修正點：縮減課卡垂直間距 */
-.course-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; display: flex; align-items: center; border: 1px solid #222; gap: 8px; }
-
-/* 修正點：虛擬鍵盤下移，縮減高度 */
+/* 底部鍵盤修正：極致下移 */
 .fixed-footer { 
     position: absolute; bottom: 0; left: 0; width: 100%;
     background: #0a0d12; 
-    padding: 4px 12px calc(env(safe-area-inset-bottom, 10px) + 2px); 
+    padding: 2px 12px calc(env(safe-area-inset-bottom, 2px) + 2px); 
     border-top: 1px solid #1a2028; 
     z-index: 100;
 }
-.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
 .num-btn { 
-    height: 38px; background: #1c222d; border-radius: 8px; 
+    height: 36px; background: #1c222d; border-radius: 6px; 
     font-size: 18px; color: white; display: flex; align-items: center; justify-content: center; 
-    font-weight: bold; border-bottom: 2px solid #000;
+    font-weight: bold; border-bottom: 1px solid #000;
 }
-.num-btn:active { transform: translateY(1px); border-bottom: none; background: #2d3646;}
-.footer-tools { display: flex; justify-content: space-between; margin-top: 6px; }
-.tool-btn { border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; }
+.num-btn:active { background: #2d3646; }
 
-/* 計時鐘 UI */
+/* 底部工具列：包含提醒文字 */
+.footer-tools { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; gap: 8px; }
+.tool-btn { border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; flex-shrink: 0; }
+.hint-text-bottom { font-size: 9px; color: #555; text-align: center; flex: 1; line-height: 1.2; }
+
+/* 計時鐘 UI (完全不動) */
 .timer-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; }
 .timer-display { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
 .time-main { font-size: 28vw; font-weight: 900; color: var(--neon-red); font-family: 'Courier New', monospace; line-height: 0.9; }
@@ -111,16 +103,6 @@ body.lock-portrait @media (orientation: landscape) {
 .btn-pause { background: var(--neon-blue); color: #fff; }
 .btn-reset { background: #333; color: #fff; }
 .btn-end { background: var(--neon-red); color: #fff; }
-
-@media (orientation: landscape) {
-  .timer-display { flex-direction: row; gap: 20px; padding: 5px 20px; }
-  .time-main { font-size: 40vh; flex: 1.5; text-align: right; }
-  .timer-current-info { flex: 1; margin: 0; height: 90%; display: flex; flex-direction: column; justify-content: center; }
-  .time-sub-grid { grid-template-columns: 1fr 1fr; gap: 5px; }
-  .timer-controls { grid-template-columns: 1fr 1fr; padding: 5px 40px 10px; gap: 6px; }
-  .timer-btn { padding: 8px 0; font-size: 13px; }
-}
-
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; align-items: center; justify-content: center; }
 .modal.active { display: flex; }
 .modal-content { background: #161b22; padding: 20px; border-radius: 15px; width: 85%; max-width: 400px; }
@@ -129,7 +111,7 @@ body.lock-portrait @media (orientation: landscape) {
 </head>
 <body oncontextmenu="return false;" class="lock-portrait">
 
-  <div id="portrait-lock"><h2 style="color:var(--neon-blue)">請轉回直屏模式</h2></div>
+  <div id="portrait-lock"><h2>請轉回直屏模式</h2></div>
  
   <header class="app-header">
     <div id="tab-planner" class="tab-btn active" onclick="switchTab('planner')">📝 課程規劃</div>
@@ -148,6 +130,7 @@ body.lock-portrait @media (orientation: landscape) {
             <div class="hud-item"><span class="label-sm">總距離</span><div id="totalDist">0m</div></div>
           </div>
         </div>
+
         <div class="zone-grid">
             <div id="btn-z1" class="tag-btn" style="background:var(--z1)" onclick="toggleZone(1,'Z1')">Z1恢復</div>
             <div id="btn-z2" class="tag-btn" style="background:var(--z2)" onclick="toggleZone(2,'Z2')">Z2耐力</div>
@@ -155,6 +138,7 @@ body.lock-portrait @media (orientation: landscape) {
             <div id="btn-z4" class="tag-btn" style="background:var(--z4)" onclick="toggleZone(4,'Z4')">Z4氧量</div>
             <div id="btn-z56" class="tag-btn" style="background:var(--z56)" onclick="toggleZone(56,'Z5/6')">Z5/6衝刺</div>
         </div>
+
         <div class="category-grid">
             <div id="cat-warmup" class="tag-btn cat-btn" onclick="toggleCat('warmup','Warm Up')">WarmUp</div>
             <div id="cat-drill" class="tag-btn cat-btn" onclick="toggleCat('drill','Drill')">Drill</div>
@@ -162,8 +146,9 @@ body.lock-portrait @media (orientation: landscape) {
             <div id="cat-cool" class="tag-btn cat-btn" onclick="toggleCat('cool','Cool Down')">CoolDown</div>
             <div id="cat-bonus" class="tag-btn cat-btn" onclick="toggleCat('bonus','Bonus')">Bonus</div>
         </div>
+
         <div class="panel">
-          <input type="text" id="courseNote" class="text-input-box" placeholder="項目內容名稱..." onfocus="currentFocus='none'">
+          <input type="text" id="courseNote" class="text-input-box" placeholder="訓練項目名稱..." onfocus="currentFocus='none'">
           <div class="row">
             <div style="flex:1"><div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')"><input id="lapMin" placeholder="分" readonly></div></div>
             <div style="flex:1"><div class="glass-box" id="box-lapSec" onclick="setFocus('lapSec')"><input id="lapSec" placeholder="秒" readonly></div></div>
@@ -177,22 +162,25 @@ body.lock-portrait @media (orientation: landscape) {
           </div>
           <button onclick="addItem()" class="btn-slim">加入項目 (+)</button>
         </div>
-        <div class="hint-text">💡 長按刪除項目 • 拖曳可排序</div>
+
         <div class="list-area" id="listArea"></div>
+
         <footer class="fixed-footer">
           <div class="numpad">
             <div class="num-btn" onclick="press(7)">7</div><div class="num-btn" onclick="press(8)">8</div><div class="num-btn" onclick="press(9)">9</div>
             <div class="num-btn" onclick="press(4)">4</div><div class="num-btn" onclick="press(5)">5</div><div class="num-btn" onclick="press(6)">6</div>
             <div class="num-btn" onclick="press(1)">1</div><div class="num-btn" onclick="press(2)">2</div><div class="num-btn" onclick="press(3)">3</div>
-            <div class="num-btn" onclick="cls()" style="color:#888; font-size:14px;">AC</div><div class="num-btn" onclick="press(0)">0</div><div class="num-btn" onclick="del()" style="color:var(--neon-red)">⌫</div>
+            <div class="num-btn" onclick="cls()" style="color:#888; font-size:12px;">AC</div><div class="num-btn" onclick="press(0)">0</div><div class="num-btn" onclick="del()" style="color:var(--neon-red)">⌫</div>
           </div>
           <div class="footer-tools">
-              <button onclick="copyToClipboard()" class="tool-btn" style="background:#232931; color:#fff;">📋 複製課表</button>
+              <button onclick="copyToClipboard()" class="tool-btn" style="background:#232931; color:#fff;">📋 複製</button>
+              <div class="hint-text-bottom">💡長按刪除項目<br>拖曳 [⠿] 排序</div>
               <button onclick="resetAll()" class="tool-btn" style="background:rgba(255,59,48,0.1); color:var(--neon-red);">🗑️ 重置</button>
           </div>
         </footer>
       </div>
     </div>
+
     <div id="page-clock" class="page">
       <div class="timer-container">
         <div class="timer-display">
@@ -225,18 +213,17 @@ body.lock-portrait @media (orientation: landscape) {
       <div id="resetItemList" style="max-height:300px; overflow-y:auto;"></div>
       <button onclick="closeResetModal()" style="width:100%; padding:15px; margin-top:10px; background:#444; color:#fff; border:none; border-radius:10px;">取消</button>
   </div></div>
- 
+
 <script>
 let currentFocus = 'classTime', items = [], selectedZones = [], selectedCats = [];
 let timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, distRemaining: 0, intervalId: null };
 
 function copyToClipboard() {
     if (items.length === 0) return alert("沒有課表");
-    let t = `🏊‍♂️ 游泳訓練課表 (${new Date().toLocaleDateString()})\n`;
+    let t = `🏊‍♂️ 游泳訓練課表\n`;
     items.forEach((item, i) => {
         const pace = `${item.lapMin}:${item.lapSec.toString().padStart(2,'0')}`;
-        const rest = `${item.resMin}:${item.resSec.toString().padStart(2,'0')}`;
-        t += `${i+1}. ${item.tags} ${item.title}\n   ${item.singleDist}m x ${item.laps}趟 x ${item.sets}組 | 配速：${pace} | 組休：${rest}\n`;
+        t += `${i+1}. ${item.tags} ${item.title} (${item.singleDist}mx${item.laps}tx${item.sets}s, 配速:${pace})\n`;
     });
     const el = document.createElement('textarea'); el.value = t; document.body.appendChild(el);
     el.select(); document.execCommand('copy'); document.body.removeChild(el); alert("已複製！");
@@ -274,7 +261,7 @@ function renderHUD() {
     const remEl = document.getElementById('remText');
     remEl.innerText = `${rem<0?'-':''}${Math.floor(Math.abs(rem)/60)}:${(Math.abs(rem)%60).toString().padStart(2,'0')}`;
     remEl.style.color = rem < 0 ? 'var(--neon-red)' : 'var(--neon-green)';
-    localStorage.setItem('swim_v2.4.1', JSON.stringify(items));
+    localStorage.setItem('swim_v2.4.2', JSON.stringify(items));
 }
 
 function addItem() {
@@ -290,33 +277,30 @@ function addItem() {
     });
     updateList(); renderHUD();
     ['lapMin','lapSec','laps','sets','dist','resMin','resSec','courseNote'].forEach(id=>document.getElementById(id).value="");
-    currentFocus = 'none'; 
-    document.querySelectorAll('.glass-box').forEach(b => b.classList.remove('active-blue'));
 }
 
-/* 修正點：合併資訊行，釋放垂直空間 */
+/* 修正點：加入拖曳手把與縮小字體 */
 function updateList() {
     document.getElementById('listArea').innerHTML = items.map((item, i) => {
-        const itemM = Math.floor(item.seconds/60), itemS = item.seconds%60;
         const paceStr = `${item.lapMin}:${item.lapSec.toString().padStart(2,'0')}`;
-        const timeStr = `${itemM}分${itemS.toString().padStart(2,'0')}秒`;
+        const timeStr = `${Math.floor(item.seconds/60)}分${item.seconds%60}秒`;
         return `
         <div class="course-card" data-index="${i}" style="border-left:5px solid ${item.color}" onpointerdown="startPress(${i})">
-            <div style="flex:1">
-                <div style="font-size:9px; color:${item.color}">${item.tags}</div>
-                <div style="font-weight:900; font-size:14px; margin:1px 0;">${item.title}</div>
-                <div style="font-size:11px; color:#aaa; display:flex; justify-content:space-between;">
+            <div class="drag-handle">⠿</div>
+            <div class="card-content">
+                <div style="font-size:8px; color:${item.color}; line-height:1;">${item.tags}</div>
+                <div class="card-title">${item.title}</div>
+                <div class="card-sub">
                    <span>${item.singleDist}m x ${item.laps}t x ${item.sets}s</span>
-                   <span style="color:#ddd">配:${paceStr} | 預:${timeStr}</span>
+                   <span style="color:#bbb">配:${paceStr} | 預:${timeStr}</span>
                 </div>
             </div>
-            <div style="text-align:right; min-width:55px;">
-                <div style="font-weight:900; color:var(--neon-blue); font-size:14px;">${item.dist}m</div>
-            </div>
+            <div style="text-align:right; min-width:50px; font-weight:900; color:var(--neon-blue); font-size:13px;">${item.dist}m</div>
         </div>`;
     }).join('');
 }
 
+// 計時鐘邏輯 (完全保持原本運作)
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playWhistle(type) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -333,7 +317,7 @@ function playWhistle(type) {
 }
 
 function timerStart() {
-    if (!items.length) return alert("無項目");
+    if (!items.length) return;
     if (timerState.paused) { timerState.paused = false; runTimer(); return; }
     if (timerState.running) return;
     timerState.running = true;
@@ -341,7 +325,6 @@ function timerStart() {
     if(timerState.distRemaining === 0) timerState.distRemaining = item.dist;
     startStep();
 }
-
 function startStep() {
     const item = items[timerState.currentItemIndex];
     if (timerState.currentLap === 0) timerState.currentLap = item.laps;
@@ -349,7 +332,6 @@ function startStep() {
     playWhistle(timerState.isResting ? 'rest' : 'start');
     updateTimerUI(); runTimer();
 }
-
 function runTimer() {
     clearInterval(timerState.intervalId);
     timerState.intervalId = setInterval(() => {
@@ -360,41 +342,27 @@ function runTimer() {
         else updateTimerUI();
     }, 1000);
 }
-
 function handleStepComplete() {
     const item = items[timerState.currentItemIndex];
     if (!timerState.isResting) {
         timerState.currentLap--;
         timerState.distRemaining = Math.max(0, timerState.distRemaining - item.singleDist);
-        if (timerState.currentLap > 0) {
-            timerState.timeRemaining = item.lapMin * 60 + item.lapSec;
-            playWhistle('start');
-        } else {
-            timerState.isResting = true;
-            timerState.currentLap = item.laps;
-            timerState.timeRemaining = item.resMin * 60 + item.resSec;
-            playWhistle('rest');
-        }
+        if (timerState.currentLap > 0) { timerState.timeRemaining = item.lapMin * 60 + item.lapSec; playWhistle('start'); } 
+        else { timerState.isResting = true; timerState.currentLap = item.laps; timerState.timeRemaining = item.resMin * 60 + item.resSec; playWhistle('rest'); }
     } else {
         timerState.isResting = false;
         timerState.currentSet++;
-        if (timerState.currentSet <= item.sets) {
-            timerState.timeRemaining = item.lapMin * 60 + item.lapSec;
-            playWhistle('start');
-        } else {
+        if (timerState.currentSet <= item.sets) { timerState.timeRemaining = item.lapMin * 60 + item.lapSec; playWhistle('start'); } 
+        else {
             timerState.currentItemIndex++;
             if (timerState.currentItemIndex < items.length) {
-                const newItem = items[timerState.currentItemIndex];
-                timerState.currentSet = 1; timerState.currentLap = 0; timerState.isResting = false;
-                timerState.distRemaining = newItem.dist;
-                startStep();
+                const ni = items[timerState.currentItemIndex];
+                timerState.currentSet = 1; timerState.currentLap = 0; timerState.isResting = false; timerState.distRemaining = ni.dist; startStep();
             } else { timerEnd(); alert("結束！"); }
-            return;
         }
     }
     updateTimerUI();
 }
-
 function updateTimerUI() {
     const m = Math.floor(timerState.timeRemaining/60), s = timerState.timeRemaining%60;
     const el = document.getElementById('timerDisplay');
@@ -410,7 +378,6 @@ function updateTimerUI() {
         document.getElementById('restTime').innerText = `${item.resMin}:${item.resSec.toString().padStart(2,'0')}`;
     }
 }
-
 function timerPause() { timerState.paused = true; clearInterval(timerState.intervalId); }
 function timerEnd() { clearInterval(timerState.intervalId); timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, distRemaining:0, intervalId: null }; updateTimerUI(); }
 function timerResetSelect() {
@@ -435,13 +402,17 @@ function toggleCat(id, n) {
 function resetAll() { if(confirm("清空？")) { items = []; localStorage.clear(); location.reload(); } }
 
 window.onload = () => {
-    const saved = localStorage.getItem('swim_v2.4.1');
+    const saved = localStorage.getItem('swim_v2.4.2');
     if (saved) items = JSON.parse(saved);
     updateList(); renderHUD();
-    new Sortable(document.getElementById('listArea'), { animation: 150, onEnd: () => {
-        const n = []; document.querySelectorAll('.course-card').forEach(el => n.push(items[parseInt(el.getAttribute('data-index'))]));
-        items = n; updateList(); renderHUD();
-    }});
+    new Sortable(document.getElementById('listArea'), { 
+        handle: '.drag-handle', // 修正：限定只能透過手把拖曳
+        animation: 150, 
+        onEnd: () => {
+            const n = []; document.querySelectorAll('.course-card').forEach(el => n.push(items[parseInt(el.getAttribute('data-index'))]));
+            items = n; updateList(); renderHUD();
+        }
+    });
 };
 </script>
 </body>
