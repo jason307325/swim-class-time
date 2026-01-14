@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練旗艦工作台 v3.5</title>
+<title>游泳教練旗艦工作台 v3.6</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -30,7 +30,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .page.active { display: flex; }
 
 /* HUD & Tags */
-.hud-container { padding: 8px 12px; background: #05070a; border-bottom: 1px solid #1a2028; }
+.hud-container { padding: 8px 12px; background: #05070a; border-bottom: 1px solid #1a2028; flex-shrink: 0; }
 .hud-inputs { display: flex; justify-content: space-between; align-items: center; }
 .label-sm { font-size: 10px; color: #555; font-weight: 900; text-align: center; }
 #remText { font-size: 16px; font-weight: 900; text-align: center; flex: 1; }
@@ -60,8 +60,8 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     pointer-events: none; 
 }
 
-.zone-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px; }
-.category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px 8px; }
+.zone-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px; flex-shrink: 0; }
+.category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px 8px; flex-shrink: 0; }
 .tag-btn { font-size: 9px; padding: 6px 0; text-align: center; border-radius: 4px; font-weight: 900; color: #000; opacity: 0.2; }
 .tag-btn.active { opacity: 1; border: 1.2px solid #fff; }
 .cat-btn { background: var(--cat-bg); color: #fff; opacity: 0.4; }
@@ -70,7 +70,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .bonus-btn.active { opacity: 1; background: linear-gradient(45deg, #ff00ff, #ff9500); }
 
 /* Panel & Inputs */
-.panel { margin: 0 12px 2px; padding: 6px; border-radius: 12px; background: #161b22; border: 1px solid #30363d; }
+.panel { margin: 0 12px 2px; padding: 6px; border-radius: 12px; background: #161b22; border: 1px solid #30363d; flex-shrink: 0; }
 .row { display: flex; gap: 6px; margin-bottom: 4px; }
 .glass-box { background: #090c10; border-radius: 6px; border: 1.5px solid #1a2028; display: flex; align-items: center; height: 32px; width: 100%; padding: 0 5px; }
 .glass-box.active-blue { border-color: var(--neon-blue); }
@@ -79,9 +79,14 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .btn-slim { width: 100%; height: 36px; background: var(--neon-blue); border: none; border-radius: 18px; color: #fff; font-weight: 900; }
 
 /* List & Hints (功能提示語回歸) */
-.list-hint { font-size: 10px; color: #555; text-align: center; margin-top: 5px; font-weight: bold; }
-.list-area { flex: 1; overflow-y: auto; padding: 5px 12px 220px; }
-.course-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; margin-bottom: 6px; display: flex; align-items: flex-start; border: 1px solid #222; gap: 8px; position: relative; }
+.list-hint { font-size: 10px; color: #555; text-align: center; margin-top: 5px; font-weight: bold; flex-shrink: 0; }
+.list-area { flex: 1; overflow-y: auto; padding: 5px 12px; margin-bottom: 180px; }
+.list-area::-webkit-scrollbar { width: 6px; }
+.list-area::-webkit-scrollbar-track { background: transparent; }
+.list-area::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+.list-area::-webkit-scrollbar-thumb:hover { background: #666; }
+
+.course-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; margin-bottom: 6px; display: flex; align-items: flex-start; border: 1px solid #222; gap: 8px; position: relative; flex-shrink: 0; }
 .drag-handle { color: #333; font-size: 20px; padding: 0 5px; cursor: grab; flex-shrink: 0; }
 
 .card-content { flex: 1; min-width: 0; }
@@ -92,7 +97,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .card-distance { font-weight: 900; color: var(--neon-blue); font-size: 16px; }
 
 /* 功能按鈕列 */
-.function-buttons { display: flex; gap: 8px; padding: 8px 12px 4px; }
+.function-buttons { display: flex; gap: 8px; padding: 8px 12px 4px; flex-shrink: 0; }
 .function-btn { flex: 1; height: 36px; border-radius: 18px; border: none; font-weight: 900; font-size: 13px; color: white; }
 .function-btn.delete-all { background: var(--neon-red); }
 .function-btn.export { background: var(--neon-green); }
@@ -118,6 +123,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     max-width: 600px;
     margin: 0 auto;
     width: 95%;
+    flex-shrink: 0;
 }
 .timer-btn { 
     padding: 12px 0; 
@@ -134,7 +140,14 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .edit-modal.active { display: flex; }
 .modal-box { background: #161b22; width: 90%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid var(--neon-blue); }
 
-.fixed-footer { position: absolute; bottom: 0; width: 100%; background: #0a0d12; padding: 5px 12px calc(env(safe-area-inset-bottom) + 5px); }
+.fixed-footer { 
+    position: fixed; 
+    bottom: 0; 
+    width: 100%; 
+    background: #0a0d12; 
+    padding: 5px 12px calc(env(safe-area-inset-bottom) + 5px);
+    z-index: 10;
+}
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 400px; margin: 0 auto; }
 .num-btn { height: 40px; background: #1c222d; border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
@@ -158,12 +171,22 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .select-course-card { background: #222; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 4px solid var(--neon-blue); }
 .select-course-card.selected { background: #333; border-color: var(--neon-green); }
 
-/* 橫屏模式適配 */
+/* 橫屏模式適配 - 重點修正網頁版問題 */
 @media (orientation: landscape) {
-    .app-header { padding-top: 0; }
+    .app-header { 
+        display: none; 
+    }
     
     /* 課程規劃頁面橫屏優化 */
-    #page-planner .hud-inputs {
+    #page-planner {
+        padding-top: 0;
+    }
+    
+    .hud-container {
+        padding-top: 8px;
+    }
+    
+    .hud-inputs {
         max-width: 600px;
         margin: 0 auto;
     }
@@ -187,8 +210,9 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     
     .list-area {
         max-width: 600px;
-        margin: 0 auto;
+        margin: 0 auto 180px;
         width: 100%;
+        overflow-y: auto;
     }
     
     .fixed-footer {
@@ -198,28 +222,40 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
         transform: translateX(-50%);
     }
     
-    /* 計時鐘頁面橫屏優化 */
+    /* 計時鐘頁面橫屏優化 - 修正網頁版被網址列擋住的問題 */
+    #page-clock {
+        padding-top: 0;
+        height: calc(100vh - 44px);
+    }
+    
     .timer-container {
         display: flex;
         flex-direction: row;
         align-items: center;
         justify-content: center;
         gap: 20px;
+        height: 100%;
+        padding-top: 0;
     }
     
     .timer-main-area {
         flex: 1;
         max-width: 50%;
+        height: 100%;
+        justify-content: center;
+        padding-top: 10px;
     }
     
     .time-display {
-        font-size: 18vw;
-        margin-bottom: 20px;
+        font-size: 20vw;
+        margin-bottom: 10px;
+        line-height: 1.1;
     }
     
     .timer-info-card {
         width: 100%;
         max-width: 400px;
+        margin-top: 10px;
     }
     
     .timer-controls {
@@ -230,53 +266,110 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
         align-self: center;
     }
     
-    /* 橫屏時隱藏導航列 */
-    .app-header {
-        display: none;
-    }
-    
-    /* 添加橫屏時的切換按鈕 */
-    .landscape-tabs {
-        display: flex;
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-        background: #05070a;
-        padding: 8px;
-    }
-    
-    .landscape-tab-btn {
-        flex: 1;
-        padding: 8px 0;
-        text-align: center;
-        font-size: 12px;
-        font-weight: 900;
-        color: #666;
-        border-radius: 6px;
-        margin: 0 2px;
-    }
-    
-    .landscape-tab-btn.active {
-        color: var(--neon-blue);
-        background: rgba(0,162,255,0.1);
-    }
-}
-
-/* 新增橫屏導航列 */
-.landscape-tabs {
-    display: none;
-}
-
-@media (orientation: landscape) {
+    /* 橫屏時顯示橫屏導航列 */
     .landscape-tabs {
         display: flex;
     }
     
     .content-wrapper {
         margin-top: 44px;
+        height: calc(100vh - 44px);
     }
+}
+
+/* 新增橫屏導航列 */
+.landscape-tabs {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: #05070a;
+    padding: 8px;
+    height: 44px;
+    border-bottom: 2px solid #1a2028;
+}
+
+.landscape-tab-btn {
+    flex: 1;
+    padding: 8px 0;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 900;
+    color: #666;
+    border-radius: 6px;
+    margin: 0 2px;
+}
+
+.landscape-tab-btn.active {
+    color: var(--neon-blue);
+    background: rgba(0,162,255,0.1);
+}
+
+/* 桌面版特定優化 */
+@media (min-width: 768px) {
+    .app-header {
+        padding-top: 0;
+    }
+    
+    .content-wrapper {
+        height: 100vh;
+    }
+    
+    /* 確保桌面版滾動正常 */
+    .list-area {
+        overflow-y: auto;
+        scroll-behavior: smooth;
+    }
+    
+    /* 桌面版計時鐘調整 */
+    .timer-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .time-display {
+        font-size: 20vw;
+        max-width: 500px;
+    }
+    
+    /* 確保鍵盤彈出時仍然可以看到課程項目 */
+    @media (max-height: 500px) {
+        .list-area {
+            margin-bottom: 140px;
+        }
+        
+        .fixed-footer {
+            padding-bottom: 10px;
+        }
+    }
+}
+
+/* 鍵盤彈出時的特殊處理 */
+@media (max-height: 600px) {
+    .list-area {
+        margin-bottom: 150px;
+        height: calc(100vh - 500px);
+        overflow-y: auto;
+    }
+    
+    .fixed-footer {
+        position: fixed;
+        bottom: 0;
+    }
+    
+    #page-planner {
+        overflow-y: auto;
+        height: 100%;
+    }
+}
+
+/* 滾輪區域加強 */
+.scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 </style>
 </head>
@@ -963,6 +1056,33 @@ function handleOrientationChange() {
     } else {
         appHeader.style.display = 'flex';
     }
+    
+    // 調整列表區域高度
+    adjustListAreaHeight();
+}
+
+// 調整列表區域高度
+function adjustListAreaHeight() {
+    const listArea = document.getElementById('listArea');
+    if (!listArea) return;
+    
+    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+    const isMobile = window.innerWidth < 768;
+    
+    if (isLandscape && isMobile) {
+        // 手機橫屏模式
+        listArea.style.maxHeight = 'calc(100vh - 300px)';
+    } else if (isLandscape) {
+        // 桌面橫屏模式
+        listArea.style.maxHeight = 'calc(100vh - 250px)';
+    } else {
+        // 豎屏模式
+        listArea.style.maxHeight = 'calc(100vh - 400px)';
+    }
+    
+    // 確保滾動功能正常
+    listArea.style.overflowY = 'auto';
+    listArea.style.webkitOverflowScrolling = 'touch';
 }
 
 // 初始化 Sortable 拖曳排序
@@ -986,13 +1106,49 @@ window.onload = () => {
         }
     });
     
-    // 初始方向檢測
+    // 初始方向檢測和高度調整
     handleOrientationChange();
+    adjustListAreaHeight();
     
     // 監聽方向變化
     window.addEventListener('resize', handleOrientationChange);
     window.addEventListener('orientationchange', handleOrientationChange);
+    
+    // 監聽鍵盤彈出/收起
+    window.addEventListener('resize', adjustListAreaHeight);
+    
+    // 確保滾輪功能正常
+    listArea.addEventListener('wheel', function(e) {
+        // 允許滾輪滾動
+        this.scrollTop += e.deltaY;
+        e.preventDefault();
+    }, { passive: false });
+    
+    // 觸摸設備滾動優化
+    listArea.addEventListener('touchstart', function(e) {
+        this.startY = e.touches[0].clientY;
+        this.scrollTopStart = this.scrollTop;
+    }, { passive: true });
+    
+    listArea.addEventListener('touchmove', function(e) {
+        if (!this.startY) return;
+        
+        const deltaY = e.touches[0].clientY - this.startY;
+        this.scrollTop = this.scrollTopStart - deltaY;
+        
+        // 如果滾動區域有滾動，阻止默認行為（避免頁面滾動）
+        if (this.scrollHeight > this.clientHeight) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 };
+
+// 監聽頁面可見性變化，確保重新調整高度
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        setTimeout(adjustListAreaHeight, 100);
+    }
+});
 </script>
 </body>
 </html>
