@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練旗艦工作台 v3.7</title>
+<title>游泳教練旗艦工作台 v3.8</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -178,6 +178,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     display: flex; 
     flex-direction: column; 
     background: #000; 
+    position: relative;
 }
 
 /* 豎屏模式 */
@@ -234,6 +235,9 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     border: none; 
     color: white; 
     min-height: 44px;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* Edit Modal */
@@ -272,178 +276,63 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .select-course-card { background: #222; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 4px solid var(--neon-blue); }
 .select-course-card.selected { background: #333; border-color: var(--neon-green); }
 
-/* 橫屏模式適配 - 重新設計佈局 */
+/* 橫屏模式適配 - 簡化版本 */
 @media (orientation: landscape) {
-    /* 隱藏原始導航列 */
+    /* 隱藏原始導航列，顯示橫屏導航列 */
     .app-header { 
         display: none !important; 
     }
     
-    /* 顯示橫屏導航列 */
     .landscape-tabs {
         display: flex;
     }
     
-    /* 調整整體佈局 */
     .content-wrapper {
         margin-top: 44px;
         height: calc(100vh - 44px);
     }
     
-    /* 課程規劃頁面橫屏優化 */
-    #page-planner {
-        padding-top: 0;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .hud-container {
-        padding-top: 8px;
-        padding-bottom: 8px;
-    }
-    
-    .hud-inputs {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    
-    .zone-grid, .category-grid {
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    
-    .panel {
-        max-width: 600px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    
-    .function-buttons {
-        max-width: 600px;
-        margin: 0 auto;
-    }
-    
-    .list-area {
-        max-width: 600px;
-        margin: 0 auto 180px;
-        width: 100%;
-        overflow-y: auto;
-    }
-    
-    .fixed-footer {
-        max-width: 600px;
-        margin: 0 auto;
-        left: 50%;
-        transform: translateX(-50%);
-    }
-    
-    /* 計時鐘頁面橫屏優化 - 重新設計佈局 */
+    /* 簡化計時鐘橫屏佈局 */
     #page-clock {
-        padding-top: 0;
-        height: calc(100vh - 44px);
-        overflow: hidden;
+        padding: 10px;
     }
     
     .timer-container {
-        display: flex;
         flex-direction: row;
-        height: 100%;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
         padding: 10px;
-        gap: 15px;
-        align-items: stretch;
     }
     
-    /* 左側計時器區域 */
     .timer-main-area {
-        flex: 0 0 40%;
+        flex: 1;
         max-width: 40%;
         justify-content: center;
-        padding: 0;
-        margin: 0;
     }
     
     .time-display {
         font-size: 20vw;
-        margin: 0 0 15px 0;
-        line-height: 1.1;
-    }
-    
-    /* 右側資訊和控制區域 */
-    .timer-side-panel {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        min-width: 0;
+        margin: 0;
     }
     
     .timer-info-card {
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
         flex: 1;
+        max-width: 60%;
+        margin: 0;
     }
     
     .timer-info-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
     }
     
     .timer-controls {
-        max-width: 100%;
-        grid-template-columns: repeat(2, 1fr);
-        width: 100%;
-        margin: 0;
-        padding: 10px;
-    }
-    
-    .timer-btn {
-        min-height: 50px;
-        font-size: 14px;
-    }
-    
-    /* 當螢幕較窄時的調整 */
-    @media (max-height: 400px) {
-        .time-display {
-            font-size: 18vw;
-        }
-        
-        .timer-info-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .timer-controls {
-            grid-template-columns: repeat(4, 1fr);
-        }
-    }
-    
-    /* 當螢幕較寬時的調整 */
-    @media (min-height: 500px) and (max-width: 800px) {
-        .timer-main-area {
-            flex: 0 0 35%;
-        }
-        
-        .time-display {
-            font-size: 18vw;
-        }
-    }
-    
-    /* 超大橫屏時的優化 */
-    @media (min-width: 900px) and (orientation: landscape) {
-        .timer-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .timer-main-area {
-            flex: 0 0 300px;
-        }
-        
-        .time-display {
-            font-size: 180px;
-        }
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 500px;
     }
 }
 
@@ -475,63 +364,6 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .landscape-tab-btn.active {
     color: var(--neon-blue);
     background: rgba(0,162,255,0.1);
-}
-
-/* 桌面版特定優化 */
-@media (min-width: 768px) {
-    .app-header {
-        padding-top: 0;
-    }
-    
-    .content-wrapper {
-        height: 100vh;
-    }
-    
-    /* 確保桌面版滾動正常 */
-    .list-area {
-        overflow-y: auto;
-    }
-    
-    /* 桌面版計時鐘調整 */
-    .timer-container {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-    
-    .time-display {
-        font-size: 20vw;
-        max-width: 500px;
-    }
-    
-    /* 確保鍵盤彈出時仍然可以看到課程項目 */
-    @media (max-height: 500px) {
-        .list-area {
-            margin-bottom: 140px;
-        }
-        
-        .fixed-footer {
-            padding-bottom: 10px;
-        }
-    }
-}
-
-/* 鍵盤彈出時的特殊處理 */
-@media (max-height: 600px) {
-    .list-area {
-        margin-bottom: 150px;
-        height: calc(100vh - 500px);
-        overflow-y: auto;
-    }
-    
-    .fixed-footer {
-        position: fixed;
-        bottom: 0;
-    }
-    
-    #page-planner {
-        overflow-y: auto;
-        height: 100%;
-    }
 }
 
 /* 課程操作確認對話框 */
@@ -650,7 +482,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 
         <div class="function-buttons">
           <button class="function-btn delete-all" onclick="showDeleteAllConfirm()">一鍵刪除全部</button>
-          <button class="function-btn export" onclick="exportCourses()">匯出課程文字檔</button>
+          <button class="function-btn export" onclick="copyCoursesToClipboard()">複製課程文字</button>
         </div>
 
         <div class="list-hint">⠿ 拖曳排序 | 點擊按鈕編輯/刪除</div>
@@ -671,23 +503,21 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
         <div class="timer-main-area">
           <div class="time-display" id="timerDisplay">00:00</div>
         </div>
-        <div class="timer-side-panel">
-          <div class="timer-info-card" id="timerInfoCard">
-            <div id="clock-tags" style="color:var(--neon-blue); font-weight:900; font-size:11px;">---</div>
-            <div id="clock-title" style="font-size:22px; font-weight:900;">尚未開始課表</div>
-            <div class="timer-info-grid">
-              <div class="sub-box"><span class="sub-label">剩餘趟數</span><span class="sub-val" id="currentLap">0</span></div>
-              <div class="sub-box"><span class="sub-label">組進度</span><span class="sub-val" id="currentSet">0/0</span></div>
-              <div class="sub-box"><span class="sub-label">剩餘距離</span><span class="sub-val" id="distRem">0m</span></div>
-              <div class="sub-box"><span class="sub-label">組休預覽</span><span class="sub-val" id="restTime" style="color:var(--neon-green)">0:00</span></div>
-            </div>
+        <div class="timer-info-card" id="timerInfoCard">
+          <div id="clock-tags" style="color:var(--neon-blue); font-weight:900; font-size:11px;">---</div>
+          <div id="clock-title" style="font-size:22px; font-weight:900;">尚未開始課表</div>
+          <div class="timer-info-grid">
+            <div class="sub-box"><span class="sub-label">剩餘趟數</span><span class="sub-val" id="currentLap">0</span></div>
+            <div class="sub-box"><span class="sub-label">組進度</span><span class="sub-val" id="currentSet">0/0</span></div>
+            <div class="sub-box"><span class="sub-label">剩餘距離</span><span class="sub-val" id="distRem">0m</span></div>
+            <div class="sub-box"><span class="sub-label">組休預覽</span><span class="sub-val" id="restTime" style="color:var(--neon-green)">0:00</span></div>
           </div>
-          <div class="timer-controls">
-            <button class="timer-btn" style="background:var(--neon-green)" onclick="timerStart()">開始</button>
-            <button class="timer-btn" style="background:var(--neon-blue)" onclick="timerPause()">暫停</button>
-            <button class="timer-btn" style="background:var(--neon-red)" onclick="timerResetSelect()">重選</button>
-            <button class="timer-btn" style="background:#333" onclick="timerEnd()">結束</button>
-          </div>
+        </div>
+        <div class="timer-controls">
+          <button class="timer-btn" style="background:var(--neon-green)" onclick="timerStart()">開始</button>
+          <button class="timer-btn" style="background:var(--neon-blue)" onclick="timerPause()">暫停</button>
+          <button class="timer-btn" style="background:var(--neon-red)" onclick="timerResetSelect()">重選</button>
+          <button class="timer-btn" style="background:#333" onclick="timerEnd()">結束</button>
         </div>
       </div>
     </div>
@@ -745,13 +575,11 @@ let timerState = { running: false, paused: false, currentItemIndex: 0, currentSe
 let selectedCourseIndex = 0;
 let deleteIndex = -1;
 let isDragging = false;
-let dragStartY = 0;
-let listAreaScrollTop = 0;
 
 // 全域封鎖預設長按選單
 window.oncontextmenu = e => { e.preventDefault(); return false; };
 
-// 創建更響亮的音效
+// 創建音效
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playBeep(frequency, duration, volume = 0.7) {
@@ -763,7 +591,7 @@ function playBeep(frequency, duration, volume = 0.7) {
     gainNode.connect(audioCtx.destination);
     
     oscillator.frequency.value = frequency;
-    oscillator.type = 'square'; // 使用方波更響亮
+    oscillator.type = 'square';
     
     const now = audioCtx.currentTime;
     gainNode.gain.setValueAtTime(0, now);
@@ -775,35 +603,55 @@ function playBeep(frequency, duration, volume = 0.7) {
 }
 
 function playShortBeep() {
-    // 短音：訓練開始/結束 - 更高頻，更響亮
     playBeep(1500, 0.15, 0.8);
 }
 
 function playLongBeep() {
-    // 長音：休息時間開始 - 中頻，較長
     playBeep(1000, 0.4, 0.8);
 }
 
 function playWhistle(type) {
     if (type === 'start') {
-        // 訓練開始：一個短音
         playShortBeep();
     } else if (type === 'rest') {
-        // 休息開始：一個長音
         playLongBeep();
     }
-    // 移除倒數三秒的音效
 }
 
+// 簡化的切換分頁函數
 function switchTab(t) {
-    // 更新垂直導航列
-    document.querySelectorAll('.tab-btn, .page').forEach(el => el.classList.remove('active'));
-    document.getElementById('tab-'+t).classList.add('active');
-    document.getElementById('page-'+t).classList.add('active');
+    // 停止任何正在運行的計時器
+    if (timerState.intervalId) {
+        clearInterval(timerState.intervalId);
+    }
     
-    // 更新橫屏導航列
-    document.querySelectorAll('.landscape-tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById('landscape-tab-'+t).classList.add('active');
+    // 隱藏所有頁面
+    document.querySelectorAll('.page').forEach(page => {
+        page.style.display = 'none';
+        page.classList.remove('active');
+    });
+    
+    // 隱藏所有導航按鈕活動狀態
+    document.querySelectorAll('.tab-btn, .landscape-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // 顯示目標頁面
+    const targetPage = document.getElementById('page-' + t);
+    if (targetPage) {
+        targetPage.style.display = 'flex';
+        targetPage.classList.add('active');
+    }
+    
+    // 更新導航按鈕狀態
+    document.getElementById('tab-' + t)?.classList.add('active');
+    document.getElementById('landscape-tab-' + t)?.classList.add('active');
+    
+    // 如果是計時鐘頁面，重置計時器狀態
+    if (t !== 'clock') {
+        timerState.running = false;
+        timerState.paused = false;
+    }
 }
 
 function setFocus(id) {
@@ -819,6 +667,7 @@ function press(n) {
     input.value = input.value === "0" ? n : input.value + n;
     renderHUD();
 }
+
 function del() { 
     const input = document.getElementById(currentFocus);
     if (input) {
@@ -826,6 +675,7 @@ function del() {
         renderHUD(); 
     }
 }
+
 function cls() { 
     document.getElementById(currentFocus).value = ""; 
     renderHUD(); 
@@ -841,6 +691,7 @@ function toggleZone(id, n) {
         b.classList.add('active'); 
     }
 }
+
 function toggleCat(id, n) {
     const b = document.getElementById('cat-'+id);
     if(b.classList.contains('active')) { 
@@ -864,7 +715,7 @@ function addItem() {
     const tagParts = [...selectedCats.map(c=>`[${c}]`), ...selectedZones.map(z=>`[${z.name}]`)];
     const allTags = tagParts.join(' ');
     
-    // 判斷顏色：如果有選區域用區域顏色，否則用第一個類別顏色
+    // 判斷顏色
     let color = '#555';
     if (selectedZones[0]) {
         color = getComputedStyle(document.getElementById('btn-z'+selectedZones[0].id)).backgroundColor;
@@ -922,18 +773,10 @@ function updateList() {
 function handleDragStart(event, index) {
     event.preventDefault();
     isDragging = false;
-    dragStartY = event.type.includes('touch') ? event.touches[0].clientY : event.clientY;
-    listAreaScrollTop = document.getElementById('listArea').scrollTop;
     
     const handleDragMove = (e) => {
         if (!isDragging) {
-            const currentY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-            const deltaY = Math.abs(currentY - dragStartY);
-            
-            // 如果垂直移動超過5像素，開始拖曳
-            if (deltaY > 5) {
-                isDragging = true;
-            }
+            isDragging = true;
         }
     };
     
@@ -975,17 +818,15 @@ function showDeleteAllConfirm() {
         return;
     }
     
-    deleteIndex = -1; // -1 表示刪除全部
+    deleteIndex = -1;
     document.getElementById('confirmMessage').textContent = "確定要刪除所有課程項目嗎？此動作無法復原！";
     document.getElementById('confirmDialog').classList.add('active');
 }
 
 function confirmDelete() {
     if (deleteIndex === -1) {
-        // 刪除全部
         items = [];
     } else {
-        // 刪除單項
         items.splice(deleteIndex, 1);
     }
     
@@ -1020,61 +861,45 @@ function closeEdit() {
     document.getElementById('editModal').classList.remove('active'); 
 }
 
-function exportCourses() {
+// 複製課程到剪貼簿
+function copyCoursesToClipboard() {
     if (items.length === 0) {
-        alert("沒有課程項目可以匯出！");
+        alert("沒有課程項目可以複製！");
         return;
     }
     
-    let exportText = "=== 游泳訓練課程表 ===\n";
-    exportText += "生成時間: " + new Date().toLocaleString('zh-TW') + "\n";
+    let exportText = "游泳訓練課程表\n";
     exportText += "總項目數: " + items.length + " 項\n";
     exportText += "總距離: " + items.reduce((sum, item) => sum + item.dist, 0) + "m\n\n";
     
-    let totalSeconds = 0;
-    
     items.forEach((item, index) => {
-        exportText += `項目 ${index + 1}: ${item.title}\n`;
-        exportText += `標籤: ${item.tags}\n`;
-        exportText += `內容: ${item.singleDist}m × ${item.laps}趟 × ${item.sets}組\n`;
+        exportText += `${index + 1}. ${item.title}\n`;
+        exportText += `${item.tags}\n`;
+        exportText += `${item.singleDist}m × ${item.laps}趟 × ${item.sets}組\n`;
         exportText += `配速: ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')}\n`;
         exportText += `休息: ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n`;
         exportText += `總距離: ${item.dist}m\n`;
-        exportText += `預計時間: ${formatSeconds(item.seconds)}\n`;
-        exportText += "─".repeat(30) + "\n\n";
-        
-        totalSeconds += item.seconds;
+        exportText += "─".repeat(20) + "\n\n";
     });
     
-    exportText += "總訓練時間: " + formatSeconds(totalSeconds) + "\n";
-    exportText += "總訓練距離: " + items.reduce((sum, item) => sum + item.dist, 0) + "m\n";
-    
-    // 建立下載連結
-    const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `游泳課程_${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    alert("課程已匯出為文字檔！");
-}
-
-function formatSeconds(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    if (hours > 0) {
-        return `${hours}小時${minutes}分${secs}秒`;
-    } else if (minutes > 0) {
-        return `${minutes}分${secs}秒`;
-    } else {
-        return `${secs}秒`;
-    }
+    // 複製到剪貼簿
+    navigator.clipboard.writeText(exportText).then(() => {
+        alert("課程已複製到剪貼簿！");
+    }).catch(err => {
+        console.error('複製失敗: ', err);
+        // 降級方案
+        const textArea = document.createElement('textarea');
+        textArea.value = exportText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            alert("課程已複製到剪貼簿！");
+        } catch (e) {
+            alert("複製失敗，請手動複製文字。");
+        }
+        document.body.removeChild(textArea);
+    });
 }
 
 function renderHUD() {
@@ -1095,6 +920,7 @@ function clearInputs() {
     document.querySelectorAll('.tag-btn').forEach(b=>b.classList.remove('active'));
 }
 
+// 計時器功能
 function timerStart() { 
     if (!items.length) {
         alert("請先建立課程項目！");
@@ -1102,13 +928,9 @@ function timerStart() {
     }
     
     if (!timerState.running) {
-        // 第一次開始，詢問要從哪個項目開始
         showCourseSelection();
     } else if (timerState.paused) {
-        // 從暫停狀態繼續
         timerPause();
-    } else {
-        // 已經在運行中，不執行任何操作
     }
 }
 
@@ -1225,7 +1047,7 @@ function handleStepComplete() {
     } else { 
         timerState.isResting = false; 
         timerState.currentSet++; 
-        timerState.currentLap = it.laps; // 重置趟數
+        timerState.currentLap = it.laps;
         startStep(); 
     }
 }
@@ -1298,11 +1120,10 @@ function timerEnd() {
 }
 
 function timerResetSelect() { 
-    // 顯示課程選擇模態框
     showCourseSelection();
 }
 
-// 處理橫屏模式切換
+// 處理橫屏模式
 function handleOrientationChange() {
     const isLandscape = window.matchMedia("(orientation: landscape)").matches;
     const appHeader = document.querySelector('.app-header');
@@ -1311,20 +1132,6 @@ function handleOrientationChange() {
         appHeader.style.display = 'none';
     } else {
         appHeader.style.display = 'flex';
-    }
-}
-
-// 調整列表區域高度
-function adjustListAreaHeight() {
-    const listArea = document.getElementById('listArea');
-    if (!listArea) return;
-    
-    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-    
-    if (isLandscape) {
-        listArea.style.maxHeight = 'calc(100vh - 350px)';
-    } else {
-        listArea.style.maxHeight = 'calc(100vh - 450px)';
     }
 }
 
@@ -1337,9 +1144,8 @@ window.onload = () => {
         onStart: function() {
             isDragging = true;
         },
-        onEnd: function(evt) {
+        onEnd: function() {
             isDragging = false;
-            // 拖曳完成後更新 items 陣列順序
             const newOrder = [];
             const cards = listArea.querySelectorAll('.course-card');
             cards.forEach((card, index) => {
@@ -1353,53 +1159,20 @@ window.onload = () => {
         }
     });
     
-    // 優化列表滾動 - 防止誤觸
-    listArea.addEventListener('touchstart', function(e) {
-        if (e.target.closest('.card-btn') || e.target.closest('.drag-handle')) {
-            // 如果是按鈕或拖曳手柄，不阻止事件
-            return;
-        }
-        
-        // 其他區域允許滾動
-        this.startY = e.touches[0].clientY;
-        this.scrollTopStart = this.scrollTop;
-    }, { passive: true });
-    
-    listArea.addEventListener('touchmove', function(e) {
-        if (!this.startY || isDragging) return;
-        
-        const deltaY = e.touches[0].clientY - this.startY;
-        
-        // 如果垂直滾動，允許滾動
-        if (Math.abs(deltaY) > 5) {
-            this.scrollTop = this.scrollTopStart - deltaY;
-        }
-    }, { passive: false });
-    
-    // 初始方向檢測和高度調整
+    // 初始方向檢測
     handleOrientationChange();
-    adjustListAreaHeight();
     
     // 監聽方向變化
-    window.addEventListener('resize', function() {
-        handleOrientationChange();
-        adjustListAreaHeight();
-    });
+    window.addEventListener('resize', handleOrientationChange);
+    window.addEventListener('orientationchange', handleOrientationChange);
     
-    window.addEventListener('orientationchange', function() {
-        setTimeout(function() {
-            handleOrientationChange();
-            adjustListAreaHeight();
-        }, 100);
+    // 防止計時鐘按鈕觸發虛擬鍵盤
+    document.querySelectorAll('.timer-btn').forEach(btn => {
+        btn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+        }, { passive: false });
     });
 };
-
-// 監聽頁面可見性變化
-document.addEventListener('visibilitychange', function() {
-    if (!document.hidden) {
-        setTimeout(adjustListAreaHeight, 100);
-    }
-});
 </script>
 </body>
 </html>
