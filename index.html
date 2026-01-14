@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練旗艦工作台 v2.8</title>
+<title>游泳教練旗艦工作台 v2.9</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -15,7 +15,6 @@
     box-sizing: border-box; margin: 0; padding: 0; 
     touch-action: manipulation; 
     -webkit-backface-visibility: hidden;
-    /* 核心修復：防止手機系統壓力感應菜單 */
     -webkit-touch-callout: none !important; 
     -webkit-user-select: none !important;
 }
@@ -31,14 +30,14 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .page { flex: 1; display: none; flex-direction: column; height: 100%; overflow: hidden; }
 .page.active { display: flex; }
 
-/* HUD 介面 */
+/* 規劃頁面佈局 */
 .hud-container { padding: 8px 12px; background: #05070a; border-bottom: 1px solid #1a2028; }
 .hud-inputs { display: flex; justify-content: space-between; align-items: center; }
 .label-sm { font-size: 10px; color: #555; font-weight: 900; }
 #remText { font-size: 16px; font-weight: 900; color: var(--neon-green); }
 #totalDist { font-size: 16px; font-weight: 900; color: var(--neon-blue); }
 
-.zone-grid, .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px; }
+.zone-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px; }
 .tag-btn { font-size: 9px; padding: 6px 0; text-align: center; border-radius: 4px; font-weight: 900; color: #000; opacity: 0.2; }
 .tag-btn.active { opacity: 1; border: 1.2px solid #fff; }
 
@@ -50,30 +49,37 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .text-input-box { width: 100%; height: 32px; background: rgba(0,0,0,0.5); border: 1px solid #444; border-radius: 6px; color: #fff; padding: 0 10px; font-size: 12px; margin-bottom: 4px;}
 .btn-slim { width: 100%; height: 36px; background: var(--neon-blue); border: none; border-radius: 18px; color: #fff; font-weight: 900; }
 
-/* 課表清單 */
 .list-area { flex: 1; overflow-y: auto; padding: 5px 12px 180px; }
-.course-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; margin-bottom: 6px; display: flex; align-items: center; border: 1px solid #222; gap: 10px; position: relative; }
-.drag-handle { color: #444; font-size: 20px; padding: 0 5px; }
+.course-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; margin-bottom: 6px; display: flex; align-items: center; border: 1px solid #222; gap: 10px; }
 .card-content { flex: 1; }
 .card-title { font-weight: 800; font-size: 14px; color: #efefef; }
-.card-sub { font-size: 10px; color: #888; margin-top: 2px; }
+.card-sub { font-size: 10px; color: #888; }
 
-/* 編輯彈窗 */
-.edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; }
+/* 計時器頁面修復與優化 */
+.timer-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; }
+.timer-main-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+.time-display { font-size: 28vw; font-weight: 900; color: var(--neon-red); font-family: monospace; line-height: 1; margin-bottom: 10px; }
+.time-display.resting { color: var(--neon-green); }
+
+.timer-info-card { width: 100%; max-width: 500px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 5px solid var(--neon-blue); }
+.timer-info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+.sub-box { text-align: center; background: #111; padding: 8px 4px; border-radius: 8px; }
+.sub-val { font-size: 18px; font-weight: 900; color: #ff9500; display: block; }
+.sub-label { font-size: 10px; color: #666; font-weight: bold; }
+
+.timer-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px 15px calc(env(safe-area-inset-bottom) + 5px); background: #0a0d12; border-top: 1px solid #222; }
+.timer-btn { padding: 12px 0; border-radius: 8px; font-weight: 900; font-size: 16px; border: none; color: white; }
+
+/* 彈窗 */
+.edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3000; align-items: center; justify-content: center; }
 .edit-modal.active { display: flex; }
 .modal-box { background: #161b22; width: 90%; border-radius: 20px; padding: 20px; border: 1px solid var(--neon-blue); }
 
-/* 計時器佈局 */
-.timer-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; }
-.time-main { font-size: 28vw; font-weight: 900; color: var(--neon-red); font-family: monospace; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; }
-.time-main.resting { color: var(--neon-green); }
-
-.timer-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px 15px calc(env(safe-area-inset-bottom) + 5px); background: #0a0d12; }
-.timer-btn { padding: 12px 0; border-radius: 8px; font-weight: 900; border: none; font-size: 16px; }
-
 .fixed-footer { position: absolute; bottom: 0; width: 100%; background: #0a0d12; padding: 5px 12px calc(env(safe-area-inset-bottom) + 5px); }
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-.num-btn { height: 40px; background: #1c222d; border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.num-btn { height: 40px; background: #1c222d; border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+
+iframe { width: 100%; height: 100%; border: none; }
 </style>
 </head>
 <body oncontextmenu="return false;">
@@ -87,7 +93,6 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
  
   <main class="content-wrapper">
     <div id="page-planner" class="page active">
-      <div class="planner-container">
         <div class="hud-container">
           <div class="hud-inputs">
             <div style="text-align:center"><span class="label-sm">總時(分)</span><div class="glass-box" id="box-classTime" onclick="setFocus('classTime')"><input id="classTime" readonly></div></div>
@@ -97,11 +102,11 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
         </div>
 
         <div class="zone-grid">
-            <div id="btn-z1" class="tag-btn" style="background:var(--z1)" onclick="toggleZone(1,'Z1')">Z1恢復</div>
-            <div id="btn-z2" class="tag-btn" style="background:var(--z2)" onclick="toggleZone(2,'Z2')">Z2耐力</div>
-            <div id="btn-z3" class="tag-btn" style="background:var(--z3)" onclick="toggleZone(3,'Z3')">Z3閾值</div>
-            <div id="btn-z4" class="tag-btn" style="background:var(--z4)" onclick="toggleZone(4,'Z4')">Z4氧量</div>
-            <div id="btn-z56" class="tag-btn" style="background:var(--z56)" onclick="toggleZone(56,'Z5/6')">Z5/6衝刺</div>
+            <div id="btn-z1" class="tag-btn" style="background:var(--z1)" onclick="toggleZone(1,'恢復')">Z1恢復</div>
+            <div id="btn-z2" class="tag-btn" style="background:var(--z2)" onclick="toggleZone(2,'耐力')">Z2耐力</div>
+            <div id="btn-z3" class="tag-btn" style="background:var(--z3)" onclick="toggleZone(3,'閾值')">Z3閾值</div>
+            <div id="btn-z4" class="tag-btn" style="background:var(--z4)" onclick="toggleZone(4,'氧量')">Z4氧量</div>
+            <div id="btn-z56" class="tag-btn" style="background:var(--z56)" onclick="toggleZone(56,'衝刺')">Z5/6衝刺</div>
         </div>
 
         <div class="panel">
@@ -129,25 +134,40 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
             <div class="num-btn" onclick="press(1)">1</div><div class="num-btn" onclick="press(2)">2</div><div class="num-btn" onclick="press(3)">3</div>
             <div class="num-btn" onclick="cls()">AC</div><div class="num-btn" onclick="press(0)">0</div><div class="num-btn" onclick="del()" style="color:var(--neon-red)">⌫</div>
           </div>
-          <div style="display:flex; gap:10px; margin-top:10px;">
+          <div style="display:flex; gap:10px; margin-top:8px;">
               <button onclick="copyToClipboard()" class="num-btn" style="flex:1; font-size:12px;">📋 完整輸出</button>
               <button onclick="resetAll()" class="num-btn" style="flex:1; font-size:12px; color:var(--neon-red);">🗑️ 重置</button>
           </div>
         </footer>
-      </div>
     </div>
 
     <div id="page-clock" class="page">
-        <div class="timer-container">
-            <div class="time-main" id="timerDisplay">00:00</div>
-            <div class="timer-controls">
-                <button class="timer-btn" style="background:var(--neon-green)" onclick="timerStart()">開始</button>
-                <button class="timer-btn" style="background:var(--neon-blue)" onclick="timerPause()">暫停</button>
-                <button class="timer-btn" style="background:#333; color:#fff;" onclick="timerEnd()">結束</button>
-                <button class="timer-btn" style="background:var(--neon-red)" onclick="timerResetSelect()">重選</button>
+      <div class="timer-container">
+        <div class="timer-main-area">
+          <div class="time-display" id="timerDisplay">00:00</div>
+          
+          <div class="timer-info-card">
+            <div id="clock-tags" style="color:var(--neon-blue); font-weight:bold; font-size:12px; margin-bottom:2px;">---</div>
+            <div id="clock-title" style="font-size:22px; font-weight:900;">請先建立課表</div>
+            
+            <div class="timer-info-grid">
+              <div class="sub-box"><span class="sub-label">剩餘趟數</span><span class="sub-val" id="currentLap">0</span></div>
+              <div class="sub-box"><span class="sub-label">組數</span><span class="sub-val" id="currentSet">0/0</span></div>
+              <div class="sub-box"><span class="sub-label">剩餘距離</span><span class="sub-val" id="distRem">0m</span></div>
+              <div class="sub-box"><span class="sub-label">組休時間</span><span class="sub-val" id="restTime" style="color:var(--neon-green)">00:00</span></div>
             </div>
+          </div>
         </div>
+
+        <div class="timer-controls">
+          <button class="timer-btn" style="background:var(--neon-green)" onclick="timerStart()">開始</button>
+          <button class="timer-btn" style="background:var(--neon-blue)" onclick="timerPause()">暫停</button>
+          <button class="timer-btn" style="background:#333" onclick="timerEnd()">結束</button>
+          <button class="timer-btn" style="background:var(--neon-red)" onclick="timerResetSelect()">重選</button>
+        </div>
+      </div>
     </div>
+
     <div id="page-percentage" class="page"><iframe src="https://jason307325.github.io/percentage-time/"></iframe></div>
     <div id="page-timer" class="page"><iframe src="https://jason307325.github.io/sports-timer2/"></iframe></div>
   </main>
@@ -176,14 +196,10 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 
 <script>
 let currentFocus = 'classTime', items = [], selectedZones = [], editingIndex = -1;
-let timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, intervalId: null };
+let timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, distRemaining: 0, intervalId: null };
 
-// 禁止所有 Context Menu (防止長按手勢)
-window.oncontextmenu = function(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    return false;
-};
+// 全域禁止 Context Menu
+window.oncontextmenu = e => { e.preventDefault(); e.stopPropagation(); return false; };
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playWhistle(type) {
@@ -224,58 +240,21 @@ function cls() { document.getElementById(currentFocus).value = ""; renderHUD(); 
 
 function addItem() {
     const g = id => parseInt(document.getElementById(id).value) || 0;
-    const lp = g('laps'), st = g('sets'), d = g('dist'), lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec');
-    if (!lp) return;
+    const lp = g('laps'), st = g('sets') || 1, d = g('dist'), lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec');
+    if (!lp) return alert("請輸入趟數");
     const totalSec = ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * (st - 1));
     const tags = selectedZones.map(z=>`[${z.name}]`).join(' ');
     items.push({ 
-        seconds: totalSec, lapMin: lm, lapSec: ls, resMin: rm, resSec: rs, laps: lp, sets: st || 1, 
-        dist: d * lp * (st || 1), singleDist: d, title: document.getElementById('courseNote').value || "訓練項目", tags, 
+        seconds: totalSec, lapMin: lm, lapSec: ls, resMin: rm, resSec: rs, laps: lp, sets: st, 
+        dist: d * lp * st, singleDist: d, title: document.getElementById('courseNote').value || "訓練項目", tags, 
         color: selectedZones[0] ? getComputedStyle(document.getElementById('btn-z'+selectedZones[0].id)).backgroundColor : '#555'
     });
     updateList(); renderHUD(); clearInputs();
 }
 
-function clearInputs() {
-    ['lapMin','lapSec','laps','sets','dist','resMin','resSec','courseNote'].forEach(id=>document.getElementById(id).value="");
-    selectedZones = []; document.querySelectorAll('.tag-btn').forEach(b=>b.classList.remove('active'));
-}
-
-function openEdit(i) {
-    editingIndex = i;
-    const it = items[i];
-    document.getElementById('editTitle').value = it.title;
-    document.getElementById('editLapMin').value = it.lapMin;
-    document.getElementById('editLapSec').value = it.lapSec;
-    document.getElementById('editLaps').value = it.laps;
-    document.getElementById('editDist').value = it.singleDist;
-    document.getElementById('editResMin').value = it.resMin;
-    document.getElementById('editResSec').value = it.resSec;
-    document.getElementById('editModal').classList.add('active');
-}
-
-function saveEdit() {
-    const i = editingIndex;
-    const g = id => parseInt(document.getElementById(id).value) || 0;
-    items[i].title = document.getElementById('editTitle').value;
-    items[i].lapMin = g('editLapMin');
-    items[i].lapSec = g('editLapSec');
-    items[i].laps = g('editLaps');
-    items[i].singleDist = g('editDist');
-    items[i].resMin = g('editResMin');
-    items[i].resSec = g('editResSec');
-    items[i].dist = items[i].singleDist * items[i].laps * items[i].sets;
-    items[i].seconds = ((items[i].lapMin * 60 + items[i].lapSec) * items[i].laps * items[i].sets) + ((items[i].resMin * 60 + items[i].resSec) * (items[i].sets - 1));
-    updateList(); renderHUD(); closeEdit();
-}
-
-function deleteInEdit() { if(confirm("刪除？")) { items.splice(editingIndex, 1); updateList(); renderHUD(); closeEdit(); } }
-function closeEdit() { document.getElementById('editModal').classList.remove('active'); }
-
 function updateList() {
     document.getElementById('listArea').innerHTML = items.map((it, i) => `
     <div class="course-card" style="border-left:5px solid ${it.color}" onclick="openEdit(${i})">
-        <div class="drag-handle">⠿</div>
         <div class="card-content">
             <div style="font-size:9px; color:${it.color}">${it.tags}</div>
             <div class="card-title">${it.title}</div>
@@ -288,6 +267,83 @@ function updateList() {
     </div>`).join('');
 }
 
+function openEdit(i) {
+    editingIndex = i; const it = items[i];
+    document.getElementById('editTitle').value = it.title;
+    document.getElementById('editLapMin').value = it.lapMin;
+    document.getElementById('editLapSec').value = it.lapSec;
+    document.getElementById('editLaps').value = it.laps;
+    document.getElementById('editDist').value = it.singleDist;
+    document.getElementById('editResMin').value = it.resMin;
+    document.getElementById('editResSec').value = it.resSec;
+    document.getElementById('editModal').classList.add('active');
+}
+
+function saveEdit() {
+    const i = editingIndex; const g = id => parseInt(document.getElementById(id).value) || 0;
+    items[i].title = document.getElementById('editTitle').value;
+    items[i].lapMin = g('editLapMin'); items[i].lapSec = g('editLapSec');
+    items[i].laps = g('editLaps'); items[i].singleDist = g('editDist');
+    items[i].resMin = g('editResMin'); items[i].resSec = g('editResSec');
+    items[i].dist = items[i].singleDist * items[i].laps * items[i].sets;
+    items[i].seconds = ((items[i].lapMin * 60 + items[i].lapSec) * items[i].laps * items[i].sets) + ((items[i].resMin * 60 + items[i].resSec) * (items[i].sets - 1));
+    updateList(); renderHUD(); closeEdit();
+}
+function deleteInEdit() { if(confirm("刪除？")) { items.splice(editingIndex, 1); updateList(); renderHUD(); closeEdit(); } }
+function closeEdit() { document.getElementById('editModal').classList.remove('active'); }
+
+function timerStart() { if (!items.length || timerState.running) return; timerState.running = true; startStep(); }
+function startStep() {
+    const it = items[timerState.currentItemIndex];
+    if (timerState.currentLap === 0) { timerState.currentLap = it.laps; timerState.distRemaining = it.dist; }
+    timerState.timeRemaining = timerState.isResting ? (it.resMin * 60 + it.resSec) : (it.lapMin * 60 + it.lapSec);
+    playWhistle(timerState.isResting ? 'rest' : 'start');
+    updateTimerUI(); runTimer();
+}
+function runTimer() {
+    clearInterval(timerState.intervalId);
+    timerState.intervalId = setInterval(() => {
+        if (timerState.paused) return;
+        timerState.timeRemaining--;
+        if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) playWhistle('countdown');
+        if (timerState.timeRemaining <= 0) { clearInterval(timerState.intervalId); handleStepComplete(); }
+        else updateTimerUI();
+    }, 1000);
+}
+function handleStepComplete() {
+    const it = items[timerState.currentItemIndex];
+    if (!timerState.isResting) {
+        timerState.currentLap--; timerState.distRemaining -= it.singleDist;
+        if (timerState.currentLap > 0) startStep();
+        else if (timerState.currentSet < it.sets) { timerState.isResting = true; startStep(); }
+        else nextItem();
+    } else { timerState.isResting = false; timerState.currentSet++; startStep(); }
+}
+function nextItem() {
+    timerState.currentItemIndex++;
+    if (timerState.currentItemIndex < items.length) { timerState.currentSet = 1; timerState.currentLap = 0; timerState.isResting = false; startStep(); }
+    else { timerEnd(); alert("課表完成！"); }
+}
+function updateTimerUI() {
+    const m = Math.floor(timerState.timeRemaining/60), s = timerState.timeRemaining%60;
+    const el = document.getElementById('timerDisplay');
+    el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    el.classList.toggle('resting', timerState.isResting);
+    const it = items[timerState.currentItemIndex];
+    if(it) {
+        document.getElementById('clock-tags').innerText = it.tags;
+        document.getElementById('clock-title').innerText = it.title + (timerState.isResting ? " (休)" : "");
+        document.getElementById('currentLap').innerText = timerState.currentLap;
+        document.getElementById('currentSet').innerText = `${timerState.currentSet}/${it.sets}`;
+        document.getElementById('distRem').innerText = timerState.distRemaining + "m";
+        document.getElementById('restTime').innerText = `${it.resMin}:${it.resSec.toString().padStart(2,'0')}`;
+    }
+}
+
+function timerPause() { timerState.paused = !timerState.paused; }
+function timerEnd() { clearInterval(timerState.intervalId); timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, distRemaining: 0, intervalId: null }; updateTimerUI(); }
+function timerResetSelect() { timerEnd(); switchTab('planner'); }
+
 function renderHUD() {
     let tS = 0, tM = 0; items.forEach(i => { tS += i.seconds; tM += i.dist; });
     document.getElementById('totalDist').innerText = tM + 'm';
@@ -297,64 +353,23 @@ function renderHUD() {
     rE.innerText = `${rem<0?'-':''}${Math.floor(Math.abs(rem)/60)}:${(Math.abs(rem)%60).toString().padStart(2,'0')}`;
     rE.style.color = rem < 0 ? 'var(--neon-red)' : 'var(--neon-green)';
 }
-
-function timerStart() { if (!items.length || timerState.running) return; timerState.running = true; startStep(); }
-function startStep() {
-    const it = items[timerState.currentItemIndex];
-    if (timerState.currentLap === 0) timerState.currentLap = it.laps;
-    timerState.timeRemaining = timerState.isResting ? (it.resMin * 60 + it.resSec) : (it.lapMin * 60 + it.lapSec);
-    playWhistle(timerState.isResting ? 'rest' : 'start');
-    runTimer();
-}
-function runTimer() {
-    clearInterval(timerState.intervalId);
-    timerState.intervalId = setInterval(() => {
-        if (timerState.paused) return;
-        timerState.timeRemaining--;
-        if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) playWhistle('countdown');
-        if (timerState.timeRemaining <= 0) handleStepComplete(); // 0秒即刻跳轉
-        updateTimerUI();
-    }, 1000);
-}
-function handleStepComplete() {
-    const it = items[timerState.currentItemIndex];
-    if (!timerState.isResting) {
-        timerState.currentLap--;
-        if (timerState.currentLap > 0) startStep();
-        else if (timerState.currentSet < it.sets) { timerState.isResting = true; startStep(); }
-        else nextItem();
-    } else { timerState.isResting = false; timerState.currentSet++; startStep(); }
-}
-function nextItem() {
-    timerState.currentItemIndex++;
-    if (timerState.currentItemIndex < items.length) { timerState.currentSet = 1; timerState.currentLap = 0; timerState.isResting = false; startStep(); }
-    else timerEnd();
-}
-function updateTimerUI() {
-    const m = Math.floor(timerState.timeRemaining/60), s = timerState.timeRemaining%60;
-    const el = document.getElementById('timerDisplay');
-    el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    el.classList.toggle('resting', timerState.isResting);
-}
-function timerPause() { timerState.paused = !timerState.paused; }
-function timerEnd() { clearInterval(timerState.intervalId); timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, intervalId: null }; updateTimerUI(); }
-
 function toggleZone(id, n) {
     const b = document.getElementById('btn-z'+id);
     if(b.classList.contains('active')) { selectedZones = selectedZones.filter(z=>z.id!==id); b.classList.remove('active'); }
     else { selectedZones.push({id, name:n}); b.classList.add('active'); }
 }
-
-function copyToClipboard() {
-    let t = `🏊‍♂️ 游泳訓練課表\n`;
-    items.forEach((it, i) => t += `${i+1}. ${it.title} | ${it.singleDist}mx${it.laps}tx${it.sets}s | 配:${it.lapMin}:${it.lapSec} | 休:${it.resMin}:${it.resSec}\n`);
-    navigator.clipboard.writeText(t).then(() => alert("已複製"));
+function clearInputs() {
+    ['lapMin','lapSec','laps','sets','dist','resMin','resSec','courseNote'].forEach(id=>document.getElementById(id).value="");
+    selectedZones = []; document.querySelectorAll('.tag-btn').forEach(b=>b.classList.remove('active'));
 }
-function resetAll() { if(confirm("重置？")) location.reload(); }
+function copyToClipboard() {
+    let t = `🏊‍♂️ 游泳訓練課表\n總距離: ${document.getElementById('totalDist').innerText}\n\n`;
+    items.forEach((it, i) => t += `${i+1}. ${it.tags} ${it.title}\n   ${it.singleDist}mx${it.laps}tx${it.sets}s | 配速:${it.lapMin}:${it.lapSec} | 組休:${it.resMin}:${it.resSec}\n\n`);
+    navigator.clipboard.writeText(t).then(() => alert("完整課表已複製"));
+}
+function resetAll() { if(confirm("重置所有課表？")) location.reload(); }
 
-window.onload = () => {
-    new Sortable(document.getElementById('listArea'), { handle: '.drag-handle', animation: 150 });
-};
+window.onload = () => { new Sortable(document.getElementById('listArea'), { animation: 150 }); };
 </script>
 </body>
 </html>
