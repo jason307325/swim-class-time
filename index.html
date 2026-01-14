@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練旗艦工作台 v1.5.0</title>
+<title>游泳教練旗艦工作台 v1.5.2</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -62,7 +62,11 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
 .btn-slim { width: 100%; height: 36px; background: var(--neon-blue); border: none; border-radius: 18px; color: #fff; font-weight: 900; font-size: 13px; }
  
 .list-area { flex: 1; overflow-y: auto; padding: 5px 12px; }
-.course-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 8px 10px; margin-bottom: 5px; display: flex; align-items: center; border: 1px solid #222; gap: 8px; }
+.course-card { 
+    background: rgba(255,255,255,0.03); border-radius: 8px; padding: 8px 10px; margin-bottom: 5px; 
+    display: flex; align-items: center; border: 1px solid #222; gap: 8px;
+    -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+}
 .drag-handle { color: #333; font-size: 14px; padding-right: 5px; }
 .card-main-info { flex: 1; min-width: 0; }
 .card-top-row { display: flex; align-items: baseline; gap: 5px; margin-bottom: 2px; }
@@ -81,81 +85,78 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .num-btn { height: 36px; background: #1c222d; border-radius: 8px; font-size: 18px; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
+/* ---------------- 計時鐘核心佈局 ---------------- */
 .timer-container {
   width: 100%; height: 100%; display: flex; flex-direction: column; background: #000;
-  position: relative;
+  position: relative; overflow: hidden;
 }
+
+/* 控制按鈕移至下方 */
 .timer-controls {
-  display: flex; gap: 8px; padding: 12px; background: #111; border-bottom: 2px solid #222;
-  flex-shrink: 0;
+  display: flex; gap: 8px; padding: 12px 12px calc(env(safe-area-inset-bottom, 10px) + 10px); 
+  background: #111; border-top: 2px solid #222; flex-shrink: 0;
 }
 .timer-btn {
-  flex: 1; padding: 12px; border-radius: 8px; font-weight: 900; font-size: 14px;
+  flex: 1; padding: 15px 0; border-radius: 12px; font-weight: 900; font-size: 16px;
   border: none; cursor: pointer; transition: 0.2s;
 }
 .btn-start { background: var(--neon-green); color: #000; }
 .btn-pause { background: var(--neon-blue); color: #fff; }
-.btn-reset { background: #666; color: #fff; }
+.btn-reset { background: #333; color: #fff; }
 .btn-end { background: var(--neon-red); color: #fff; }
+
 .timer-display {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 20px;
+  padding: 10px; overflow: hidden;
 }
+
 .time-main {
-  font-size: 120px; font-weight: 900; color: var(--neon-red); 
+  font-size: 25vw; font-weight: 900; color: var(--neon-red); 
   font-family: 'Courier New', monospace; line-height: 1;
   text-shadow: 0 0 20px rgba(255,59,48,0.5);
-  transition: color 0.3s, text-shadow 0.3s;
 }
-.time-main.resting {
-  color: var(--neon-green);
-  text-shadow: 0 0 20px rgba(76,217,100,0.5);
-}
-.time-info {
-  margin-top: 30px; text-align: center;
-}
-.info-row {
-  font-size: 36px; font-weight: 800; margin: 10px 0;
-}
-.info-label { font-size: 18px; color: #666; margin-right: 10px; }
-.info-sets { color: #ff9500; }
-.info-laps { color: #ff9500; }
+.time-main.resting { color: var(--neon-green); text-shadow: 0 0 20px rgba(76,217,100,0.5); }
+
+.time-info { width: 100%; max-width: 500px; }
+.info-row { display: flex; justify-content: center; align-items: center; font-size: 8vw; font-weight: 800; margin: 5px 0; }
+.info-label { font-size: 4vw; color: #666; margin-right: 10px; }
+.info-sets, .info-laps { color: #ff9500; }
 .info-rest { color: var(--neon-green); }
+
 .current-exercise {
-  font-size: 24px; color: #fff; margin-top: 20px; text-align: center;
-  padding: 10px 20px; background: rgba(255,255,255,0.05); border-radius: 12px;
+  font-size: 16px; color: #fff; margin-top: 10px; text-align: center;
+  padding: 8px 15px; background: rgba(255,255,255,0.05); border-radius: 8px;
+  width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+
+/* 橫屏專屬修正 */
+@media (orientation: landscape) {
+  .timer-display { flex-direction: row; gap: 30px; padding: 0 20px; }
+  .time-main { font-size: 30vh; flex: 1.2; text-align: right; }
+  .time-info { flex: 1; text-align: left; }
+  .info-row { justify-content: flex-start; font-size: 8vh; }
+  .info-label { font-size: 4vh; }
+  .current-exercise { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: auto; font-size: 14px; }
+  .timer-controls { padding: 8px 20px; }
+  .timer-btn { padding: 10px 0; }
+}
+
+/* 彈窗樣式 */
 .modal {
   display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center;
 }
 .modal.active { display: flex; }
 .modal-content {
-  background: #161b22; padding: 20px; border-radius: 12px; max-width: 90%;
+  background: #161b22; padding: 20px; border-radius: 12px; width: 85%; max-width: 400px;
   max-height: 80%; overflow-y: auto; border: 2px solid #30363d;
 }
 .modal-title { font-size: 18px; font-weight: 900; margin-bottom: 15px; color: var(--neon-blue); }
 .modal-item {
   padding: 12px; margin: 8px 0; background: rgba(255,255,255,0.05);
-  border-radius: 8px; cursor: pointer; transition: 0.2s;
+  border-radius: 8px; cursor: pointer;
 }
-.modal-item:hover { background: rgba(255,255,255,0.1); }
-.modal-close {
-  margin-top: 15px; width: 100%; padding: 12px; background: #666;
-  color: #fff; border: none; border-radius: 8px; font-weight: 900;
-}
-
-@media (orientation: landscape) {
-  .time-main { font-size: 160px; }
-  .info-row { font-size: 42px; }
-  .current-exercise { font-size: 28px; }
-}
-
-@media (max-width: 600px) and (orientation: portrait) {
-  .time-main { font-size: 80px; }
-  .info-row { font-size: 28px; }
-  .current-exercise { font-size: 18px; }
-}
+.modal-close { margin-top: 15px; width: 100%; padding: 12px; background: #666; color: #fff; border: none; border-radius: 8px; font-weight: 900; }
 </style>
 </head>
 <body>
@@ -230,29 +231,20 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
 
     <div id="page-clock" class="page">
       <div class="timer-container">
+        <div class="timer-display">
+          <div class="time-main" id="timerDisplay">00:00</div>
+          <div class="time-info">
+            <div class="info-row"><span class="info-label">趟數:</span><span class="info-laps" id="currentLap">-/-</span></div>
+            <div class="info-row"><span class="info-label">組數:</span><span class="info-sets" id="currentSet">-/-</span></div>
+            <div class="info-row"><span class="info-label">組休:</span><span class="info-rest" id="restTime">00:00</span></div>
+          </div>
+          <div class="current-exercise" id="currentExercise">請先新增訓練項目</div>
+        </div>
         <div class="timer-controls">
           <button class="timer-btn btn-start" onclick="timerStart()">開始</button>
           <button class="timer-btn btn-pause" onclick="timerPause()">暫停</button>
           <button class="timer-btn btn-reset" onclick="timerResetSelect()">重新</button>
           <button class="timer-btn btn-end" onclick="timerEnd()">結束</button>
-        </div>
-        <div class="timer-display">
-          <div class="time-main" id="timerDisplay">00:00</div>
-          <div class="time-info">
-            <div class="info-row">
-              <span class="info-label">組數:</span>
-              <span class="info-sets" id="currentSet">-/-</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">趟數:</span>
-              <span class="info-laps" id="currentLap">-/-</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">組休:</span>
-              <span class="info-rest" id="restTime">00:00</span>
-            </div>
-          </div>
-          <div class="current-exercise" id="currentExercise">請先在課程規劃中新增項目</div>
         </div>
       </div>
     </div>
@@ -275,58 +267,44 @@ let items = [];
 let selectedZones = [], selectedCats = [];
 
 let timerState = {
-  running: false,
-  paused: false,
-  currentItemIndex: 0,
-  currentSet: 1,
-  currentLap: 1,
-  isResting: false,
-  timeRemaining: 0,
-  intervalId: null
+  running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 1,
+  isResting: false, timeRemaining: 0, intervalId: null
 };
 
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-function playBeep(frequency, duration) {
-  const oscillator = audioContext.createOscillator();
-  const gainNode = audioContext.createGain();
-  
-  oscillator.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-  
-  oscillator.frequency.value = frequency;
-  oscillator.type = 'sine';
-  
-  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-  
-  oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + duration);
-}
-
-function playStartBeep() {
-  playBeep(800, 0.1);
-  setTimeout(() => playBeep(1000, 0.15), 150);
-}
-
-function playCountdownBeep() {
-  playBeep(600, 0.08);
-}
-
-function playEndBeep() {
-  playBeep(400, 0.15);
-  setTimeout(() => playBeep(350, 0.15), 200);
-  setTimeout(() => playBeep(300, 0.3), 400);
-}
-
-function playRestBeep() {
-  playBeep(500, 0.12);
-}
-
-function playCompletionBeep() {
-  playBeep(1200, 0.2);
-  setTimeout(() => playBeep(1400, 0.2), 250);
-  setTimeout(() => playBeep(1600, 0.3), 500);
+/**
+ * 哨音音效
+ */
+function playWhistle(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const playBlast = (startTime, duration, freq = 2500) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, startTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.05, startTime + duration);
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(0.6, startTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(startTime); osc.stop(startTime + duration);
+    };
+    const now = audioCtx.currentTime;
+    switch(type) {
+        case 'start': playBlast(now, 0.4); break;
+        case 'change': playBlast(now, 0.25); playBlast(now + 0.35, 0.25); break;
+        case 'rest': playBlast(now, 0.8, 2200); break;
+        case 'complete': playBlast(now, 0.2); playBlast(now + 0.3, 0.2); playBlast(now + 0.6, 0.4, 2800); break;
+        case 'countdown': 
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.frequency.setValueAtTime(800, now);
+            g.gain.setValueAtTime(0.2, now);
+            g.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(now); osc.stop(now + 0.1); break;
+    }
 }
 
 function switchTab(tabName) {
@@ -334,10 +312,7 @@ function switchTab(tabName) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('tab-' + tabName).classList.add('active');
     document.getElementById('page-' + tabName).classList.add('active');
-    
-    if (tabName === 'clock') {
-      updateTimerDisplay();
-    }
+    if (tabName === 'clock') updateTimerDisplay();
 }
  
 function setFocus(id) {
@@ -364,17 +339,11 @@ function renderHUD() {
     const classInput = document.getElementById('classTime').value;
     const classMinutes = parseInt(classInput) || 0;
     let totalUsedSeconds = 0, totalMeters = 0;
-    
-    items.forEach(item => {
-        totalUsedSeconds += item.seconds;
-        totalMeters += item.dist;
-    });
- 
+    items.forEach(item => { totalUsedSeconds += item.seconds; totalMeters += item.dist; });
     document.getElementById('totalDist').innerText = `${totalMeters}m`;
     const remEl = document.getElementById('remText');
-    if (classInput === "") {
-        remEl.innerText = "--分--秒"; remEl.style.color = "#444";
-    } else {
+    if (classInput === "") { remEl.innerText = "--分--秒"; remEl.style.color = "#444"; }
+    else {
         const diff = (classMinutes * 60) - totalUsedSeconds;
         const isNeg = diff < 0, absD = Math.abs(diff);
         remEl.innerText = `${isNeg?'-':''}${Math.floor(absD/60)}分${(absD%60).toString().padStart(2,'0')}秒`;
@@ -388,18 +357,11 @@ function addItem() {
     const g = id => parseInt(document.getElementById(id).value) || 0;
     const lp = g('laps'), st = g('sets'), d = g('dist');
     if (lp === 0 || st === 0) { alert("請輸入趟數與組數"); return; }
- 
     const lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec');
     const itemSec = ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * st); 
     const tags = [...selectedCats.map(c=>`[${c}]`), ...selectedZones.map(z=>`[${z.name}]`)].join('');
     const color = selectedZones.length > 0 ? getComputedStyle(document.getElementById('btn-z'+selectedZones[0].id)).backgroundColor : '#444';
- 
-    items.push({
-        seconds: itemSec, lapMin: lm, lapSec: ls, resMin: rm, resSec: rs, laps: lp, sets: st,
-        dist: d * lp * st, singleDist: d, title: document.getElementById('courseNote').value.trim() || "項目",
-        tags, color
-    });
-    
+    items.push({ seconds: itemSec, lapMin: lm, lapSec: ls, resMin: rm, resSec: rs, laps: lp, sets: st, dist: d * lp * st, singleDist: d, title: document.getElementById('courseNote').value.trim() || "項目", tags, color });
     ['lapMin', 'lapSec', 'laps', 'sets', 'dist', 'resMin', 'resSec'].forEach(id => document.getElementById(id).value = "");
     document.getElementById('courseNote').value = "";
     selectedZones = []; selectedCats = [];
@@ -412,9 +374,9 @@ function updateList() {
     container.innerHTML = items.map((item, index) => {
         const m = Math.floor(item.seconds / 60), s = item.seconds % 60;
         return `
-        <div class="course-card" data-index="${index}" style="border-left: 4px solid ${item.color}">
+        <div class="course-card" data-index="${index}" style="border-left: 4px solid ${item.color}" oncontextmenu="return false;">
             <div class="drag-handle">☰</div>
-            <div class="card-main-info" onpointerdown="startPress(${index})" onpointerup="endPress()" onpointerleave="endPress()">
+            <div class="card-main-info" onpointerdown="startPress(event, ${index})" onpointerup="endPress()" onpointerleave="endPress()">
                 <div class="card-top-row">
                     <span class="card-tags" style="color:${item.color}">${item.tags}</span>
                     <span class="card-title">${item.title}</span>
@@ -436,184 +398,80 @@ function copyToClipboard() {
     let txt = `🏊‍♂️ 游泳課表 (總距離: ${document.getElementById('totalDist').innerText})\n---\n`;
     items.forEach((item, idx) => {
         const m = Math.floor(item.seconds / 60), s = item.seconds % 60;
-        txt += `${idx+1}. ${item.tags} ${item.title}\n`;
-        txt += `   規格: ${item.singleDist}m x ${item.laps}t x ${item.sets}s\n`;
-        txt += `   配速 ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')} | 組休 ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n`;
-        txt += `   用時: ${m}分${s.toString().padStart(2,'0')}秒 | 距離: ${item.dist}m\n\n`;
+        txt += `${idx+1}. ${item.tags} ${item.title}\n   規格: ${item.singleDist}m x ${item.laps}t x ${item.sets}s\n   配速 ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')} | 組休 ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n   用時: ${m}分${s.toString().padStart(2,'0')}秒 | 距離: ${item.dist}m\n\n`;
     });
     const el = document.createElement('textarea'); el.value = txt; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
     alert("專業課表已導出至剪貼簿");
 }
 
+/* ---------------- 計時核心 ---------------- */
 function timerStart() {
-  if (items.length === 0) {
-    alert("請先在課程規劃中新增訓練項目");
-    return;
-  }
-  
+  if (items.length === 0) return alert("請先新增訓練項目");
   if (!timerState.running) {
-    timerState.running = true;
-    timerState.paused = false;
-    
-    if (timerState.currentItemIndex === 0 && timerState.currentSet === 1 && timerState.currentLap === 1) {
-      startNewItem();
-    }
-    
-    playStartBeep();
-    runTimer();
+    timerState.running = true; timerState.paused = false;
+    if (timerState.currentItemIndex === 0 && timerState.currentSet === 1 && timerState.currentLap === 1) startNewItem();
+    else { playWhistle('start'); runTimer(); }
   } else if (timerState.paused) {
-    timerState.paused = false;
-    playStartBeep();
-    runTimer();
+    timerState.paused = false; playWhistle('start'); runTimer();
   }
 }
 
 function timerPause() {
   if (timerState.running && !timerState.paused) {
     timerState.paused = true;
-    if (timerState.intervalId) {
-      clearInterval(timerState.intervalId);
-      timerState.intervalId = null;
-    }
-    playBeep(450, 0.15);
+    if (timerState.intervalId) { clearInterval(timerState.intervalId); timerState.intervalId = null; }
   }
 }
 
 function timerResetSelect() {
   if (items.length === 0) return;
-  
   timerPause();
-  
   const modal = document.getElementById('resetModal');
   const itemList = document.getElementById('resetItemList');
-  
-  itemList.innerHTML = items.map((item, idx) => `
-    <div class="modal-item" onclick="resetToItem(${idx})">
-      ${idx + 1}. ${item.tags} ${item.title}
-      <div style="font-size:12px; color:#888; margin-top:4px;">
-        ${item.singleDist}m×${item.laps}t×${item.sets}s
-      </div>
-    </div>
-  `).join('');
-  
+  itemList.innerHTML = items.map((item, idx) => `<div class="modal-item" onclick="resetToItem(${idx})">${idx + 1}. ${item.tags} ${item.title}<div style="font-size:12px; color:#888;">${item.singleDist}m×${item.laps}t×${item.sets}s</div></div>`).join('');
   modal.classList.add('active');
 }
 
-function closeResetModal() {
-  document.getElementById('resetModal').classList.remove('active');
-}
-
-function resetToItem(index) {
-  timerState.currentItemIndex = index;
-  timerState.currentSet = 1;
-  timerState.currentLap = 1;
-  timerState.isResting = false;
-  startNewItem();
-  closeResetModal();
-  playStartBeep();
-}
+function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); }
+function resetToItem(index) { timerState.currentItemIndex = index; timerState.currentSet = 1; timerState.currentLap = 1; timerState.isResting = false; startNewItem(); closeResetModal(); }
 
 function timerEnd() {
-  if (!timerState.running && timerState.currentItemIndex === 0) {
-    alert("訓練尚未開始");
-    return;
-  }
-  
   if (confirm("確定結束訓練？")) {
-    if (timerState.intervalId) {
-      clearInterval(timerState.intervalId);
-    }
-    
-    timerState = {
-      running: false,
-      paused: false,
-      currentItemIndex: 0,
-      currentSet: 1,
-      currentLap: 1,
-      isResting: false,
-      timeRemaining: 0,
-      intervalId: null
-    };
-    
-    updateTimerDisplay();
-    playEndBeep();
+    if (timerState.intervalId) clearInterval(timerState.intervalId);
+    timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 1, isResting: false, timeRemaining: 0, intervalId: null };
+    updateTimerDisplay(); playWhistle('complete');
   }
 }
 
 function startNewItem() {
-  if (timerState.currentItemIndex >= items.length) {
-    playCompletionBeep();
-    alert("🎉 所有訓練項目已完成！");
-    timerEnd();
-    return;
-  }
-  
+  if (timerState.currentItemIndex >= items.length) { playWhistle('complete'); alert("🎉 所有項目完成！"); return timerEnd(); }
   const item = items[timerState.currentItemIndex];
   timerState.timeRemaining = item.lapMin * 60 + item.lapSec;
   timerState.isResting = false;
-  updateTimerDisplay();
+  updateTimerDisplay(); playWhistle('change'); runTimer();
 }
 
 function runTimer() {
-  if (timerState.intervalId) {
-    clearInterval(timerState.intervalId);
-  }
-  
+  if (timerState.intervalId) clearInterval(timerState.intervalId);
   timerState.intervalId = setInterval(() => {
     if (timerState.paused) return;
-    
     timerState.timeRemaining--;
-    
-    if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) {
-      playCountdownBeep();
-    }
-    
+    if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) playWhistle('countdown');
     if (timerState.timeRemaining <= 0) {
       const item = items[timerState.currentItemIndex];
-      
       if (!timerState.isResting) {
-        // 完成一趟
         timerState.currentLap++;
-        
         if (timerState.currentLap > item.laps) {
-          // 完成一組
-          playRestBeep();
-          timerState.currentLap = 1;
-          timerState.currentSet++;
-          
+          timerState.currentLap = 1; timerState.currentSet++;
           if (timerState.currentSet > item.sets) {
-            // 完成整個項目
-            playCompletionBeep();
-            timerState.currentItemIndex++;
-            timerState.currentSet = 1;
-            timerState.currentLap = 1;
-            
-            if (timerState.currentItemIndex >= items.length) {
-              // 所有項目完成
-              alert("🎉 所有訓練項目已完成！");
-              timerEnd();
-              return;
-            }
-            
-            startNewItem();
-          } else {
-            // 進入組間休息
-            timerState.isResting = true;
-            timerState.timeRemaining = item.resMin * 60 + item.resSec;
-          }
-        } else {
-          // 繼續下一趟（不休息）
-          playStartBeep();
-          timerState.timeRemaining = item.lapMin * 60 + item.lapSec;
-        }
-      } else {
-        // 休息結束，開始下一組的第一趟
-        playStartBeep();
-        timerState.isResting = false;
-        timerState.timeRemaining = item.lapMin * 60 + item.lapSec;
-      }
+            timerState.currentItemIndex++; timerState.currentSet = 1; timerState.currentLap = 1;
+            if (timerState.currentItemIndex < items.length) startNewItem();
+            else { playWhistle('complete'); alert("🎉 所有項目完成！"); timerEnd(); }
+            return;
+          } else { playWhistle('rest'); timerState.isResting = true; timerState.timeRemaining = item.resMin * 60 + item.resSec; }
+        } else { playWhistle('start'); timerState.timeRemaining = item.lapMin * 60 + item.lapSec; }
+      } else { playWhistle('rest'); timerState.isResting = false; timerState.timeRemaining = item.lapMin * 60 + item.lapSec; }
     }
-    
     updateTimerDisplay();
   }, 1000);
 }
@@ -622,35 +480,20 @@ function updateTimerDisplay() {
   const min = Math.floor(timerState.timeRemaining / 60);
   const sec = timerState.timeRemaining % 60;
   const displayEl = document.getElementById('timerDisplay');
-  
   displayEl.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-  
-  // 休息時顯示綠色
-  if (timerState.isResting) {
-    displayEl.classList.add('resting');
-  } else {
-    displayEl.classList.remove('resting');
-  }
-  
+  timerState.isResting ? displayEl.classList.add('resting') : displayEl.classList.remove('resting');
   if (items.length === 0 || timerState.currentItemIndex >= items.length) {
     document.getElementById('currentSet').innerText = '-/-';
     document.getElementById('currentLap').innerText = '-/-';
     document.getElementById('restTime').innerText = '00:00';
-    document.getElementById('currentExercise').innerText = '請先在課程規劃中新增項目';
+    document.getElementById('currentExercise').innerText = '尚未有項目';
     return;
   }
-  
   const item = items[timerState.currentItemIndex];
   document.getElementById('currentSet').innerText = `${timerState.currentSet}/${item.sets}`;
   document.getElementById('currentLap').innerText = `${timerState.currentLap}/${item.laps}`;
-  
-  const restMin = item.resMin;
-  const restSec = item.resSec;
-  document.getElementById('restTime').innerText = 
-    `${restMin.toString().padStart(2, '0')}:${restSec.toString().padStart(2, '0')}`;
-  
-  document.getElementById('currentExercise').innerText = 
-    `${item.tags} ${item.title} - ${item.singleDist}m ${timerState.isResting ? '(組休中)' : ''}`;
+  document.getElementById('restTime').innerText = `${item.resMin.toString().padStart(2, '0')}:${item.resSec.toString().padStart(2, '0')}`;
+  document.getElementById('currentExercise').innerText = `${item.tags} ${item.title} - ${item.singleDist}m ${timerState.isResting ? '(休息中)' : ''}`;
 }
  
 new Sortable(document.getElementById('listArea'), {
@@ -664,8 +507,9 @@ new Sortable(document.getElementById('listArea'), {
 });
  
 let pressTimer;
-function startPress(i) { pressTimer = setTimeout(() => { if(confirm("確定刪除？")) { items.splice(i, 1); updateList(); renderHUD(); } }, 800); }
+function startPress(e, i) { pressTimer = setTimeout(() => { if(confirm("確定刪除此項目？")) { items.splice(i, 1); updateList(); renderHUD(); } }, 800); }
 function endPress() { clearTimeout(pressTimer); }
+
 function toggleZone(id, name) {
     const btn = document.getElementById('btn-z' + id);
     const index = selectedZones.findIndex(z => z.id === id);
@@ -679,6 +523,7 @@ function toggleCat(domId, name) {
     else { selectedCats.push(name); btn.classList.add('active'); }
 }
 function resetAll() { if(confirm("確定清空所有數據？")) { items = []; localStorage.clear(); location.reload(); } }
+
 window.onload = () => {
     const saved = localStorage.getItem('swim_v11_items');
     if (saved) items = JSON.parse(saved);
