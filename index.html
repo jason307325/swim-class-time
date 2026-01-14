@@ -244,6 +244,8 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     touch-action: manipulation;
     -webkit-user-select: none;
     user-select: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Edit Modal */
@@ -260,7 +262,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     z-index: 10;
 }
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 400px; margin: 0 auto; }
-.num-btn { height: 40px; background: #1c222d; border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.num-btn { height: 40px; background: #1c222d; border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
 /* 百分比和分段表頁面調整 */
 .page iframe { 
@@ -414,6 +416,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     color: #666;
     border-radius: 6px;
     margin: 0 2px;
+    cursor: pointer;
 }
 
 .landscape-tab-btn.active {
@@ -458,6 +461,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     border: none;
     font-weight: bold;
     color: white;
+    cursor: pointer;
 }
 .confirm-yes {
     background: var(--neon-red);
@@ -564,6 +568,18 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     font-weight: bold;
     margin-top: 4px;
     text-align: right;
+}
+
+/* 修復手機觸控問題 */
+button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn, .num-btn {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    touch-action: manipulation;
+}
+
+/* 防止長按選單 */
+button {
+    -webkit-touch-callout: none;
 }
 </style>
 </head>
@@ -858,7 +874,7 @@ function toggleCat(id, n) {
     }
 }
 
-// 新增：計算單項課程總用時
+// 計算單項課程總用時
 function calculateItemTotalTime(item) {
     // 計算運動時間 (每趟時間 × 趟數 × 組數)
     const lapTime = item.lapMin * 60 + item.lapSec;
@@ -872,7 +888,7 @@ function calculateItemTotalTime(item) {
     return totalWorkTime + totalRestTime;
 }
 
-// 新增：將秒數轉換為分:秒格式
+// 將秒數轉換為分:秒格式
 function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -1115,7 +1131,7 @@ function clearInputs() {
     document.querySelectorAll('.tag-btn').forEach(b=>b.classList.remove('active'));
 }
 
-// 計時器功能 - 修復課程導入問題
+// 計時器功能
 function timerStart() { 
     if (!items.length) {
         alert("請先建立課程項目！");
@@ -1334,41 +1350,6 @@ function handleOrientationChange() {
     }
 }
 
-// 測試橫屏佈局
-function testLandscapeLayout() {
-    console.log("測試橫屏佈局...");
-    
-    // 檢查計時鐘元素是否存在
-    const timerDisplay = document.getElementById('timerDisplay');
-    const timerInfoCard = document.getElementById('timerInfoCard');
-    const timerControls = document.querySelector('.timer-controls');
-    
-    if (!timerDisplay || !timerInfoCard || !timerControls) {
-        console.error("計時鐘元素未找到");
-        return;
-    }
-    
-    console.log("計時鐘元素檢查通過");
-    
-    // 測試佈局函數
-    console.log("當前頁面:", document.querySelector('.page.active')?.id);
-    
-    // 檢查CSS是否正確加載
-    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-    console.log("是否橫屏:", isLandscape);
-    
-    if (isLandscape) {
-        console.log("測試橫屏佈局配置:");
-        console.log("- timer-container flex-direction:", getComputedStyle(document.querySelector('.timer-container')).flexDirection);
-        console.log("- timer-main-area width:", getComputedStyle(document.querySelector('.timer-main-area')).width);
-        console.log("- timer-info-card width:", getComputedStyle(timerInfoCard).width);
-        console.log("- time-display font-size:", getComputedStyle(timerDisplay).fontSize);
-        console.log("- clock-title font-size:", getComputedStyle(document.getElementById('clock-title')).fontSize);
-        console.log("- timer-controls position:", getComputedStyle(timerControls).position);
-        console.log("- 視窗高度:", window.innerHeight, "px");
-    }
-}
-
 // 初始化 Sortable 拖曳排序
 window.onload = () => { 
     const listArea = document.getElementById('listArea');
@@ -1401,39 +1382,6 @@ window.onload = () => {
     // 監聽方向變化
     window.addEventListener('resize', handleOrientationChange);
     window.addEventListener('orientationchange', handleOrientationChange);
-    
-    // 防止計時鐘按鈕觸發虛擬鍵盤
-    document.querySelectorAll('.timer-btn').forEach(btn => {
-        btn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-        }, { passive: false });
-    });
-    
-    // 執行佈局測試
-    setTimeout(testLandscapeLayout, 1000);
-    
-    // 監聽橫豎屏切換以測試佈局
-    window.addEventListener('orientationchange', function() {
-        setTimeout(testLandscapeLayout, 300);
-    });
-    
-    // 測試：添加一個示例課程
-    setTimeout(() => {
-        if (items.length === 0) {
-            console.log("添加示例課程進行測試...");
-            // 添加一個測試課程
-            items.push({
-                seconds: 600,
-                lapMin: 1, lapSec: 30, resMin: 0, resSec: 30,
-                laps: 4, sets: 2, dist: 200, singleDist: 25,
-                title: "自由式衝刺", tags: "[MainSet] [Z4氧量]",
-                color: "#ff9500",
-                totalTime: 600
-            });
-            updateList();
-            renderHUD();
-        }
-    }, 1500);
 };
 </script>
 </body>
