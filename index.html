@@ -32,8 +32,33 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 /* HUD & Tags */
 .hud-container { padding: 8px 12px; background: #05070a; border-bottom: 1px solid #1a2028; }
 .hud-inputs { display: flex; justify-content: space-between; align-items: center; }
-.label-sm { font-size: 10px; color: #555; font-weight: 900; }
-#remText { font-size: 16px; font-weight: 900; }
+.label-sm { font-size: 10px; color: #555; font-weight: 900; text-align: center; }
+#remText { font-size: 16px; font-weight: 900; text-align: center; width: 100px; }
+
+/* 調整總時輸入格大小 */
+.hud-time-box { display: flex; flex-direction: column; align-items: center; width: 80px; }
+.glass-box-sm { 
+    background: #090c10; 
+    border-radius: 6px; 
+    border: 1.5px solid #1a2028; 
+    display: flex; 
+    align-items: center; 
+    height: 32px; 
+    width: 60px; 
+    margin: 0 auto; 
+    padding: 0 5px; 
+}
+.glass-box-sm.active-blue { border-color: var(--neon-blue); }
+.glass-box-sm input { 
+    width: 100%; 
+    background: transparent; 
+    border: none; 
+    color: #fff; 
+    font-size: 13px; 
+    font-weight: 800; 
+    text-align: center; 
+    pointer-events: none; 
+}
 
 .zone-grid, .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px; }
 .category-grid { grid-template-columns: repeat(4, 1fr); margin-top: 0; margin-bottom: 8px; }
@@ -80,6 +105,19 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .fixed-footer { position: absolute; bottom: 0; width: 100%; background: #0a0d12; padding: 5px 12px calc(env(safe-area-inset-bottom) + 5px); }
 .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .num-btn { height: 40px; background: #1c222d; border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+/* 百分比和分段表頁面調整 */
+.page iframe { 
+    width: 100%; 
+    height: 100%; 
+    border: none; 
+    display: block; 
+}
+#page-percentage, #page-timer { 
+    padding: 0; 
+    margin: 0; 
+    background: #000; 
+}
 </style>
 </head>
 <body oncontextmenu="return false;">
@@ -95,9 +133,20 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     <div id="page-planner" class="page active">
         <div class="hud-container">
           <div class="hud-inputs">
-            <div style="text-align:center"><span class="label-sm">總時(分)</span><div class="glass-box" id="box-classTime" onclick="setFocus('classTime')"><input id="classTime" readonly></div></div>
-            <div style="text-align:center"><span class="label-sm">剩餘時間</span><div id="remText">--:--</div></div>
-            <div style="text-align:center"><span class="label-sm">總距離</span><div id="totalDist" style="color:var(--neon-blue); font-weight:900;">0m</div></div>
+            <div class="hud-time-box">
+              <span class="label-sm">總時(分)</span>
+              <div class="glass-box-sm" id="box-classTime" onclick="setFocus('classTime')">
+                <input id="classTime" readonly>
+              </div>
+            </div>
+            <div style="text-align:center; flex: 1;">
+              <span class="label-sm">剩餘時間</span>
+              <div id="remText">--:--</div>
+            </div>
+            <div style="text-align:center; width: 80px;">
+              <span class="label-sm">總距離</span>
+              <div id="totalDist" style="color:var(--neon-blue); font-weight:900;">0m</div>
+            </div>
           </div>
         </div>
 
@@ -196,7 +245,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 <script>
 let currentFocus = 'classTime', items = [], selectedZones = [], selectedCats = [], editingIndex = -1;
 let timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, distRemaining: 0, intervalId: null };
-let longPressTimer;
+let touchStartTime = 0, touchTimeout = null;
 
 // 全域封鎖預設長按選單
 window.oncontextmenu = e => { e.preventDefault(); return false; };
@@ -225,7 +274,7 @@ function switchTab(t) {
 
 function setFocus(id) {
     currentFocus = id;
-    document.querySelectorAll('.glass-box').forEach(b => b.classList.remove('active-blue'));
+    document.querySelectorAll('.glass-box, .glass-box-sm').forEach(b => b.classList.remove('active-blue'));
     document.getElementById('box-'+id).classList.add('active-blue');
 }
 
@@ -235,18 +284,37 @@ function press(n) {
     input.value = input.value === "0" ? n : input.value + n;
     renderHUD();
 }
-function del() { document.getElementById(currentFocus).value = document.getElementById(currentFocus).value.slice(0, -1); renderHUD(); }
-function cls() { document.getElementById(currentFocus).value = ""; renderHUD(); }
+function del() { 
+    const input = document.getElementById(currentFocus);
+    if (input) {
+        input.value = input.value.slice(0, -1); 
+        renderHUD(); 
+    }
+}
+function cls() { 
+    document.getElementById(currentFocus).value = ""; 
+    renderHUD(); 
+}
 
 function toggleZone(id, n) {
     const b = document.getElementById('btn-z'+id);
-    if(b.classList.contains('active')) { selectedZones = selectedZones.filter(z=>z.id!==id); b.classList.remove('active'); }
-    else { selectedZones.push({id, name:n}); b.classList.add('active'); }
+    if(b.classList.contains('active')) { 
+        selectedZones = selectedZones.filter(z=>z.id!==id); 
+        b.classList.remove('active'); 
+    } else { 
+        selectedZones.push({id, name:n}); 
+        b.classList.add('active'); 
+    }
 }
 function toggleCat(id, n) {
     const b = document.getElementById('cat-'+id);
-    if(b.classList.contains('active')) { selectedCats = selectedCats.filter(c=>c!==n); b.classList.remove('active'); }
-    else { selectedCats.push(n); b.classList.add('active'); }
+    if(b.classList.contains('active')) { 
+        selectedCats = selectedCats.filter(c=>c!==n); 
+        b.classList.remove('active'); 
+    } else { 
+        selectedCats.push(n); 
+        b.classList.add('active'); 
+    }
 }
 
 function addItem() {
@@ -263,24 +331,36 @@ function addItem() {
     updateList(); renderHUD(); clearInputs();
 }
 
-// 修正長按刪除與點擊編輯衝突
-function handleTouchStart(i) {
-    longPressTimer = setTimeout(() => {
-        if(confirm("確定要刪除此項目嗎？")) { items.splice(i, 1); updateList(); renderHUD(); }
-        longPressTimer = null;
-    }, 600);
+function handleTouchStart(i, event) {
+    event.preventDefault();
+    touchStartTime = Date.now();
+    touchTimeout = setTimeout(() => {
+        if(confirm("確定要刪除此項目嗎？")) { 
+            items.splice(i, 1); 
+            updateList(); 
+            renderHUD(); 
+        }
+        touchTimeout = null;
+    }, 800);
 }
-function handleTouchEnd(i) {
-    if(longPressTimer) {
-        clearTimeout(longPressTimer);
-        openEdit(i);
+
+function handleTouchEnd(i, event) {
+    event.preventDefault();
+    if (touchTimeout) {
+        clearTimeout(touchTimeout);
+        const touchDuration = Date.now() - touchStartTime;
+        if (touchDuration < 300) {
+            openEdit(i);
+        }
     }
 }
 
 function updateList() {
     document.getElementById('listArea').innerHTML = items.map((it, i) => `
     <div class="course-card" style="border-left:6px solid ${it.color}" 
-         ontouchstart="handleTouchStart(${i})" ontouchend="handleTouchEnd(${i})" onmousedown="handleTouchStart(${i})" onmouseup="handleTouchEnd(${i})">
+         ontouchstart="handleTouchStart(${i}, event)" ontouchend="handleTouchEnd(${i}, event)"
+         onmousedown="handleTouchStart(${i}, event)" onmouseup="handleTouchEnd(${i}, event)"
+         data-index="${i}">
         <div class="drag-handle">⠿</div>
         <div class="card-content">
             <div style="font-size:9px; color:${it.color}; font-weight:900;">${it.tags}</div>
@@ -294,7 +374,8 @@ function updateList() {
 }
 
 function openEdit(i) {
-    editingIndex = i; const it = items[i];
+    editingIndex = i; 
+    const it = items[i];
     document.getElementById('editTitle').value = it.title;
     document.getElementById('editLapMin').value = it.lapMin;
     document.getElementById('editLapSec').value = it.lapSec;
@@ -306,19 +387,29 @@ function openEdit(i) {
 }
 
 function saveEdit() {
-    const i = editingIndex; const g = id => parseInt(document.getElementById(id).value) || 0;
+    const i = editingIndex; 
+    const g = id => parseInt(document.getElementById(id).value) || 0;
     items[i].title = document.getElementById('editTitle').value;
-    items[i].lapMin = g('editLapMin'); items[i].lapSec = g('editLapSec');
-    items[i].laps = g('editLaps'); items[i].singleDist = g('editDist');
-    items[i].resMin = g('editResMin'); items[i].resSec = g('editResSec');
+    items[i].lapMin = g('editLapMin'); 
+    items[i].lapSec = g('editLapSec');
+    items[i].laps = g('editLaps'); 
+    items[i].singleDist = g('editDist');
+    items[i].resMin = g('editResMin'); 
+    items[i].resSec = g('editResSec');
     items[i].dist = items[i].singleDist * items[i].laps * items[i].sets;
     items[i].seconds = ((items[i].lapMin * 60 + items[i].lapSec) * items[i].laps * items[i].sets) + ((items[i].resMin * 60 + items[i].resSec) * (items[i].sets - 1));
-    updateList(); renderHUD(); closeEdit();
+    updateList(); 
+    renderHUD(); 
+    closeEdit();
 }
-function closeEdit() { document.getElementById('editModal').classList.remove('active'); }
+
+function closeEdit() { 
+    document.getElementById('editModal').classList.remove('active'); 
+}
 
 function renderHUD() {
-    let tS = 0, tM = 0; items.forEach(i => { tS += i.seconds; tM += i.dist; });
+    let tS = 0, tM = 0; 
+    items.forEach(i => { tS += i.seconds; tM += i.dist; });
     document.getElementById('totalDist').innerText = tM + 'm';
     const cM = parseInt(document.getElementById('classTime').value) || 0;
     const rem = (cM * 60) - tS;
@@ -329,46 +420,97 @@ function renderHUD() {
 
 function clearInputs() {
     ['lapMin','lapSec','laps','sets','dist','resMin','resSec','courseNote'].forEach(id=>document.getElementById(id).value="");
-    selectedZones = []; selectedCats = [];
+    selectedZones = []; 
+    selectedCats = [];
     document.querySelectorAll('.tag-btn').forEach(b=>b.classList.remove('active'));
 }
 
-function timerStart() { if (!items.length || timerState.running) return; timerState.running = true; startStep(); }
+function timerStart() { 
+    if (!items.length || timerState.running) return; 
+    timerState.running = true; 
+    startStep(); 
+}
+
 function startStep() {
     const it = items[timerState.currentItemIndex];
-    if (timerState.currentLap === 0) { timerState.currentLap = it.laps; timerState.distRemaining = it.dist; }
-    timerState.timeRemaining = timerState.isResting ? (it.resMin * 60 + it.resSec) : (it.lapMin * 60 + it.lapSec);
-    playWhistle(timerState.isResting ? 'rest' : 'start');
-    updateTimerUI(); runTimer();
+    if (!it) {
+        timerEnd();
+        alert("沒有訓練項目！");
+        return;
+    }
+    
+    if (timerState.currentLap === 0) { 
+        timerState.currentLap = it.laps; 
+        timerState.distRemaining = it.dist; 
+    }
+    
+    if (timerState.isResting) {
+        timerState.timeRemaining = (it.resMin * 60 + it.resSec);
+        playWhistle('rest');
+    } else {
+        timerState.timeRemaining = (it.lapMin * 60 + it.lapSec);
+        playWhistle('start');
+    }
+    
+    updateTimerUI(); 
+    runTimer();
 }
+
 function runTimer() {
     clearInterval(timerState.intervalId);
     timerState.intervalId = setInterval(() => {
         if (timerState.paused) return;
         timerState.timeRemaining--;
         if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) playWhistle('countdown');
-        if (timerState.timeRemaining <= 0) { clearInterval(timerState.intervalId); handleStepComplete(); }
-        else updateTimerUI();
+        if (timerState.timeRemaining <= 0) { 
+            clearInterval(timerState.intervalId); 
+            handleStepComplete(); 
+        } else {
+            updateTimerUI();
+        }
     }, 1000);
 }
+
 function handleStepComplete() {
     const it = items[timerState.currentItemIndex];
     if (!timerState.isResting) {
-        timerState.currentLap--; timerState.distRemaining -= it.singleDist;
-        if (timerState.currentLap > 0) startStep();
-        else if (timerState.currentSet < it.sets) { timerState.isResting = true; startStep(); }
-        else nextItem();
-    } else { timerState.isResting = false; timerState.currentSet++; startStep(); }
+        timerState.currentLap--; 
+        timerState.distRemaining -= it.singleDist;
+        
+        if (timerState.currentLap > 0) {
+            startStep();
+        } else if (timerState.currentSet < it.sets) { 
+            timerState.isResting = true; 
+            startStep(); 
+        } else {
+            nextItem();
+        }
+    } else { 
+        timerState.isResting = false; 
+        timerState.currentSet++; 
+        timerState.currentLap = it.laps; // 重置趟數
+        startStep(); 
+    }
 }
+
 function nextItem() {
     timerState.currentItemIndex++;
-    if (timerState.currentItemIndex < items.length) { timerState.currentSet = 1; timerState.currentLap = 0; timerState.isResting = false; startStep(); }
-    else { timerEnd(); alert("完成！"); }
+    if (timerState.currentItemIndex < items.length) { 
+        timerState.currentSet = 1; 
+        timerState.currentLap = 0; 
+        timerState.isResting = false; 
+        startStep(); 
+    } else { 
+        timerEnd(); 
+        alert("訓練完成！"); 
+    }
 }
+
 function updateTimerUI() {
     const m = Math.floor(timerState.timeRemaining/60), s = timerState.timeRemaining%60;
     document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     document.getElementById('timerDisplay').classList.toggle('resting', timerState.isResting);
+    
     const it = items[timerState.currentItemIndex];
     if(it) {
         document.getElementById('clock-title').innerText = it.title + (timerState.isResting ? " (休)" : "");
@@ -378,11 +520,71 @@ function updateTimerUI() {
         document.getElementById('restTime').innerText = `${it.resMin}:${it.resSec.toString().padStart(2,'0')}`;
     }
 }
-function timerPause() { timerState.paused = !timerState.paused; }
-function timerEnd() { clearInterval(timerState.intervalId); timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, distRemaining: 0, intervalId: null }; updateTimerUI(); }
-function timerResetSelect() { timerEnd(); switchTab('planner'); }
 
-window.onload = () => { new Sortable(document.getElementById('listArea'), { handle: '.drag-handle', animation: 150 }); };
+function timerPause() { 
+    if (!timerState.running) return;
+    
+    timerState.paused = !timerState.paused;
+    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
+    
+    if (timerState.paused) {
+        clearInterval(timerState.intervalId);
+        pauseBtn.textContent = '繼續';
+        pauseBtn.style.background = 'var(--neon-green)';
+    } else {
+        runTimer();
+        pauseBtn.textContent = '暫停';
+        pauseBtn.style.background = 'var(--neon-blue)';
+    }
+}
+
+function timerEnd() { 
+    clearInterval(timerState.intervalId); 
+    timerState = { 
+        running: false, 
+        paused: false, 
+        currentItemIndex: 0, 
+        currentSet: 1, 
+        currentLap: 0, 
+        isResting: false, 
+        timeRemaining: 0, 
+        distRemaining: 0, 
+        intervalId: null 
+    }; 
+    
+    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
+    pauseBtn.textContent = '暫停';
+    pauseBtn.style.background = 'var(--neon-blue)';
+    
+    updateTimerUI(); 
+}
+
+function timerResetSelect() { 
+    timerEnd(); 
+    switchTab('planner'); 
+}
+
+// 初始化 Sortable 拖曳排序
+window.onload = () => { 
+    const listArea = document.getElementById('listArea');
+    new Sortable(listArea, { 
+        handle: '.drag-handle', 
+        animation: 150,
+        onEnd: function(evt) {
+            // 拖曳完成後更新 items 陣列順序
+            const newOrder = [];
+            const cards = listArea.querySelectorAll('.course-card');
+            cards.forEach((card, index) => {
+                const oldIndex = parseInt(card.dataset.index || index);
+                if (items[oldIndex]) {
+                    newOrder.push(items[oldIndex]);
+                }
+            });
+            items = newOrder;
+            updateList();
+        }
+    });
+};
 </script>
 </body>
 </html>
