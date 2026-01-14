@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練旗艦工作台 v3.3</title>
+<title>游泳教練旗艦工作台 v3.5</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -60,12 +60,14 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     pointer-events: none; 
 }
 
-.zone-grid, .category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px; }
-.category-grid { grid-template-columns: repeat(4, 1fr); margin-top: 0; margin-bottom: 8px; }
+.zone-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px; }
+.category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 4px 12px 8px; }
 .tag-btn { font-size: 9px; padding: 6px 0; text-align: center; border-radius: 4px; font-weight: 900; color: #000; opacity: 0.2; }
 .tag-btn.active { opacity: 1; border: 1.2px solid #fff; }
 .cat-btn { background: var(--cat-bg); color: #fff; opacity: 0.4; }
 .cat-btn.active { opacity: 1; background: #555; }
+.bonus-btn { background: linear-gradient(45deg, #ff00ff, #ff9500); color: #fff; opacity: 0.4; }
+.bonus-btn.active { opacity: 1; background: linear-gradient(45deg, #ff00ff, #ff9500); }
 
 /* Panel & Inputs */
 .panel { margin: 0 12px 2px; padding: 6px; border-radius: 12px; background: #161b22; border: 1px solid #30363d; }
@@ -95,28 +97,45 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .function-btn.delete-all { background: var(--neon-red); }
 .function-btn.export { background: var(--neon-green); }
 
-/* Timer UI */
+/* Timer UI - 橫屏模式優化 */
 .timer-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; }
 .timer-main-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.time-display { font-size: 28vw; font-weight: 900; color: var(--neon-red); font-family: monospace; }
+.time-display { font-size: 28vw; font-weight: 900; color: var(--neon-red); font-family: monospace; line-height: 1; }
 .time-display.resting { color: var(--neon-green); }
 
-.timer-info-card { width: 95%; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 6px solid var(--neon-blue); }
+.timer-info-card { width: 95%; max-width: 600px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border-left: 6px solid var(--neon-blue); }
 .timer-info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
 .sub-box { text-align: center; background: #111; padding: 8px 2px; border-radius: 8px; }
 .sub-val { font-size: 18px; font-weight: 900; color: #ff9500; display: block; }
 .sub-label { font-size: 9px; color: #666; }
 
-.timer-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px 15px calc(env(safe-area-inset-bottom) + 5px); background: #0a0d12; }
-.timer-btn { padding: 12px 0; border-radius: 8px; font-weight: 900; font-size: 16px; border: none; color: white; }
+.timer-controls { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 8px; 
+    padding: 10px 15px calc(env(safe-area-inset-bottom) + 5px); 
+    background: #0a0d12; 
+    max-width: 600px;
+    margin: 0 auto;
+    width: 95%;
+}
+.timer-btn { 
+    padding: 12px 0; 
+    border-radius: 8px; 
+    font-weight: 900; 
+    font-size: 16px; 
+    border: none; 
+    color: white; 
+    min-height: 44px;
+}
 
 /* Edit Modal */
 .edit-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; }
 .edit-modal.active { display: flex; }
-.modal-box { background: #161b22; width: 90%; border-radius: 20px; padding: 20px; border: 1px solid var(--neon-blue); }
+.modal-box { background: #161b22; width: 90%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid var(--neon-blue); }
 
 .fixed-footer { position: absolute; bottom: 0; width: 100%; background: #0a0d12; padding: 5px 12px calc(env(safe-area-inset-bottom) + 5px); }
-.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 400px; margin: 0 auto; }
 .num-btn { height: 40px; background: #1c222d; border-radius: 6px; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
 /* 百分比和分段表頁面調整 */
@@ -138,9 +157,137 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .course-select-list { max-height: 60vh; overflow-y: auto; margin: 15px 0; }
 .select-course-card { background: #222; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 4px solid var(--neon-blue); }
 .select-course-card.selected { background: #333; border-color: var(--neon-green); }
+
+/* 橫屏模式適配 */
+@media (orientation: landscape) {
+    .app-header { padding-top: 0; }
+    
+    /* 課程規劃頁面橫屏優化 */
+    #page-planner .hud-inputs {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .zone-grid, .category-grid {
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .panel {
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .function-buttons {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .list-area {
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    
+    .fixed-footer {
+        max-width: 600px;
+        margin: 0 auto;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    /* 計時鐘頁面橫屏優化 */
+    .timer-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+    }
+    
+    .timer-main-area {
+        flex: 1;
+        max-width: 50%;
+    }
+    
+    .time-display {
+        font-size: 18vw;
+        margin-bottom: 20px;
+    }
+    
+    .timer-info-card {
+        width: 100%;
+        max-width: 400px;
+    }
+    
+    .timer-controls {
+        max-width: 300px;
+        grid-template-columns: repeat(2, 1fr);
+        width: 100%;
+        margin: 0;
+        align-self: center;
+    }
+    
+    /* 橫屏時隱藏導航列 */
+    .app-header {
+        display: none;
+    }
+    
+    /* 添加橫屏時的切換按鈕 */
+    .landscape-tabs {
+        display: flex;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: #05070a;
+        padding: 8px;
+    }
+    
+    .landscape-tab-btn {
+        flex: 1;
+        padding: 8px 0;
+        text-align: center;
+        font-size: 12px;
+        font-weight: 900;
+        color: #666;
+        border-radius: 6px;
+        margin: 0 2px;
+    }
+    
+    .landscape-tab-btn.active {
+        color: var(--neon-blue);
+        background: rgba(0,162,255,0.1);
+    }
+}
+
+/* 新增橫屏導航列 */
+.landscape-tabs {
+    display: none;
+}
+
+@media (orientation: landscape) {
+    .landscape-tabs {
+        display: flex;
+    }
+    
+    .content-wrapper {
+        margin-top: 44px;
+    }
+}
 </style>
 </head>
 <body oncontextmenu="return false;">
+
+  <div class="landscape-tabs">
+    <div id="landscape-tab-planner" class="landscape-tab-btn active" onclick="switchTab('planner')">📝 規劃</div>
+    <div id="landscape-tab-clock" class="landscape-tab-btn" onclick="switchTab('clock')">⏱️ 計時</div>
+    <div id="landscape-tab-percentage" class="landscape-tab-btn" onclick="switchTab('percentage')">📊 %</div>
+    <div id="landscape-tab-timer" class="landscape-tab-btn" onclick="switchTab('timer')">📋 分段</div>
+  </div>
 
   <header class="app-header">
     <div id="tab-planner" class="tab-btn active" onclick="switchTab('planner')">📝 課程規劃</div>
@@ -182,6 +329,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
             <div id="cat-drill" class="tag-btn cat-btn" onclick="toggleCat('drill','Drill')">Drill</div>
             <div id="cat-main" class="tag-btn cat-btn" onclick="toggleCat('main','MainSet')">MainSet</div>
             <div id="cat-cool" class="tag-btn cat-btn" onclick="toggleCat('cool','CoolDown')">CoolDown</div>
+            <div id="cat-bonus" class="tag-btn bonus-btn" onclick="toggleCat('bonus','Bonus')">Bonus</div>
         </div>
 
         <div class="panel">
@@ -287,26 +435,59 @@ let selectedCourseIndex = 0;
 // 全域封鎖預設長按選單
 window.oncontextmenu = e => { e.preventDefault(); return false; };
 
+// 創建更響亮的音效
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playWhistle(type) {
+
+function playBeep(frequency, duration, volume = 0.7) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    oscillator.frequency.value = frequency;
+    oscillator.type = 'square'; // 使用方波更響亮
+    
     const now = audioCtx.currentTime;
-    const blast = (f, d, v) => {
-        const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-        o.frequency.setValueAtTime(f, now); g.gain.setValueAtTime(0, now);
-        g.gain.linearRampToValueAtTime(v, now + 0.005);
-        g.gain.exponentialRampToValueAtTime(0.01, now + d);
-        o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(now + d);
-    };
-    if(type==='start') blast(2000, 0.4, 0.4);
-    if(type==='rest') blast(1000, 0.8, 0.4);
-    if(type==='countdown') blast(800, 0.1, 0.2);
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(volume, now + 0.001);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+}
+
+function playShortBeep() {
+    // 短音：訓練開始/結束 - 更高頻，更響亮
+    playBeep(1500, 0.15, 0.8);
+}
+
+function playLongBeep() {
+    // 長音：休息時間開始 - 中頻，較長
+    playBeep(1000, 0.4, 0.8);
+}
+
+function playWhistle(type) {
+    if (type === 'start') {
+        // 訓練開始：一個短音
+        playShortBeep();
+    } else if (type === 'rest') {
+        // 休息開始：一個長音
+        playLongBeep();
+    }
+    // 移除倒數三秒的音效
 }
 
 function switchTab(t) {
+    // 更新垂直導航列
     document.querySelectorAll('.tab-btn, .page').forEach(el => el.classList.remove('active'));
     document.getElementById('tab-'+t).classList.add('active');
     document.getElementById('page-'+t).classList.add('active');
+    
+    // 更新橫屏導航列
+    document.querySelectorAll('.landscape-tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('landscape-tab-'+t).classList.add('active');
 }
 
 function setFocus(id) {
@@ -362,14 +543,35 @@ function addItem() {
         alert("請輸入趟數！");
         return;
     }
-    const allTags = [...selectedCats.map(c=>`[${c}]`), ...selectedZones.map(z=>`[${z.name}]`)].join(' ');
+    
+    // 建立標籤陣列
+    const tagParts = [...selectedCats.map(c=>`[${c}]`), ...selectedZones.map(z=>`[${z.name}]`)];
+    const allTags = tagParts.join(' ');
+    
+    // 判斷顏色：如果有選區域用區域顏色，否則用第一個類別顏色
+    let color = '#555';
+    if (selectedZones[0]) {
+        color = getComputedStyle(document.getElementById('btn-z'+selectedZones[0].id)).backgroundColor;
+    } else if (selectedCats.includes('Bonus')) {
+        color = 'linear-gradient(45deg, #ff00ff, #ff9500)';
+    } else if (selectedCats[0]) {
+        const catId = selectedCats[0].toLowerCase().replace('set', '').replace('up', '').replace('down', '');
+        const catBtn = document.getElementById('cat-' + catId);
+        if (catBtn) {
+            color = getComputedStyle(catBtn).backgroundColor;
+        }
+    }
+    
     items.push({ 
         seconds: ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * (st - 1)), 
         lapMin: lm, lapSec: ls, resMin: rm, resSec: rs, laps: lp, sets: st, 
         dist: d * lp * st, singleDist: d, title: document.getElementById('courseNote').value || "訓練項目", tags: allTags, 
-        color: selectedZones[0] ? getComputedStyle(document.getElementById('btn-z'+selectedZones[0].id)).backgroundColor : '#555'
+        color: color
     });
-    updateList(); renderHUD(); clearInputs();
+    
+    updateList(); 
+    renderHUD(); 
+    clearInputs();
 }
 
 function handleTouchStart(i, event) {
@@ -398,13 +600,13 @@ function handleTouchEnd(i, event) {
 
 function updateList() {
     document.getElementById('listArea').innerHTML = items.map((it, i) => `
-    <div class="course-card" style="border-left:6px solid ${it.color}" 
+    <div class="course-card" style="border-left:6px solid ${typeof it.color === 'string' && it.color.includes('gradient') ? '#ff9500' : it.color}" 
          ontouchstart="handleTouchStart(${i}, event)" ontouchend="handleTouchEnd(${i}, event)"
          onmousedown="handleTouchStart(${i}, event)" onmouseup="handleTouchEnd(${i}, event)"
          data-index="${i}">
         <div class="drag-handle">⠿</div>
         <div class="card-content">
-            <div style="font-size:9px; color:${it.color}; font-weight:900; margin-bottom:4px;">${it.tags}</div>
+            <div style="font-size:9px; color:${typeof it.color === 'string' && it.color.includes('gradient') ? '#ff9500' : it.color}; font-weight:900; margin-bottom:4px;">${it.tags}</div>
             <div class="card-title">${it.title}</div>
             <div class="card-sub">
                 <div class="card-info-row">
@@ -648,7 +850,6 @@ function runTimer() {
     timerState.intervalId = setInterval(() => {
         if (timerState.paused) return;
         timerState.timeRemaining--;
-        if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) playWhistle('countdown');
         if (timerState.timeRemaining <= 0) { 
             clearInterval(timerState.intervalId); 
             handleStepComplete(); 
@@ -752,6 +953,18 @@ function timerResetSelect() {
     showCourseSelection();
 }
 
+// 處理橫屏模式切換
+function handleOrientationChange() {
+    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+    const appHeader = document.querySelector('.app-header');
+    
+    if (isLandscape) {
+        appHeader.style.display = 'none';
+    } else {
+        appHeader.style.display = 'flex';
+    }
+}
+
 // 初始化 Sortable 拖曳排序
 window.onload = () => { 
     const listArea = document.getElementById('listArea');
@@ -772,6 +985,13 @@ window.onload = () => {
             updateList();
         }
     });
+    
+    // 初始方向檢測
+    handleOrientationChange();
+    
+    // 監聽方向變化
+    window.addEventListener('resize', handleOrientationChange);
+    window.addEventListener('orientationchange', handleOrientationChange);
 };
 </script>
 </body>
