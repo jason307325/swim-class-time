@@ -105,6 +105,11 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
   font-size: 120px; font-weight: 900; color: var(--neon-red); 
   font-family: 'Courier New', monospace; line-height: 1;
   text-shadow: 0 0 20px rgba(255,59,48,0.5);
+  transition: color 0.3s, text-shadow 0.3s;
+}
+.time-main.resting {
+  color: var(--neon-green);
+  text-shadow: 0 0 20px rgba(76,217,100,0.5);
 }
 .time-info {
   margin-top: 30px; text-align: center;
@@ -198,8 +203,8 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
         </div>
         <div class="row">
           <div style="flex:1.6"><div class="glass-box" id="box-dist" onclick="setFocus('dist')"><span class="inner-label">距離/m</span><input id="dist" readonly></div></div>
-          <div style="flex:1"><div class="glass-box" id="box-resMin" onclick="setFocus('resMin')"><span class="inner-label">休分</span><input id="resMin" readonly></div></div>
-          <div style="flex:1"><div class="glass-box" id="box-resSec" onclick="setFocus('resSec')"><span class="inner-label">休秒</span><input id="resSec" readonly></div></div>
+          <div style="flex:1"><div class="glass-box" id="box-resMin" onclick="setFocus('resMin')"><span class="inner-label">組休分</span><input id="resMin" readonly></div></div>
+          <div style="flex:1"><div class="glass-box" id="box-resSec" onclick="setFocus('resSec')"><span class="inner-label">組休秒</span><input id="resSec" readonly></div></div>
         </div>
         <button onclick="addItem()" class="btn-slim">加入訓練項目 (+)</button>
       </div>
@@ -243,7 +248,7 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
               <span class="info-laps" id="currentLap">-/-</span>
             </div>
             <div class="info-row">
-              <span class="info-label">休息:</span>
+              <span class="info-label">組休:</span>
               <span class="info-rest" id="restTime">00:00</span>
             </div>
           </div>
@@ -260,8 +265,8 @@ iframe { width: 100%; height: 100%; border: none; background: #fff; }
       </div>
     </div>
  
-    <div id="page-percentage" class="page"><iframe src="https://jason307325.github.io/percentage-time/"></iframe></div>
-    <div id="page-timer" class="page"><iframe src="https://jason307325.github.io/sports-timer2/"></iframe></div>
+    <div id="page-percentage" class="page"><iframe src="https://jason307325.github.io/percentage-time/" allow=""></iframe></div>
+    <div id="page-timer" class="page"><iframe src="https://jason307325.github.io/sports-timer2/" allow=""></iframe></div>
   </main>
  
 <script>
@@ -433,7 +438,7 @@ function copyToClipboard() {
         const m = Math.floor(item.seconds / 60), s = item.seconds % 60;
         txt += `${idx+1}. ${item.tags} ${item.title}\n`;
         txt += `   規格: ${item.singleDist}m x ${item.laps}t x ${item.sets}s\n`;
-        txt += `   配速 ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')} | 休息 ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n`;
+        txt += `   配速 ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')} | 組休 ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n`;
         txt += `   用時: ${m}分${s.toString().padStart(2,'0')}秒 | 距離: ${item.dist}m\n\n`;
     });
     const el = document.createElement('textarea'); el.value = txt; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
@@ -509,6 +514,11 @@ function resetToItem(index) {
 }
 
 function timerEnd() {
+  if (!timerState.running && timerState.currentItemIndex === 0) {
+    alert("訓練尚未開始");
+    return;
+  }
+  
   if (confirm("確定結束訓練？")) {
     if (timerState.intervalId) {
       clearInterval(timerState.intervalId);
@@ -562,20 +572,24 @@ function runTimer() {
       const item = items[timerState.currentItemIndex];
       
       if (!timerState.isResting) {
-        playRestBeep();
+        // 完成一趟
         timerState.currentLap++;
         
         if (timerState.currentLap > item.laps) {
+          // 完成一組
+          playRestBeep();
           timerState.currentLap = 1;
           timerState.currentSet++;
           
           if (timerState.currentSet > item.sets) {
+            // 完成整個項目
             playCompletionBeep();
             timerState.currentItemIndex++;
             timerState.currentSet = 1;
             timerState.currentLap = 1;
             
             if (timerState.currentItemIndex >= items.length) {
+              // 所有項目完成
               alert("🎉 所有訓練項目已完成！");
               timerEnd();
               return;
@@ -583,14 +597,17 @@ function runTimer() {
             
             startNewItem();
           } else {
+            // 進入組間休息
             timerState.isResting = true;
             timerState.timeRemaining = item.resMin * 60 + item.resSec;
           }
         } else {
-          timerState.isResting = true;
-          timerState.timeRemaining = item.resMin * 60 + item.resSec;
+          // 繼續下一趟（不休息）
+          playStartBeep();
+          timerState.timeRemaining = item.lapMin * 60 + item.lapSec;
         }
       } else {
+        // 休息結束，開始下一組的第一趟
         playStartBeep();
         timerState.isResting = false;
         timerState.timeRemaining = item.lapMin * 60 + item.lapSec;
@@ -604,8 +621,16 @@ function runTimer() {
 function updateTimerDisplay() {
   const min = Math.floor(timerState.timeRemaining / 60);
   const sec = timerState.timeRemaining % 60;
-  document.getElementById('timerDisplay').innerText = 
-    `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  const displayEl = document.getElementById('timerDisplay');
+  
+  displayEl.innerText = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  
+  // 休息時顯示綠色
+  if (timerState.isResting) {
+    displayEl.classList.add('resting');
+  } else {
+    displayEl.classList.remove('resting');
+  }
   
   if (items.length === 0 || timerState.currentItemIndex >= items.length) {
     document.getElementById('currentSet').innerText = '-/-';
@@ -625,7 +650,7 @@ function updateTimerDisplay() {
     `${restMin.toString().padStart(2, '0')}:${restSec.toString().padStart(2, '0')}`;
   
   document.getElementById('currentExercise').innerText = 
-    `${item.tags} ${item.title} - ${item.singleDist}m ${timerState.isResting ? '(休息中)' : ''}`;
+    `${item.tags} ${item.title} - ${item.singleDist}m ${timerState.isResting ? '(組休中)' : ''}`;
 }
  
 new Sortable(document.getElementById('listArea'), {
