@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練旗艦工作台 v3.2</title>
+<title>游泳教練旗艦工作台 v3.3</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -33,7 +33,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 .hud-container { padding: 8px 12px; background: #05070a; border-bottom: 1px solid #1a2028; }
 .hud-inputs { display: flex; justify-content: space-between; align-items: center; }
 .label-sm { font-size: 10px; color: #555; font-weight: 900; text-align: center; }
-#remText { font-size: 16px; font-weight: 900; text-align: center; width: 100px; }
+#remText { font-size: 16px; font-weight: 900; text-align: center; flex: 1; }
 
 /* 調整總時輸入格大小 */
 .hud-time-box { display: flex; flex-direction: column; align-items: center; width: 80px; }
@@ -78,9 +78,22 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
 
 /* List & Hints (功能提示語回歸) */
 .list-hint { font-size: 10px; color: #555; text-align: center; margin-top: 5px; font-weight: bold; }
-.list-area { flex: 1; overflow-y: auto; padding: 5px 12px 180px; }
-.course-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; margin-bottom: 6px; display: flex; align-items: center; border: 1px solid #222; gap: 8px; position: relative; }
-.drag-handle { color: #333; font-size: 20px; padding: 0 5px; cursor: grab; }
+.list-area { flex: 1; overflow-y: auto; padding: 5px 12px 220px; }
+.course-card { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px; margin-bottom: 6px; display: flex; align-items: flex-start; border: 1px solid #222; gap: 8px; position: relative; }
+.drag-handle { color: #333; font-size: 20px; padding: 0 5px; cursor: grab; flex-shrink: 0; }
+
+.card-content { flex: 1; min-width: 0; }
+.card-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-sub { font-size: 11px; color: #aaa; display: flex; flex-direction: column; gap: 2px; }
+.card-info-row { display: flex; justify-content: space-between; }
+.card-right { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.card-distance { font-weight: 900; color: var(--neon-blue); font-size: 16px; }
+
+/* 功能按鈕列 */
+.function-buttons { display: flex; gap: 8px; padding: 8px 12px 4px; }
+.function-btn { flex: 1; height: 36px; border-radius: 18px; border: none; font-weight: 900; font-size: 13px; color: white; }
+.function-btn.delete-all { background: var(--neon-red); }
+.function-btn.export { background: var(--neon-green); }
 
 /* Timer UI */
 .timer-container { width: 100%; height: 100%; display: flex; flex-direction: column; background: #000; }
@@ -118,6 +131,13 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     margin: 0; 
     background: #000; 
 }
+
+/* 課程選擇模態框 */
+.course-select-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 3000; align-items: center; justify-content: center; }
+.course-select-modal.active { display: flex; }
+.course-select-list { max-height: 60vh; overflow-y: auto; margin: 15px 0; }
+.select-course-card { background: #222; border-radius: 10px; padding: 12px; margin-bottom: 8px; border-left: 4px solid var(--neon-blue); }
+.select-course-card.selected { background: #333; border-color: var(--neon-green); }
 </style>
 </head>
 <body oncontextmenu="return false;">
@@ -139,7 +159,7 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
                 <input id="classTime" readonly>
               </div>
             </div>
-            <div style="text-align:center; flex: 1;">
+            <div style="display: flex; flex-direction: column; align-items: center; flex: 1;">
               <span class="label-sm">剩餘時間</span>
               <div id="remText">--:--</div>
             </div>
@@ -180,7 +200,12 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
           <button onclick="addItem()" class="btn-slim">加入訓練項目 (+)</button>
         </div>
 
-        <div class="list-hint">⠿ 拖曳排序 | 👆 點擊編輯 | 🖐️ 長按刪除</div>
+        <div class="function-buttons">
+          <button class="function-btn delete-all" onclick="deleteAllCourses()">一鍵刪除全部</button>
+          <button class="function-btn export" onclick="exportCourses()">匯出課程文字檔</button>
+        </div>
+
+        <div class="list-hint">⠿ 拖曳排序 | 👆 點擊編輯 | 🖐️ 長按刪除(1秒)</div>
         <div class="list-area" id="listArea"></div>
 
         <footer class="fixed-footer">
@@ -211,8 +236,8 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
         <div class="timer-controls">
           <button class="timer-btn" style="background:var(--neon-green)" onclick="timerStart()">開始</button>
           <button class="timer-btn" style="background:var(--neon-blue)" onclick="timerPause()">暫停</button>
-          <button class="timer-btn" style="background:#333" onclick="timerEnd()">結束</button>
           <button class="timer-btn" style="background:var(--neon-red)" onclick="timerResetSelect()">重選</button>
+          <button class="timer-btn" style="background:#333" onclick="timerEnd()">結束</button>
         </div>
       </div>
     </div>
@@ -242,10 +267,22 @@ body { font-family: -apple-system, sans-serif; background: var(--bg-dark); color
     </div>
   </div>
 
+  <div id="courseSelectModal" class="course-select-modal">
+    <div class="modal-box" style="max-width: 400px;">
+        <h3 style="color:var(--neon-blue); text-align:center; margin-bottom:15px;">選擇開始項目</h3>
+        <div class="course-select-list" id="courseSelectList"></div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button onclick="confirmCourseSelection()" class="btn-slim" style="background:var(--neon-green)">開始計時</button>
+            <button onclick="cancelCourseSelection()" class="btn-slim" style="background:#444">取消</button>
+        </div>
+    </div>
+  </div>
+
 <script>
 let currentFocus = 'classTime', items = [], selectedZones = [], selectedCats = [], editingIndex = -1;
 let timerState = { running: false, paused: false, currentItemIndex: 0, currentSet: 1, currentLap: 0, isResting: false, timeRemaining: 0, distRemaining: 0, intervalId: null };
 let touchStartTime = 0, touchTimeout = null;
+let selectedCourseIndex = 0;
 
 // 全域封鎖預設長按選單
 window.oncontextmenu = e => { e.preventDefault(); return false; };
@@ -275,7 +312,8 @@ function switchTab(t) {
 function setFocus(id) {
     currentFocus = id;
     document.querySelectorAll('.glass-box, .glass-box-sm').forEach(b => b.classList.remove('active-blue'));
-    document.getElementById('box-'+id).classList.add('active-blue');
+    const box = document.getElementById('box-'+id);
+    if (box) box.classList.add('active-blue');
 }
 
 function press(n) {
@@ -320,7 +358,10 @@ function toggleCat(id, n) {
 function addItem() {
     const g = id => parseInt(document.getElementById(id).value) || 0;
     const lp = g('laps'), st = g('sets') || 1, d = g('dist'), lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec');
-    if (!lp) return;
+    if (!lp) {
+        alert("請輸入趟數！");
+        return;
+    }
     const allTags = [...selectedCats.map(c=>`[${c}]`), ...selectedZones.map(z=>`[${z.name}]`)].join(' ');
     items.push({ 
         seconds: ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * (st - 1)), 
@@ -341,7 +382,7 @@ function handleTouchStart(i, event) {
             renderHUD(); 
         }
         touchTimeout = null;
-    }, 800);
+    }, 1000); // 1秒長按刪除
 }
 
 function handleTouchEnd(i, event) {
@@ -363,12 +404,20 @@ function updateList() {
          data-index="${i}">
         <div class="drag-handle">⠿</div>
         <div class="card-content">
-            <div style="font-size:9px; color:${it.color}; font-weight:900;">${it.tags}</div>
+            <div style="font-size:9px; color:${it.color}; font-weight:900; margin-bottom:4px;">${it.tags}</div>
             <div class="card-title">${it.title}</div>
-            <div class="card-sub">${it.singleDist}mx${it.laps}tx${it.sets}s | 配:${it.lapMin}:${it.lapSec.toString().padStart(2,'0')}</div>
+            <div class="card-sub">
+                <div class="card-info-row">
+                    <span>${it.singleDist}m × ${it.laps}趟 × ${it.sets}組</span>
+                </div>
+                <div class="card-info-row">
+                    <span>配速: ${it.lapMin}:${it.lapSec.toString().padStart(2,'0')}</span>
+                    <span>休息: ${it.resMin}:${it.resSec.toString().padStart(2,'0')}</span>
+                </div>
+            </div>
         </div>
-        <div style="text-align:right">
-            <div style="font-weight:900; color:var(--neon-blue);">${it.dist}m</div>
+        <div class="card-right">
+            <div class="card-distance">${it.dist}m</div>
         </div>
     </div>`).join('');
 }
@@ -407,6 +456,76 @@ function closeEdit() {
     document.getElementById('editModal').classList.remove('active'); 
 }
 
+function deleteAllCourses() {
+    if (items.length === 0) {
+        alert("目前沒有課程項目！");
+        return;
+    }
+    
+    if (confirm("確定要刪除所有課程項目嗎？此動作無法復原！")) {
+        items = [];
+        updateList();
+        renderHUD();
+    }
+}
+
+function exportCourses() {
+    if (items.length === 0) {
+        alert("沒有課程項目可以匯出！");
+        return;
+    }
+    
+    let exportText = "=== 游泳訓練課程表 ===\n";
+    exportText += "生成時間: " + new Date().toLocaleString('zh-TW') + "\n";
+    exportText += "總項目數: " + items.length + " 項\n";
+    exportText += "總距離: " + items.reduce((sum, item) => sum + item.dist, 0) + "m\n\n";
+    
+    let totalSeconds = 0;
+    
+    items.forEach((item, index) => {
+        exportText += `項目 ${index + 1}: ${item.title}\n`;
+        exportText += `標籤: ${item.tags}\n`;
+        exportText += `內容: ${item.singleDist}m × ${item.laps}趟 × ${item.sets}組\n`;
+        exportText += `配速: ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')}\n`;
+        exportText += `休息: ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n`;
+        exportText += `總距離: ${item.dist}m\n`;
+        exportText += `預計時間: ${formatSeconds(item.seconds)}\n`;
+        exportText += "─".repeat(30) + "\n\n";
+        
+        totalSeconds += item.seconds;
+    });
+    
+    exportText += "總訓練時間: " + formatSeconds(totalSeconds) + "\n";
+    exportText += "總訓練距離: " + items.reduce((sum, item) => sum + item.dist, 0) + "m\n";
+    
+    // 建立下載連結
+    const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `游泳課程_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert("課程已匯出為文字檔！");
+}
+
+function formatSeconds(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+        return `${hours}小時${minutes}分${secs}秒`;
+    } else if (minutes > 0) {
+        return `${minutes}分${secs}秒`;
+    } else {
+        return `${secs}秒`;
+    }
+}
+
 function renderHUD() {
     let tS = 0, tM = 0; 
     items.forEach(i => { tS += i.seconds; tM += i.dist; });
@@ -426,165 +545,12 @@ function clearInputs() {
 }
 
 function timerStart() { 
-    if (!items.length || timerState.running) return; 
-    timerState.running = true; 
-    startStep(); 
-}
-
-function startStep() {
-    const it = items[timerState.currentItemIndex];
-    if (!it) {
-        timerEnd();
-        alert("沒有訓練項目！");
+    if (!items.length) {
+        alert("請先建立課程項目！");
         return;
     }
     
-    if (timerState.currentLap === 0) { 
-        timerState.currentLap = it.laps; 
-        timerState.distRemaining = it.dist; 
-    }
-    
-    if (timerState.isResting) {
-        timerState.timeRemaining = (it.resMin * 60 + it.resSec);
-        playWhistle('rest');
-    } else {
-        timerState.timeRemaining = (it.lapMin * 60 + it.lapSec);
-        playWhistle('start');
-    }
-    
-    updateTimerUI(); 
-    runTimer();
-}
-
-function runTimer() {
-    clearInterval(timerState.intervalId);
-    timerState.intervalId = setInterval(() => {
-        if (timerState.paused) return;
-        timerState.timeRemaining--;
-        if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) playWhistle('countdown');
-        if (timerState.timeRemaining <= 0) { 
-            clearInterval(timerState.intervalId); 
-            handleStepComplete(); 
-        } else {
-            updateTimerUI();
-        }
-    }, 1000);
-}
-
-function handleStepComplete() {
-    const it = items[timerState.currentItemIndex];
-    if (!timerState.isResting) {
-        timerState.currentLap--; 
-        timerState.distRemaining -= it.singleDist;
-        
-        if (timerState.currentLap > 0) {
-            startStep();
-        } else if (timerState.currentSet < it.sets) { 
-            timerState.isResting = true; 
-            startStep(); 
-        } else {
-            nextItem();
-        }
-    } else { 
-        timerState.isResting = false; 
-        timerState.currentSet++; 
-        timerState.currentLap = it.laps; // 重置趟數
-        startStep(); 
-    }
-}
-
-function nextItem() {
-    timerState.currentItemIndex++;
-    if (timerState.currentItemIndex < items.length) { 
-        timerState.currentSet = 1; 
-        timerState.currentLap = 0; 
-        timerState.isResting = false; 
-        startStep(); 
-    } else { 
-        timerEnd(); 
-        alert("訓練完成！"); 
-    }
-}
-
-function updateTimerUI() {
-    const m = Math.floor(timerState.timeRemaining/60), s = timerState.timeRemaining%60;
-    document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    document.getElementById('timerDisplay').classList.toggle('resting', timerState.isResting);
-    
-    const it = items[timerState.currentItemIndex];
-    if(it) {
-        document.getElementById('clock-title').innerText = it.title + (timerState.isResting ? " (休)" : "");
-        document.getElementById('currentLap').innerText = timerState.currentLap;
-        document.getElementById('currentSet').innerText = `${timerState.currentSet}/${it.sets}`;
-        document.getElementById('distRem').innerText = timerState.distRemaining + "m";
-        document.getElementById('restTime').innerText = `${it.resMin}:${it.resSec.toString().padStart(2,'0')}`;
-    }
-}
-
-function timerPause() { 
-    if (!timerState.running) return;
-    
-    timerState.paused = !timerState.paused;
-    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
-    
-    if (timerState.paused) {
-        clearInterval(timerState.intervalId);
-        pauseBtn.textContent = '繼續';
-        pauseBtn.style.background = 'var(--neon-green)';
-    } else {
-        runTimer();
-        pauseBtn.textContent = '暫停';
-        pauseBtn.style.background = 'var(--neon-blue)';
-    }
-}
-
-function timerEnd() { 
-    clearInterval(timerState.intervalId); 
-    timerState = { 
-        running: false, 
-        paused: false, 
-        currentItemIndex: 0, 
-        currentSet: 1, 
-        currentLap: 0, 
-        isResting: false, 
-        timeRemaining: 0, 
-        distRemaining: 0, 
-        intervalId: null 
-    }; 
-    
-    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
-    pauseBtn.textContent = '暫停';
-    pauseBtn.style.background = 'var(--neon-blue)';
-    
-    updateTimerUI(); 
-}
-
-function timerResetSelect() { 
-    timerEnd(); 
-    switchTab('planner'); 
-}
-
-// 初始化 Sortable 拖曳排序
-window.onload = () => { 
-    const listArea = document.getElementById('listArea');
-    new Sortable(listArea, { 
-        handle: '.drag-handle', 
-        animation: 150,
-        onEnd: function(evt) {
-            // 拖曳完成後更新 items 陣列順序
-            const newOrder = [];
-            const cards = listArea.querySelectorAll('.course-card');
-            cards.forEach((card, index) => {
-                const oldIndex = parseInt(card.dataset.index || index);
-                if (items[oldIndex]) {
-                    newOrder.push(items[oldIndex]);
-                }
-            });
-            items = newOrder;
-            updateList();
-        }
-    });
-};
-</script>
-</body>
-</html>
+    if (!timerState.running) {
+        // 第一次開始，詢問要從哪個項目開始
+        showCourseSelection();
+    } else if (timerState
