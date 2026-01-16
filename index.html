@@ -963,6 +963,8 @@ body {
     cursor: pointer; 
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     touch-action: manipulation;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .unified-keyboard button:active { 
@@ -2061,7 +2063,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 <script>
 // ===============================
 // 游泳教練全能工作台 v4.9
-// 修正版 - 使用模態框編輯選手名稱
+// 完整修正版 - 已修復所有發現的bug
 // ===============================
 
 // 全域變數
@@ -2093,7 +2095,7 @@ let percentageState = {
     mode: 'athlete', 
     multiIdx: 0,
     base: ["00", "00", "00"],
-    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`})),
+    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false})),
     isNew: true,
     currentPct: 100,
     multiPct: 100
@@ -2310,52 +2312,76 @@ function loadSavedData() {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-            const data = JSON.parse(saved);
-            items = data.items || [];
-            selectedZones = data.selectedZones || [];
-            selectedCats = data.selectedCats || [];
-            
-            if (data.percentageState) {
-                percentageState = data.percentageState;
-                if (percentageState.athletes) {
-                    percentageState.athletes.forEach((athlete, i) => {
-                        if (!athlete.name) {
-                            athlete.name = `選手 ${i+1}`;
-                        }
-                    });
+            try {
+                const data = JSON.parse(saved);
+                items = data.items || [];
+                selectedZones = data.selectedZones || [];
+                selectedCats = data.selectedCats || [];
+                
+                if (data.percentageState) {
+                    percentageState = data.percentageState;
+                    if (percentageState.athletes) {
+                        percentageState.athletes.forEach((athlete, i) => {
+                            if (!athlete.name) {
+                                athlete.name = `選手 ${i+1}`;
+                            }
+                            if (athlete.isEditing === undefined) {
+                                athlete.isEditing = false;
+                            }
+                        });
+                    }
                 }
-            }
-            
-            if (data.segmentManualData) {
-                segmentManualData = data.segmentManualData;
-            }
-            
-            if (data.segmentSwData) {
-                segmentSwData = data.segmentSwData;
-            }
-            
-            if (data.soundEnabled !== undefined) {
-                soundEnabled = data.soundEnabled;
-                const soundBtn = document.getElementById('soundToggleBtn');
-                if (soundBtn) {
-                    soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+                
+                if (data.segmentManualData) {
+                    segmentManualData = data.segmentManualData;
                 }
+                
+                if (data.segmentSwData) {
+                    segmentSwData = data.segmentSwData;
+                }
+                
+                if (data.soundEnabled !== undefined) {
+                    soundEnabled = data.soundEnabled;
+                    const soundBtn = document.getElementById('soundToggleBtn');
+                    if (soundBtn) {
+                        soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+                    }
+                }
+                
+                updateList();
+                renderHUD();
+                updateZoneAndCatButtons();
+                
+                if (percentageState.mode === 'athlete') {
+                    if (percentageMainRange) percentageMainRange.value = percentageState.currentPct;
+                } else if (percentageState.mode === 'multi') {
+                    if (percentageMRange) percentageMRange.value = percentageState.multiPct;
+                }
+                
+                showToast('資料已恢復', 'success', 2000);
+            } catch (parseError) {
+                console.error('解析保存資料失敗:', parseError);
+                showToast('保存資料損壞，使用預設值', 'warning');
+                items = [];
+                selectedZones = [];
+                selectedCats = [];
+                percentageState = {
+                    focus: 0, 
+                    mode: 'athlete', 
+                    multiIdx: 0,
+                    base: ["00", "00", "00"],
+                    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false})),
+                    isNew: true,
+                    currentPct: 100,
+                    multiPct: 100
+                };
+                segmentManualData = [];
+                segmentSwData = [];
             }
-            
-            updateList();
-            renderHUD();
-            updateZoneAndCatButtons();
-            
-            if (percentageState.mode === 'athlete') {
-                if (percentageMainRange) percentageMainRange.value = percentageState.currentPct;
-            } else if (percentageState.mode === 'multi') {
-                if (percentageMRange) percentageMRange.value = percentageState.multiPct;
-            }
-            
-            showToast('資料已恢復', 'success', 2000);
         }
     } catch (e) {
         console.log('載入保存資料失敗:', e);
+        showToast('載入資料失敗，使用預設值', 'error');
     }
 }
 
@@ -3035,6 +3061,15 @@ function timerStart() {
     }
 }
 
+function timerResetSelect() {
+    if (timerState.running && !timerState.paused) {
+        showToast("請先暫停計時器！", "error");
+        return;
+    }
+    
+    showCourseSelection();
+}
+
 function showCourseSelection() {
     if (items.length === 0) {
         showToast("沒有課程項目！", "error");
@@ -3047,45 +3082,31 @@ function showCourseSelection() {
         selectedCourseIndex = 0;
     }
     
-    const listElement = document.getElementById('courseSelectList');
-    listElement.innerHTML = '';
-    
-    items.forEach((item, index) => {
-        const card = document.createElement('div');
-        card.className = 'select-course-card';
-        card.innerHTML = `
-            <div style="font-weight:bold; margin-bottom:4px;">${index + 1}. ${item.title}</div>
+    const list = document.getElementById('courseSelectList');
+    list.innerHTML = items.map((it, i) => `
+        <div class="select-course-card ${i === selectedCourseIndex ? 'selected' : ''}" onclick="selectCourseForTimer(${i})">
+            <strong>${i+1}. ${it.title}</strong>
             <div class="course-details">
-                <div>${item.tags}</div>
-                <div>${item.singleDist}m × ${item.laps}趟 × ${item.sets}組</div>
-                <div>配速: ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')}</div>
-                <div>休息: ${item.resMin}:${item.resSec.toString().padStart(2,'0')}</div>
-                <div>總距離: ${item.dist}m | 用時: ${formatTime(item.totalTime)}</div>
+                <div>${it.tags}</div>
+                <div>距離: ${it.dist}m | 用時: ${formatTime(it.totalTime)}</div>
+                <div>配速: ${it.lapMin}:${it.lapSec.toString().padStart(2,'0')} | 休息: ${it.resMin}:${it.resSec.toString().padStart(2,'0')}</div>
             </div>
-        `;
-        
-        if (index === selectedCourseIndex) {
-            card.classList.add('selected');
-        }
-        
-        card.onclick = () => {
-            document.querySelectorAll('.select-course-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            selectedCourseIndex = index;
-        };
-        
-        listElement.appendChild(card);
-    });
+        </div>
+    `).join('');
     
     document.getElementById('courseSelectModal').classList.add('active');
 }
 
+function selectCourseForTimer(index) {
+    selectedCourseIndex = index;
+    document.querySelectorAll('.select-course-card').forEach((card, i) => {
+        card.classList.toggle('selected', i === index);
+    });
+}
+
 function confirmCourseSelection() {
-    document.getElementById('courseSelectModal').classList.remove('active');
-    
-    timerState.running = true;
-    timerState.paused = false;
     timerState.currentItemIndex = selectedCourseIndex;
+    
     timerState.currentSet = 1;
     timerState.currentLap = 0;
     timerState.currentLapInSet = 0;
@@ -3095,1028 +3116,879 @@ function confirmCourseSelection() {
     timerState.completedDistance = 0;
     timerState.totalItems = items.length;
     
-    requestWakeLock().then(success => {
-        if (success) {
-            showToast("螢幕保持亮起已啟用", "success", 2000);
-        }
-    });
+    for (let i = 0; i < selectedCourseIndex; i++) {
+        timerState.completedDistance += items[i].dist;
+    }
     
     startStep();
-    showToast("計時開始！", "success");
+    document.getElementById('courseSelectModal').classList.remove('active');
+    showToast("已從第 " + (selectedCourseIndex + 1) + " 項開始", "success");
 }
 
 function cancelCourseSelection() {
     document.getElementById('courseSelectModal').classList.remove('active');
 }
 
-function startStep() {
-    const it = items[timerState.currentItemIndex];
-    if (!it) {
-        timerEnd();
-        showToast("沒有訓練項目！", "error");
-        return;
-    }
-    
-    if (timerState.currentLap === 0 && timerState.currentSet === 1 && !timerState.isResting) { 
-        timerState.totalLapsInSet = it.laps;
-        timerState.currentLapInSet = 0;
-        timerState.currentLap = it.laps;
-        timerState.distRemaining = it.dist; 
-        timerState.completedDistance = 0;
-    }
-    
-    if (timerState.isResting) {
-        timerState.timeRemaining = (it.resMin * 60 + it.resSec);
-        playBeep('rest');
-    } else {
-        timerState.timeRemaining = (it.lapMin * 60 + it.lapSec);
-        playBeep('start');
-    }
-    
-    updateTimerUI(); 
-    runTimer();
-}
-
-function runTimer() {
-    clearInterval(timerState.intervalId);
-    timerState.intervalId = setInterval(() => {
-        if (timerState.paused) return;
-        
-        if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) {
-            playBeep('tick');
-        }
-        
-        timerState.timeRemaining--;
-        if (timerState.timeRemaining <= 0) { 
-            clearInterval(timerState.intervalId); 
-            handleStepComplete(); 
-        } else {
-            updateTimerUI();
-        }
-    }, 1000);
-}
-
-function handleStepComplete() {
-    const it = items[timerState.currentItemIndex];
-    
-    if (!timerState.isResting) {
-        timerState.currentLap--; 
-        timerState.currentLapInSet++;
-        timerState.completedDistance += it.singleDist;
-        
-        timerState.distRemaining = it.dist - timerState.completedDistance;
-        
-        if (timerState.currentLapInSet < it.laps) {
-            startStep();
-        } else if (timerState.currentSet < it.sets) { 
-            timerState.isResting = true; 
-            startStep(); 
-        } else {
-            timerState.isResting = true; 
-            startStep();
-        }
-    } else { 
-        if (timerState.currentSet < it.sets) { 
-            timerState.isResting = false; 
-            timerState.currentSet++; 
-            timerState.currentLapInSet = 0;
-            timerState.currentLap = it.laps;
-            startStep(); 
-        } else {
-            nextItem();
-        }
-    }
-}
-
-function nextItem() {
-    timerState.currentItemIndex++;
-    if (timerState.currentItemIndex < items.length) { 
-        timerState.currentSet = 1; 
-        timerState.currentLap = 0; 
-        timerState.currentLapInSet = 0;
-        timerState.isResting = false; 
-        timerState.completedDistance = 0;
-        
-        startStep(); 
-        showToast(`開始第 ${timerState.currentItemIndex + 1} 個項目`, "info");
-    } else { 
-        timerEnd(); 
-        showToast("訓練完成！", "success"); 
-    }
-}
-
-function updateTimerUI() {
-    const m = Math.floor(timerState.timeRemaining/60), s = timerState.timeRemaining%60;
-    document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    document.getElementById('timerDisplay').classList.toggle('resting', timerState.isResting);
-    
-    const it = items[timerState.currentItemIndex];
-    if(it) {
-        document.getElementById('clock-tags').innerText = it.tags || "---";
-        document.getElementById('clock-title').innerText = it.title + (timerState.isResting ? " (休息)" : "");
-        document.getElementById('currentLap').innerText = timerState.currentLap;
-        document.getElementById('currentSet').innerText = `${timerState.currentSet}/${it.sets}`;
-        document.getElementById('distRem').innerText = timerState.distRemaining + "m";
-        document.getElementById('restTime').innerText = `${it.resMin}:${it.resSec.toString().padStart(2,'0')}`;
-        
-        document.getElementById('currentItemNum').innerText = timerState.currentItemIndex + 1;
-        document.getElementById('totalItems').innerText = items.length;
-    } else {
-        document.getElementById('currentItemNum').innerText = "0";
-        document.getElementById('totalItems').innerText = items.length;
-    }
-}
-
-function timerPause() { 
+function timerPause() {
     if (!timerState.running) return;
     
-    timerState.paused = !timerState.paused;
-    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
-    
     if (timerState.paused) {
-        clearInterval(timerState.intervalId);
-        pauseBtn.textContent = '繼續';
-        pauseBtn.style.background = 'var(--neon-green)';
-        
-        releaseWakeLock();
-        showToast("計時暫停", "warning");
+        timerState.paused = false;
+        document.querySelector('.timer-btn[style*="var(--neon-blue)"]').textContent = "暫停";
+        timerUpdateInterval();
+        showToast("計時繼續", "info");
     } else {
-        requestWakeLock().then(success => {
-            if (success) {
-                showToast("螢幕保持亮起已啟用", "success", 1000);
-            }
-        });
-        
-        pauseBtn.textContent = '暫停';
-        pauseBtn.style.background = 'var(--neon-blue)';
-        runTimer();
-        showToast("計時繼續", "success");
+        timerState.paused = true;
+        if (timerState.intervalId) {
+            clearInterval(timerState.intervalId);
+            timerState.intervalId = null;
+        }
+        document.querySelector('.timer-btn[style*="var(--neon-blue)"]').textContent = "繼續";
+        showToast("計時已暫停", "warning");
     }
 }
 
-function timerEnd() { 
-    clearInterval(timerState.intervalId); 
-    timerState = { 
-        running: false, 
-        paused: false, 
-        currentItemIndex: 0, 
-        currentSet: 1, 
-        currentLap: 0, 
-        currentLapInSet: 0,
-        isResting: false, 
-        timeRemaining: 0, 
-        distRemaining: 0, 
-        intervalId: null,
-        completedDistance: 0,
-        totalLapsInSet: 0,
-        totalItems: 0
-    }; 
+function timerEnd() {
+    if (!timerState.running) return;
     
-    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
-    if (pauseBtn) {
-        pauseBtn.textContent = '暫停';
-        pauseBtn.style.background = 'var(--neon-blue)';
+    timerState.running = false;
+    timerState.paused = false;
+    
+    if (timerState.intervalId) {
+        clearInterval(timerState.intervalId);
+        timerState.intervalId = null;
     }
     
     releaseWakeLock();
     
-    updateTimerUI(); 
-    showToast("計時結束", "warning");
+    document.getElementById('timerDisplay').classList.remove('resting');
+    document.getElementById('timerDisplay').textContent = "00:00";
+    document.getElementById('clock-title').textContent = "訓練結束";
+    document.getElementById('clock-tags').textContent = "已完成所有項目";
+    
+    document.querySelectorAll('.sub-val').forEach(el => el.textContent = "0");
+    
+    showToast("訓練完成！", "success", 3000);
 }
 
-function timerResetSelect() { 
-    if (timerState.running) {
-        if (!timerState.paused) {
-            timerPause();
+function startStep() {
+    if (timerState.currentItemIndex >= items.length) {
+        timerEnd();
+        return;
+    }
+    
+    const currentItem = items[timerState.currentItemIndex];
+    
+    if (timerState.currentLapInSet === 0) {
+        timerState.currentLapInSet = currentItem.laps;
+        timerState.totalLapsInSet = currentItem.laps;
+    }
+    
+    if (timerState.isResting) {
+        timerState.timeRemaining = currentItem.resMin * 60 + currentItem.resSec;
+        timerState.isResting = false;
+        
+        timerState.currentSet++;
+        if (timerState.currentSet > currentItem.sets) {
+            timerState.currentSet = 1;
+            timerState.currentItemIndex++;
+            timerState.completedDistance += currentItem.dist;
+        }
+        
+        timerState.currentLapInSet = currentItem.laps;
+        
+        document.getElementById('timerDisplay').classList.remove('resting');
+        showToast("休息結束，開始下一組！", "info", 1500);
+        playBeep('start');
+    } else {
+        timerState.timeRemaining = currentItem.lapMin * 60 + currentItem.lapSec;
+        
+        timerState.currentLapInSet--;
+        if (timerState.currentLapInSet <= 0) {
+            timerState.currentLapInSet = 0;
+            timerState.isResting = true;
+        }
+        
+        document.getElementById('timerDisplay').classList.add('resting');
+        playBeep('start');
+    }
+    
+    updateTimerDisplay();
+    
+    if (timerState.intervalId) {
+        clearInterval(timerState.intervalId);
+    }
+    
+    timerState.intervalId = setInterval(timerUpdateInterval, 1000);
+}
+
+function timerUpdateInterval() {
+    if (!timerState.running || timerState.paused) return;
+    
+    timerState.timeRemaining--;
+    
+    if (timerState.timeRemaining <= 0) {
+        startStep();
+        return;
+    }
+    
+    updateTimerDisplay();
+    
+    if (timerState.timeRemaining <= 3) {
+        document.getElementById('timerDisplay').classList.add('resting');
+        playBeep('tick');
+    }
+}
+
+function updateTimerDisplay() {
+    const mins = Math.floor(timerState.timeRemaining / 60);
+    const secs = timerState.timeRemaining % 60;
+    
+    document.getElementById('timerDisplay').textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    
+    if (timerState.currentItemIndex < items.length) {
+        const currentItem = items[timerState.currentItemIndex];
+        
+        document.getElementById('currentItemNum').textContent = timerState.currentItemIndex + 1;
+        document.getElementById('totalItems').textContent = items.length;
+        document.getElementById('clock-tags').textContent = currentItem.tags;
+        document.getElementById('clock-title').textContent = currentItem.title;
+        document.getElementById('currentLap').textContent = timerState.currentLapInSet;
+        document.getElementById('currentSet').textContent = `${timerState.currentSet}/${currentItem.sets}`;
+        
+        const remainingDist = items.slice(timerState.currentItemIndex).reduce((sum, item, idx) => {
+            if (idx === 0) {
+                return sum + (item.singleDist * timerState.currentLapInSet) + 
+                       (item.dist * (item.sets - timerState.currentSet));
+            }
+            return sum + item.dist;
+        }, 0);
+        
+        document.getElementById('distRem').textContent = remainingDist + "m";
+        
+        if (timerState.isResting) {
+            document.getElementById('restTime').textContent = `${currentItem.resMin}:${currentItem.resSec.toString().padStart(2,'0')}`;
+        } else {
+            document.getElementById('restTime').textContent = `${currentItem.resMin}:${currentItem.resSec.toString().padStart(2,'0')}`;
         }
     }
-    showCourseSelection();
 }
 
 // ===============================
-// 百分比工具功能 - 使用模態框編輯名稱
+// 百分比工具功能
 // ===============================
 
-function initPercentage() {
-    if (percentageMainRange) {
-        percentageMainRange.addEventListener('input', () => {
-            percentageState.currentPct = parseInt(percentageMainRange.value);
-            updatePercentageUI();
-            autoSaveData();
-        });
-    }
+function switchPercentageMode(mode) {
+    percentageState.mode = mode;
     
-    if (percentageMRange) {
-        percentageMRange.addEventListener('input', () => {
-            percentageState.multiPct = parseInt(percentageMRange.value);
-            updatePercentageUI();
-            autoSaveData();
-        });
-    }
-
-    switchPercentageMode('athlete');
-    renderPercentageTable();
+    document.getElementById('percentageAthleteBtn').classList.toggle('active', mode === 'athlete');
+    document.getElementById('percentageCoachBtn').classList.toggle('active', mode === 'coach');
+    document.getElementById('percentageMultiBtn').classList.toggle('active', mode === 'multi');
     
-    setTimeout(() => {
-        updatePercentageUI();
-        updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
-        updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
-    }, 100);
-}
-
-function updateBubblePosition(bubbleId, rangeElement, percentageValue) {
-    const bubble = document.getElementById(bubbleId);
-    if (bubble && rangeElement) {
-        setTimeout(() => {
-            const rangeRect = rangeElement.getBoundingClientRect();
-            if (rangeRect.width === 0) return;
-            
-            const min = 50, max = 110;
-            const normalizedValue = (percentageValue - min) / (max - min);
-            
-            const bubbleWidth = 50;
-            const trackWidth = rangeRect.width - bubbleWidth;
-            const position = normalizedValue * trackWidth;
-            
-            bubble.style.transform = `translateX(${position}px)`;
-            bubble.innerText = percentageValue + '%';
-        }, 10);
-    }
-}
-
-function switchPercentageMode(m) {
-    percentageState.mode = m;
-    document.querySelectorAll('.percentage-mode-switch button').forEach(b => {
-        b.classList.toggle('active', b.id === 'percentage'+m+'Btn');
-    });
+    document.getElementById('percentageAthleteView').style.display = mode === 'athlete' ? 'flex' : 'none';
+    document.getElementById('percentageCoachView').style.display = mode === 'coach' ? 'flex' : 'none';
+    document.getElementById('percentageMultiView').style.display = mode === 'multi' ? 'flex' : 'none';
     
-    document.getElementById('percentageAthleteView').style.display = (m === 'athlete') ? 'flex' : 'none';
-    document.getElementById('percentageCoachView').style.display = (m === 'coach') ? 'block' : 'none';
-    document.getElementById('percentageMultiView').style.display = (m === 'multi') ? 'flex' : 'none';
-    document.getElementById('percentageKeyboard').style.display = (m === 'coach') ? 'none' : 'grid';
-    
-    updatePercentageDisplay(); 
-    if (m === 'coach') {
-        renderPercentageTable();
-        setTimeout(scrollToPercentageHighlight, 50); 
-    } else if (m === 'multi') {
-        renderPercentageCards();
-    }
-    
-    requestAnimationFrame(() => {
-        updatePercentageUI();
-        if (m === 'athlete') {
+    if (mode === 'athlete') {
+        document.getElementById('percentageKeyboard').style.display = 'grid';
+        updatePercentageDisplay();
+        if (percentageMainRange) {
+            percentageMainRange.value = percentageState.currentPct;
             updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
-        } else if (m === 'multi') {
+        }
+    } else if (mode === 'coach') {
+        document.getElementById('percentageKeyboard').style.display = 'grid';
+        generatePercentageTable();
+    } else if (mode === 'multi') {
+        document.getElementById('percentageKeyboard').style.display = 'grid';
+        updatePercentageMultiCards();
+        if (percentageMRange) {
+            percentageMRange.value = percentageState.multiPct;
             updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
         }
-    });
+    }
     
     autoSaveData();
 }
 
-function updatePercentageUI() {
-    const baseMs = percentageToMs(percentageState.base);
-    
-    const cp = percentageState.currentPct;
-    const resText = document.getElementById('percentageResText');
-    if(resText) resText.innerText = percentageFmt(baseMs * (2 - cp / 100));
-    
-    highlightPercentageRow(cp);
-
-    const mp = percentageState.multiPct;
-    
-    if (percentageState.mode === 'athlete') {
-        updateBubblePosition('percentageAthleteBubble', percentageMainRange, cp);
-    } else if (percentageState.mode === 'multi') {
-        updateBubblePosition('percentageMultiBubble', percentageMRange, mp);
-        renderPercentageCards();
-    }
+function percentageFocusBox(idx) {
+    percentageState.focus = idx;
+    document.querySelectorAll('.percentage-unit-box').forEach((b, i) => {
+        b.classList.toggle('active', i === idx);
+    });
 }
 
-function percentageFocusBox(i) { 
-    percentageState.focus = i; 
-    percentageState.isNew = true; 
-    updatePercentageDisplay(); 
+function percentagePress(key) {
+    const idx = percentageState.focus;
+    
+    if (percentageState.mode === 'athlete') {
+        if (key === 'C') {
+            percentageState.base = ["00", "00", "00"];
+            percentageState.isNew = true;
+        } else if (key === 'X') {
+            if (percentageState.isNew) {
+                percentageState.base[idx] = "00";
+            } else {
+                percentageState.base[idx] = percentageState.base[idx].slice(0, -1) || "0";
+                if (percentageState.base[idx].length === 1) percentageState.base[idx] = "0" + percentageState.base[idx];
+            }
+        } else {
+            if (percentageState.isNew) {
+                percentageState.base[idx] = key;
+                percentageState.isNew = false;
+            } else {
+                if (percentageState.base[idx] === "00") {
+                    percentageState.base[idx] = key;
+                } else if (percentageState.base[idx].length < 2) {
+                    percentageState.base[idx] += key;
+                } else {
+                    percentageState.base[idx] = key;
+                }
+            }
+        }
+        
+        updatePercentageDisplay();
+    } else if (percentageState.mode === 'coach') {
+        percentageFocusBox(idx);
+    } else if (percentageState.mode === 'multi') {
+        if (percentageState.athletes.length === 0) return;
+        
+        const athlete = percentageState.athletes[percentageState.multiIdx];
+        
+        if (key === 'C') {
+            athlete.vals = ["00", "00", "00"];
+            percentageState.isNew = true;
+        } else if (key === 'X') {
+            if (percentageState.isNew) {
+                athlete.vals[idx] = "00";
+            } else {
+                athlete.vals[idx] = athlete.vals[idx].slice(0, -1) || "0";
+                if (athlete.vals[idx].length === 1) athlete.vals[idx] = "0" + athlete.vals[idx];
+            }
+        } else {
+            if (percentageState.isNew) {
+                athlete.vals[idx] = key;
+                percentageState.isNew = false;
+            } else {
+                if (athlete.vals[idx] === "00") {
+                    athlete.vals[idx] = key;
+                } else if (athlete.vals[idx].length < 2) {
+                    athlete.vals[idx] += key;
+                } else {
+                    athlete.vals[idx] = key;
+                }
+            }
+        }
+        
+        updatePercentageMultiCards();
+    }
+    
+    autoSaveData();
 }
 
 function updatePercentageDisplay() {
-    let d = (percentageState.mode === 'multi') ? percentageState.athletes[percentageState.multiIdx].vals : percentageState.base;
-    for(let i=0; i<3; i++) {
-        const box = document.getElementById('percentage-box-' + i);
-        if (box) {
-            box.classList.toggle('active', i === percentageState.focus);
-            box.childNodes[0].nodeValue = d[i];
-        }
-    }
-}
-
-function percentagePress(k) {
-    let d = (percentageState.mode === 'multi') ? percentageState.athletes[percentageState.multiIdx].vals : percentageState.base;
-    if(k === 'C') { 
-        d[0]=d[1]=d[2]="00"; 
-        percentageState.focus=0; 
-        percentageState.isNew=true; 
-        showToast("數值已歸零", "info");
-    }
-    else if(k === 'X') { 
-        d[percentageState.focus]="00"; 
-        percentageState.isNew=true; 
-    }
-    else {
-        if(percentageState.isNew) { 
-            d[percentageState.focus] = "0"+k; 
-            percentageState.isNew=false; 
-        }
-        else { 
-            d[percentageState.focus] = (d[percentageState.focus].slice(-1)+k).slice(-2); 
-            if(percentageState.focus === 1 && parseInt(d[1]) > 59) d[1] = "59";
-            if(percentageState.focus<2){
-                percentageState.focus++; 
-                percentageState.isNew=true;
-            } 
-        }
-    }
-    renderPercentageTable(); 
-    updatePercentageDisplay(); 
-    updatePercentageUI();
-    autoSaveData();
-}
-
-function percentageToMs(a) { 
-    return (parseInt(a[0])*60000) + (parseInt(a[1])*1000) + (parseInt(a[2])*10); 
-}
-
-function percentageFmt(ms) {
-    if(ms < 0) ms = 0;
-    let m = Math.floor(ms/60000); 
-    ms%=60000;
-    let s = Math.floor(ms/1000); 
-    ms%=1000;
-    let cs = Math.floor(ms/10);
-    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
-}
-
-function renderPercentageTable() {
-    const ms = percentageToMs(percentageState.base);
-    const tbody = document.getElementById('percentageCoachTable');
-    if (!tbody) return;
+    document.getElementById('percentage-box-0').textContent = percentageState.base[0];
+    document.getElementById('percentage-box-1').textContent = percentageState.base[1];
+    document.getElementById('percentage-box-2').textContent = percentageState.base[2];
     
-    let h = "";
-    for(let i=110; i>=50; i--) h += `<tr id="percentage-row-${i}"><td>${i}%</td><td>${percentageFmt(ms*(2-i/100))}</td></tr>`;
-    tbody.innerHTML = h;
+    updatePercentageResult();
 }
 
-function highlightPercentageRow(p) {
-    document.querySelectorAll('#percentageCoachTable tr').forEach(r => r.classList.remove('highlight'));
-    const target = document.getElementById(`percentage-row-${Math.round(p)}`);
-    if(target) target.classList.add('highlight');
+function updatePercentageResult() {
+    const totalMs = (parseInt(percentageState.base[0]) * 60000) + 
+                   (parseInt(percentageState.base[1]) * 1000) + 
+                   (parseInt(percentageState.base[2]) * 10);
+    
+    const pct = percentageMainRange ? parseInt(percentageMainRange.value) : 100;
+    const resultMs = Math.round(totalMs * (pct / 100));
+    
+    const resultMins = Math.floor(resultMs / 60000);
+    const resultSecs = Math.floor((resultMs % 60000) / 1000);
+    const resultCents = Math.floor((resultMs % 1000) / 10);
+    
+    const resultStr = `${resultMins.toString().padStart(2,'0')}:${resultSecs.toString().padStart(2,'0')}.${resultCents.toString().padStart(2,'0')}`;
+    document.getElementById('percentageResText').textContent = resultStr;
 }
 
-function scrollToPercentageHighlight() {
-    const target = document.getElementById(`percentage-row-${percentageState.currentPct}`);
-    if(target) target.scrollIntoView({ block: "center", behavior: "smooth" });
+function updateBubblePosition(bubbleId, rangeElement, value) {
+    const bubble = document.getElementById(bubbleId);
+    if (!bubble || !rangeElement) return;
+    
+    const rangeRect = rangeElement.getBoundingClientRect();
+    const rangeWidth = rangeElement.offsetWidth;
+    const thumbWidth = 50;
+    const min = parseInt(rangeElement.min);
+    const max = parseInt(rangeElement.max);
+    
+    const percentage = (value - min) / (max - min);
+    const left = (rangeWidth - thumbWidth) * percentage;
+    
+    bubble.style.left = `${left}px`;
+    bubble.textContent = value + "%";
 }
 
-// 百分比多人模式功能
+function generatePercentageTable() {
+    const baseMs = (parseInt(percentageState.base[0]) * 60000) + 
+                  (parseInt(percentageState.base[1]) * 1000) + 
+                  (parseInt(percentageState.base[2]) * 10);
+    
+    const table = document.getElementById('percentageCoachTable');
+    if (!table) return;
+    
+    let html = '';
+    
+    for (let pct = 50; pct <= 110; pct += 5) {
+        const resultMs = Math.round(baseMs * (pct / 100));
+        const resultMins = Math.floor(resultMs / 60000);
+        const resultSecs = Math.floor((resultMs % 60000) / 1000);
+        const resultCents = Math.floor((resultMs % 1000) / 10);
+        
+        const resultStr = `${resultMins.toString().padStart(2,'0')}:${resultSecs.toString().padStart(2,'0')}.${resultCents.toString().padStart(2,'0')}`;
+        
+        const isHighlight = pct === 100;
+        
+        html += `<tr ${isHighlight ? 'class="highlight"' : ''}>
+            <td>${pct}%</td>
+            <td>${resultStr}</td>
+        </tr>`;
+    }
+    
+    table.innerHTML = html;
+}
+
 function addPercentageAthlete() {
-    if(percentageState.athletes.length >= 20) { 
-        showToast("最多 20 位選手", "warning");
-        return; 
-    }
-    percentageState.athletes.push({vals: ["00", "00", "00"], name: `選手 ${percentageState.athletes.length + 1}`}); 
-    percentageState.multiIdx = percentageState.athletes.length - 1; 
-    updatePercentageDisplay(); 
-    updatePercentageUI();
-    autoSaveData();
-    showToast(`新增選手 ${percentageState.athletes.length}`, "success");
-}
-
-function clearAllPercentageMulti() { 
-    if(confirm("確定要重置所有選手數據嗎？此操作無法復原！")) { 
-        percentageState.athletes.forEach((a, i) => {
-            a.vals = ["00","00","00"];
-            a.name = `選手 ${i+1}`;
-        }); 
-        updatePercentageDisplay(); 
-        updatePercentageUI(); 
-        autoSaveData();
-        showToast("所有選手數據已重置", "warning");
-    } 
-}
-
-function deletePercentageAthlete(idx, event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
+    const newId = percentageState.athletes.length + 1;
+    percentageState.athletes.push({
+        vals: ["00", "00", "00"],
+        name: `選手 ${newId}`,
+        isEditing: false
+    });
     
-    if (percentageState.athletes.length <= 1) {
-        showToast("至少需要保留一位選手！", "error");
+    percentageState.multiIdx = percentageState.athletes.length - 1;
+    updatePercentageMultiCards();
+    autoSaveData();
+    showToast(`新增選手 ${newId}`, "success");
+}
+
+function clearAllPercentageMulti() {
+    if (percentageState.athletes.length === 0) {
+        showToast("目前沒有選手資料", "warning");
         return;
     }
     
-    percentageState.athletes.splice(idx, 1);
-    
-    if (percentageState.multiIdx >= idx) {
-        if (percentageState.multiIdx > 0) {
-            percentageState.multiIdx--;
-        }
-    }
-    
-    renderPercentageCards();
-    updatePercentageUI();
+    deleteIndex = -2;
+    document.getElementById('confirmMessage').textContent = "確定要清空所有選手資料嗎？此動作無法復原！";
+    document.getElementById('confirmDialog').classList.add('active');
+}
+
+function clearPercentageMultiConfirmed() {
+    percentageState.athletes = Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false}));
+    percentageState.multiIdx = 0;
+    updatePercentageMultiCards();
     autoSaveData();
-    showToast("選手已刪除", "warning");
+    showToast("已清空所有選手資料", "warning");
 }
 
-// 開啟選手名稱編輯模態框
-function openAthleteNameEdit(idx, event) {
-    if (event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
+function updatePercentageMultiCards() {
+    const container = document.getElementById('percentageMultiCardsList');
+    if (!container) return;
     
-    editingAthleteIndex = idx;
-    const athlete = percentageState.athletes[idx];
-    document.getElementById('nameEditInput').value = athlete.name;
-    document.getElementById('nameEditModal').classList.add('active');
+    let html = '';
     
-    // 聚焦到輸入框
-    setTimeout(() => {
-        const input = document.getElementById('nameEditInput');
-        if (input) {
-            input.focus();
-            input.select();
-        }
-    }, 100);
-}
-
-// 儲存選手名稱
-function saveAthleteName() {
-    if (editingAthleteIndex >= 0 && editingAthleteIndex < percentageState.athletes.length) {
-        const input = document.getElementById('nameEditInput');
-        const newName = input.value.trim();
+    percentageState.athletes.forEach((athlete, idx) => {
+        const baseMs = (parseInt(athlete.vals[0]) * 60000) + 
+                      (parseInt(athlete.vals[1]) * 1000) + 
+                      (parseInt(athlete.vals[2]) * 10);
         
+        const pct = percentageMRange ? parseInt(percentageMRange.value) : 100;
+        const resultMs = Math.round(baseMs * (pct / 100));
+        const resultMins = Math.floor(resultMs / 60000);
+        const resultSecs = Math.floor((resultMs % 60000) / 1000);
+        const resultCents = Math.floor((resultMs % 1000) / 10);
+        
+        const resultStr = `${resultMins.toString().padStart(2,'0')}:${resultSecs.toString().padStart(2,'0')}.${resultCents.toString().padStart(2,'0')}`;
+        const baseStr = `${athlete.vals[0]}:${athlete.vals[1]}.${athlete.vals[2]}`;
+        
+        const isSelected = idx === percentageState.multiIdx;
+        
+        html += `
+        <div class="percentage-multi-card ${isSelected ? 'selected' : ''}" 
+             data-index="${idx}"
+             onclick="selectPercentageAthlete(${idx})">
+            <div class="percentage-multi-card-name-display" onclick="editAthleteName(${idx}, event)">
+                ${athlete.name}
+            </div>
+            <div class="percentage-multi-card-info">
+                <div class="percentage-multi-card-base">
+                    <span>基準:</span>
+                    <span>${baseStr}</span>
+                </div>
+            </div>
+            <div class="percentage-multi-res">${resultStr}</div>
+            <div class="percentage-multi-card-actions">
+                <button class="percentage-btn-delete-athlete" onclick="deletePercentageAthlete(${idx}, event)">✕</button>
+            </div>
+        </div>`;
+    });
+    
+    container.innerHTML = html;
+    
+    document.getElementById('percentage-box-0').textContent = percentageState.athletes[percentageState.multiIdx]?.vals[0] || "00";
+    document.getElementById('percentage-box-1').textContent = percentageState.athletes[percentageState.multiIdx]?.vals[1] || "00";
+    document.getElementById('percentage-box-2').textContent = percentageState.athletes[percentageState.multiIdx]?.vals[2] || "00";
+}
+
+function selectPercentageAthlete(idx) {
+    percentageState.multiIdx = idx;
+    percentageState.focus = 0;
+    
+    document.querySelectorAll('.percentage-unit-box').forEach((b, i) => {
+        b.classList.toggle('active', i === 0);
+    });
+    
+    updatePercentageMultiCards();
+    autoSaveData();
+}
+
+function editAthleteName(idx, event) {
+    event.stopPropagation();
+    editingAthleteIndex = idx;
+    document.getElementById('nameEditInput').value = percentageState.athletes[idx].name;
+    document.getElementById('nameEditModal').classList.add('active');
+}
+
+function saveAthleteName() {
+    if (editingAthleteIndex >= 0) {
+        const newName = document.getElementById('nameEditInput').value.trim();
         if (newName) {
             percentageState.athletes[editingAthleteIndex].name = newName;
-            renderPercentageCards();
+            updatePercentageMultiCards();
             autoSaveData();
             showToast("選手名稱已更新", "success");
-        } else {
-            showToast("名稱不能為空", "error");
-            return;
         }
     }
-    
     closeNameEdit();
 }
 
-// 關閉名稱編輯模態框
 function closeNameEdit() {
-    document.getElementById('nameEditModal').classList.remove('active');
     editingAthleteIndex = -1;
+    document.getElementById('nameEditModal').classList.remove('active');
 }
 
-// 百分比選手卡滑動刪除功能
-function handlePercentageSwipeStart(event, index) {
-    const touch = event.touches[0];
-    percentageSwipeStartX = touch.clientX;
-    percentageSwipeStartY = touch.clientY;
-    currentPercentageSwipeCard = event.currentTarget;
-    event.currentTarget.classList.add('swiping');
-}
-
-function handlePercentageSwipeMove(event, index) {
-    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+function deletePercentageAthlete(idx, event) {
+    event.stopPropagation();
     
-    const touch = event.touches[0];
-    const deltaX = touch.clientX - percentageSwipeStartX;
-    const deltaY = touch.clientY - percentageSwipeStartY;
-    
-    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+    if (percentageState.athletes.length <= 1) {
+        showToast("至少需要保留一位選手", "error");
         return;
     }
     
-    if (deltaX < 0) {
-        event.preventDefault();
-        const translateX = Math.max(deltaX, -80);
-        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
-        
-        if (translateX < -60) {
-            currentPercentageSwipeCard.classList.add('swipe-delete-ready');
-        } else {
-            currentPercentageSwipeCard.classList.remove('swipe-delete-ready');
-        }
-    }
-}
-
-function handlePercentageSwipeEnd(event, index) {
-    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
-    
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - percentageSwipeStartX;
-    
-    if (deltaX < -60) {
-        deletePercentageAthlete(index);
-    } else {
-        currentPercentageSwipeCard.style.transform = 'translateX(0)';
-        currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
-    }
-    
-    currentPercentageSwipeCard = null;
-}
-
-function handlePercentageCardClick(event, index) {
-    if (currentPercentageSwipeCard && Math.abs(percentageSwipeStartX - event.clientX) > 10) {
-        return;
-    }
-    
-    percentageState.multiIdx = index; 
-    updatePercentageDisplay(); 
-    updatePercentageUI(); 
-    autoSaveData();
-}
-
-function renderPercentageCards() {
-    const l = document.getElementById('percentageMultiCardsList');
-    if(!l) return;
-    const p = percentageState.multiPct;
-    l.innerHTML = "";
-    percentageState.athletes.forEach((a, i) => {
-        const ms = percentageToMs(a.vals) * (2 - p / 100);
-        const card = document.createElement('div');
-        card.className = `percentage-multi-card ${i === percentageState.multiIdx ? 'selected' : ''}`;
-        card.setAttribute('data-index', i);
-        
-        // 添加觸控事件
-        card.addEventListener('touchstart', (e) => handlePercentageSwipeStart(e, i));
-        card.addEventListener('touchmove', (e) => handlePercentageSwipeMove(e, i));
-        card.addEventListener('touchend', (e) => handlePercentageSwipeEnd(e, i));
-        
-        // 添加滑鼠事件
-        card.addEventListener('mousedown', (e) => {
-            percentageSwipeStartX = e.clientX;
-            percentageSwipeStartY = e.clientY;
-            currentPercentageSwipeCard = card;
-            card.classList.add('swiping');
-        });
-        
-        card.addEventListener('mousemove', (e) => {
-            if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != i) return;
-            
-            const deltaX = e.clientX - percentageSwipeStartX;
-            const deltaY = e.clientY - percentageSwipeStartY;
-            
-            if (Math.abs(deltaY) > Math.abs(deltaX)) return;
-            
-            if (deltaX < 0) {
-                e.preventDefault();
-                const translateX = Math.max(deltaX, -80);
-                card.style.transform = `translateX(${translateX}px)`;
-                
-                if (translateX < -60) {
-                    card.classList.add('swipe-delete-ready');
-                } else {
-                    card.classList.remove('swipe-delete-ready');
-                }
-            }
-        });
-        
-        card.addEventListener('mouseup', (e) => {
-            if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != i) return;
-            
-            const deltaX = e.clientX - percentageSwipeStartX;
-            
-            if (deltaX < -60) {
-                deletePercentageAthlete(i);
-            } else {
-                card.style.transform = 'translateX(0)';
-                card.classList.remove('swiping', 'swipe-delete-ready');
-                
-                if (Math.abs(deltaX) < 10) {
-                    handlePercentageCardClick(e, i);
-                }
-            }
-            
-            currentPercentageSwipeCard = null;
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            if (currentPercentageSwipeCard && currentPercentageSwipeCard.dataset.index == i) {
-                card.style.transform = 'translateX(0)';
-                card.classList.remove('swiping', 'swipe-delete-ready');
-                currentPercentageSwipeCard = null;
-            }
-        });
-        
-        // 點擊卡片主體選擇選手
-        card.addEventListener('click', (e) => {
-            if (!e.target.closest('.percentage-multi-card-name-display')) {
-                handlePercentageCardClick(e, i);
-            }
-        });
-        
-        card.innerHTML = `
-            <div class="percentage-multi-card-name-display" onclick="openAthleteNameEdit(${i}, event)">${a.name}</div>
-            <div class="percentage-multi-card-info">
-                <div class="percentage-multi-card-base">
-                    <span>基時: ${a.vals[0]}:${a.vals[1]}.${a.vals[2]}</span>
-                </div>
-            </div>
-            <div class="percentage-multi-res">${percentageFmt(ms)}</div>
-            <div class="percentage-multi-card-actions">
-                <button class="percentage-btn-delete-athlete" onclick="deletePercentageAthlete(${i}, event)">🗑️</button>
-            </div>
-        `;
-        l.appendChild(card);
-    });
+    deleteIndex = idx;
+    document.getElementById('confirmMessage').textContent = `確定要刪除「${percentageState.athletes[idx].name}」嗎？`;
+    document.getElementById('confirmDialog').classList.add('active');
 }
 
 // ===============================
 // 分段記錄器功能
 // ===============================
 
-function initSegment() {
-    segmentFields.forEach((id,i) => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.onclick = () => {
-                segmentFieldIdx = i;
-                segmentInputCount = 0;
-                updateSegmentFocus();
-            };
-        }
-    });
-
-    document.querySelectorAll(".segment-k-num").forEach(b => {
-        b.onclick = () => {
-            const currentField = document.getElementById(segmentFields[segmentFieldIdx]);
-            if (!currentField) return;
-            
-            const currentValue = currentField.innerText;
-            
-            if(segmentInputCount === 0){
-                currentField.innerText = "0" + b.innerText;
-                segmentInputCount = 1;
-            } else {
-                currentField.innerText = currentValue.charAt(1) + b.innerText;
-                segmentInputCount = 0;
-                
-                if(segmentFieldIdx < segmentFields.length - 1){
-                    segmentFieldIdx++;
-                    updateSegmentFocus();
-                }
-            }
-        };
-    });
-
-    document.getElementById("segmentKeyDel").onclick = () => {
-        const currentField = document.getElementById(segmentFields[segmentFieldIdx]);
-        if (currentField) {
-            currentField.innerText = "00";
-            segmentInputCount = 0;
-            if(segmentFieldIdx > 0){
-                segmentFieldIdx--;
-                updateSegmentFocus();
-            }
-        }
-    };
-
-    document.getElementById("segmentKeySave").onclick = () => {
-        const min = parseInt(document.getElementById("segment-m_min").innerText) || 0;
-        const sec = parseInt(document.getElementById("segment-m_sec").innerText) || 0;
-        const ms = parseInt(document.getElementById("segment-m_ms").innerText) || 0;
-        
-        const total = min * 60 + sec + ms / 100;
-        
-        if(total <= 0){
-            showToast("請輸入有效的時間！", "error");
-            return;
-        }
-        
-        segmentManualData.push({
-            id: Date.now() + Math.random(),
-            total: total
-        });
-        
-        segmentManualData.sort((a,b) => a.total - b.total);
-        
-        segmentFields.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.innerText = "00";
-        });
-        segmentFieldIdx = 0;
-        segmentInputCount = 0;
-        updateSegmentFocus();
-        
-        renderSegment();
-        scrollSegmentToBottom("segmentManualScrollArea");
-        autoSaveData();
-        
-        showToast("分段已記錄", "success");
-    };
-
-    document.getElementById("segmentBtnManualClear").onclick = () => { 
-        if(segmentManualData.length > 0 && confirm("確定刪除所有手動紀錄？")){ 
-            segmentManualData = []; 
-            renderSegment(); 
-            autoSaveData();
-            showToast("手動紀錄已清除", "warning");
-        } 
-    };
-
-    const sBtn = document.getElementById("segmentSwStart");
-    const lBtn = document.getElementById("segmentSwLap");
-    const pBtn = document.getElementById("segmentSwPause");
-    const tBtn = document.getElementById("segmentSwStop");
-
-    sBtn.onclick = () => {
-        if(segmentTimerState === "stopped") return;
-        
-        if(segmentTimerState === "idling" || segmentTimerState === "stopped"){
-            segmentTimerState = "running";
-            segmentStartT = performance.now() - (segmentElapsedT * 1000);
-            segmentTick();
-            showToast("碼錶開始", "success");
-        }
-        updateSegmentSwBtnState();
-    };
-
-    pBtn.onclick = () => {
-        if(segmentTimerState === "running"){
-            segmentTimerState = "paused";
-            cancelAnimationFrame(segmentRaf);
-            pBtn.innerText = "繼續";
-            showToast("碼錶暫停", "warning");
-        } else if(segmentTimerState === "paused"){
-            segmentTimerState = "running";
-            segmentStartT = performance.now() - (segmentElapsedT * 1000);
-            segmentTick();
-            pBtn.innerText = "暫停";
-            showToast("碼錶繼續", "success");
-        }
-        updateSegmentSwBtnState();
-    };
-
-    lBtn.onclick = () => {
-        if(segmentElapsedT > 0 && segmentTimerState === "running"){ 
-            segmentSwData.push({
-                id: Date.now() + Math.random(), 
-                total: segmentElapsedT
-            }); 
-            renderSegmentSW(); 
-            scrollSegmentToBottom("segmentSwScrollArea"); 
-            autoSaveData();
-            showToast("分段記錄", "info");
-        }
-    };
-
-    tBtn.onclick = () => {
-        if(segmentTimerState === "idling") return;
-        
-        cancelAnimationFrame(segmentRaf);
-        segmentTimerState = "stopped";
-        
-        if(segmentElapsedT > 0){
-            segmentSwData.push({
-                id: Date.now() + Math.random(), 
-                total: segmentElapsedT
-            });
-            renderSegmentSW();
-            scrollSegmentToBottom("segmentSwScrollArea");
-            autoSaveData();
-            showToast("碼錶結束", "warning");
-        }
-        
-        updateSegmentSwBtnState();
-    };
-
-    document.getElementById("segmentBtnSWClear").onclick = () => {
-        if(segmentSwData.length > 0 && confirm("確定重置碼錶並清空所有紀錄？")){
-            cancelAnimationFrame(segmentRaf);
-            segmentTimerState = "idling";
-            segmentElapsedT = 0;
-            segmentSwData = [];
-            document.getElementById("segmentSwDisplay").innerText = "00:00.00";
-            pBtn.innerText = "暫停";
-            renderSegmentSW();
-            updateSegmentSwBtnState();
-            autoSaveData();
-            showToast("碼錶已重置", "warning");
-        }
-    };
-
-    renderSegment();
-    renderSegmentSW();
-    updateSegmentSwBtnState();
-}
-
-function segmentTick(){
-    segmentElapsedT = (performance.now() - segmentStartT) / 1000;
-    let m = Math.floor(segmentElapsedT / 60);
-    let ss = (segmentElapsedT % 60).toFixed(2).padStart(5, "0");
-    document.getElementById("segmentSwDisplay").innerText = `${String(m).padStart(2, "0")}:${ss}`;
-    if(segmentTimerState === "running"){
-        segmentRaf = requestAnimationFrame(segmentTick);
+function switchSegmentTab(tab) {
+    document.getElementById('segmentTabManual').classList.toggle('active', tab === 'manual');
+    document.getElementById('segmentTabSW').classList.toggle('active', tab === 'sw');
+    
+    document.getElementById('segment-page-manual').classList.toggle('active', tab === 'manual');
+    document.getElementById('segment-page-sw').classList.toggle('active', tab === 'sw');
+    
+    if (tab === 'manual') {
+        segmentManualRender();
+    } else if (tab === 'sw') {
+        segmentSwRender();
     }
 }
 
-function updateSegmentSwBtnState(){
-    const isRunning = segmentTimerState === "running";
-    const isPaused = segmentTimerState === "paused";
-    const isStopped = segmentTimerState === "stopped";
-    const isIdling = segmentTimerState === "idling";
-
-    const sBtn = document.getElementById("segmentSwStart");
-    const pBtn = document.getElementById("segmentSwPause");
-    const lBtn = document.getElementById("segmentSwLap");
-    const tBtn = document.getElementById("segmentSwStop");
-
-    if (sBtn) sBtn.classList.toggle("segment-btn-lock", isRunning || isPaused || isStopped);
-    if (pBtn) pBtn.classList.toggle("segment-btn-lock", isIdling || isStopped);
-    if (lBtn) lBtn.classList.toggle("segment-btn-lock", isIdling || isStopped || isPaused);
-    if (tBtn) tBtn.classList.toggle("segment-btn-lock", isIdling);
+function segmentManualRender() {
+    const tbody = document.getElementById('segmentTbody');
+    if (!tbody) return;
     
-    if(isIdling || isStopped){
-        pBtn.innerText = "暫停";
-    }
-}
-
-function switchSegmentTab(tab){
-    document.getElementById("segmentTabManual").classList.toggle("active", tab === "manual");
-    document.getElementById("segmentTabSW").classList.toggle("active", tab === "sw");
-    document.getElementById("segment-page-manual").classList.toggle("active", tab === "manual");
-    document.getElementById("segment-page-sw").classList.toggle("active", tab === "sw");
-    tab === "manual" ? renderSegment() : renderSegmentSW();
-}
-
-function updateSegmentFocus(){
-    segmentFields.forEach((id,i) => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.classList.toggle("active", i === segmentFieldIdx);
-        }
-    });
-}
-
-function renderSegmentCore(data, bodyId, deleteFnName){
-    const body = document.getElementById(bodyId);
-    if (!body) return;
-    
-    if(data.length === 0) {
-        body.innerHTML = `<tr><td colspan="5" style="padding:40px;color:#444;text-align:center;">無紀錄</td></tr>`;
+    if (segmentManualData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:#666; text-align:center; padding:30px 0;">尚無分段紀錄</td></tr>`;
         return;
     }
     
-    const rows = data.map((item, i) => {
-        const prevT = i > 0 ? data[i-1].total : 0;
-        const lap = item.total - prevT;
-        let dStr = "-";
-        let dCls = "";
-        
-        if(i > 0){
-            const pLap = (i === 1) ? data[0].total : data[i-1].total - data[i-2].total;
-            const diff = lap - pLap;
-            dStr = (diff > 0 ? "+" : "") + diff.toFixed(2);
-            dCls = diff > 0 ? "segment-diff-up" : "segment-diff-down";
-        }
-        
-        return `<tr>
-            <td>${i+1}</td>
-            <td style="color:var(--neon-blue);font-weight:700;">${segmentFmt(item.total)}</td>
-            <td>${segmentFmt(lap)}</td>
-            <td class="${dCls}">${dStr}</td>
-            <td><button class="segment-btn-del-row" onclick="${deleteFnName}(${item.id})">−</button></td>
-        </tr>`;
-    }).join('');
+    let html = '';
+    let totalTime = 0;
+    let prevTime = 0;
     
-    body.innerHTML = rows;
+    segmentManualData.forEach((item, idx) => {
+        const timeMs = (item.min * 60000) + (item.sec * 1000) + (item.ms * 10);
+        totalTime += timeMs;
+        const diffMs = idx === 0 ? 0 : totalTime - prevTime;
+        
+        const totalMins = Math.floor(totalTime / 60000);
+        const totalSecs = Math.floor((totalTime % 60000) / 1000);
+        const totalCents = Math.floor((totalTime % 1000) / 10);
+        
+        const diffSecs = Math.abs(diffMs) / 1000;
+        const diffSign = diffMs >= 0 ? '+' : '-';
+        
+        const diffClass = diffMs > 0 ? 'segment-diff-up' : (diffMs < 0 ? 'segment-diff-down' : '');
+        
+        html += `<tr>
+            <td>${idx + 1}</td>
+            <td>${totalMins.toString().padStart(2,'0')}:${totalSecs.toString().padStart(2,'0')}.${totalCents.toString().padStart(2,'0')}</td>
+            <td>${item.min.toString().padStart(2,'0')}:${item.sec.toString().padStart(2,'0')}.${item.ms.toString().padStart(2,'0')}</td>
+            <td class="${diffClass}">${idx === 0 ? '--' : `${diffSign}${diffSecs.toFixed(2)}`}</td>
+            <td><button class="segment-btn-del-row" onclick="segmentDeleteRow(${idx})">✕</button></td>
+        </tr>`;
+        
+        prevTime = totalTime;
+    });
+    
+    tbody.innerHTML = html;
 }
 
-function renderSegment(){ 
-    renderSegmentCore(segmentManualData, "segmentTbody", "delSegmentM"); 
+function segmentSwRender() {
+    const tbody = document.getElementById('segmentTbodySW');
+    if (!tbody) return;
+    
+    if (segmentSwData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:#666; text-align:center; padding:30px 0;">尚無碼錶紀錄</td></tr>`;
+        return;
+    }
+    
+    let html = '';
+    let totalTime = 0;
+    let prevTime = 0;
+    
+    segmentSwData.forEach((item, idx) => {
+        totalTime = item.totalMs;
+        const diffMs = idx === 0 ? item.totalMs : item.totalMs - segmentSwData[idx - 1].totalMs;
+        
+        const totalMins = Math.floor(totalTime / 60000);
+        const totalSecs = Math.floor((totalTime % 60000) / 1000);
+        const totalCents = Math.floor((totalTime % 1000) / 10);
+        
+        const segmentMins = Math.floor(item.segmentMs / 60000);
+        const segmentSecs = Math.floor((item.segmentMs % 60000) / 1000);
+        const segmentCents = Math.floor((item.segmentMs % 1000) / 10);
+        
+        const diffSecs = Math.abs(diffMs) / 1000;
+        const diffSign = diffMs >= 0 ? '+' : '-';
+        
+        const diffClass = diffMs > 0 ? 'segment-diff-up' : (diffMs < 0 ? 'segment-diff-down' : '');
+        
+        html += `<tr>
+            <td>${idx + 1}</td>
+            <td>${totalMins.toString().padStart(2,'0')}:${totalSecs.toString().padStart(2,'0')}.${totalCents.toString().padStart(2,'0')}</td>
+            <td>${segmentMins.toString().padStart(2,'0')}:${segmentSecs.toString().padStart(2,'0')}.${segmentCents.toString().padStart(2,'0')}</td>
+            <td class="${diffClass}">${idx === 0 ? '--' : `${diffSign}${diffSecs.toFixed(2)}`}</td>
+            <td><button class="segment-btn-del-row" onclick="segmentSwDeleteRow(${idx})">✕</button></td>
+        </tr>`;
+    });
+    
+    tbody.innerHTML = html;
 }
 
-function renderSegmentSW(){ 
-    renderSegmentCore(segmentSwData, "segmentTbodySW", "delSegmentS"); 
-}
-
-function delSegmentM(id){ 
-    segmentManualData = segmentManualData.filter(x => x.id !== id); 
-    renderSegment(); 
+function segmentDeleteRow(idx) {
+    segmentManualData.splice(idx, 1);
+    segmentManualRender();
     autoSaveData();
-    showToast("分段已刪除", "warning");
+    showToast("已刪除分段紀錄", "warning");
 }
 
-function delSegmentS(id){ 
-    segmentSwData = segmentSwData.filter(x => x.id !== id); 
-    renderSegmentSW(); 
+function segmentSwDeleteRow(idx) {
+    segmentSwData.splice(idx, 1);
+    segmentSwRender();
     autoSaveData();
-    showToast("分段已刪除", "warning");
+    showToast("已刪除碼錶紀錄", "warning");
 }
 
-function segmentFmt(s){ 
-    const m = Math.floor(s/60);
-    const ss = (s%60).toFixed(2).padStart(5,"0"); 
-    return `${String(m).padStart(2,"0")}:${ss}`; 
-}
-
-function scrollSegmentToBottom(id){ 
-    const el = document.getElementById(id); 
-    if (el) {
-        setTimeout(() => {
-            el.scrollTop = el.scrollHeight;
-        }, 50); 
+function segmentSwStart() {
+    if (segmentTimerState === "idling") {
+        segmentStartT = Date.now() - segmentElapsedT;
+        segmentTimerState = "running";
+        
+        document.getElementById('segmentSwStart').classList.add('segment-btn-lock');
+        document.getElementById('segmentSwLap').classList.remove('segment-btn-lock');
+        document.getElementById('segmentSwPause').classList.remove('segment-btn-lock');
+        document.getElementById('segmentSwStop').classList.remove('segment-btn-lock');
+        
+        segmentSwUpdate();
+        showToast("碼錶開始計時", "success");
     }
 }
 
+function segmentSwPause() {
+    if (segmentTimerState === "running") {
+        segmentTimerState = "paused";
+        
+        document.getElementById('segmentSwPause').classList.add('segment-btn-lock');
+        document.getElementById('segmentSwStart').classList.remove('segment-btn-lock');
+        
+        if (segmentRaf) {
+            cancelAnimationFrame(segmentRaf);
+            segmentRaf = null;
+        }
+        
+        showToast("碼錶已暫停", "warning");
+    }
+}
+
+function segmentSwLap() {
+    if (segmentTimerState !== "running") return;
+    
+    const currentTime = Date.now();
+    const totalMs = currentTime - segmentStartT;
+    const prevTotalMs = segmentSwData.length > 0 ? segmentSwData[segmentSwData.length - 1].totalMs : 0;
+    const segmentMs = totalMs - prevTotalMs;
+    
+    segmentSwData.push({
+        totalMs: totalMs,
+        segmentMs: segmentMs,
+        timestamp: new Date().toISOString()
+    });
+    
+    segmentSwRender();
+    autoSaveData();
+    
+    showToast(`分段紀錄 #${segmentSwData.length}`, "info");
+    
+    const scrollArea = document.getElementById('segmentSwScrollArea');
+    if (scrollArea) {
+        setTimeout(() => {
+            scrollArea.scrollTop = scrollArea.scrollHeight;
+        }, 100);
+    }
+}
+
+function segmentSwStop() {
+    if (segmentTimerState === "running" || segmentTimerState === "paused") {
+        segmentTimerState = "idling";
+        segmentElapsedT = 0;
+        
+        document.getElementById('segmentSwStart').classList.remove('segment-btn-lock');
+        document.getElementById('segmentSwLap').classList.add('segment-btn-lock');
+        document.getElementById('segmentSwPause').classList.add('segment-btn-lock');
+        document.getElementById('segmentSwStop').classList.add('segment-btn-lock');
+        
+        document.getElementById('segmentSwDisplay').textContent = "00:00.00";
+        
+        if (segmentRaf) {
+            cancelAnimationFrame(segmentRaf);
+            segmentRaf = null;
+        }
+        
+        showToast("碼錶已結束", "warning");
+    }
+}
+
+function segmentSwUpdate() {
+    if (segmentTimerState !== "running") return;
+    
+    const currentTime = Date.now();
+    const elapsed = currentTime - segmentStartT;
+    
+    const mins = Math.floor(elapsed / 60000);
+    const secs = Math.floor((elapsed % 60000) / 1000);
+    const cents = Math.floor((elapsed % 1000) / 10);
+    
+    document.getElementById('segmentSwDisplay').textContent = 
+        `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}.${cents.toString().padStart(2,'0')}`;
+    
+    segmentRaf = requestAnimationFrame(segmentSwUpdate);
+}
+
 // ===============================
-// 初始化與通用函數
+// 頁面初始化
 // ===============================
 
-window.onload = () => { 
+document.addEventListener('DOMContentLoaded', function() {
     loadSavedData();
+    checkOrientation();
     
-    const listArea = document.getElementById('listArea');
-    if (listArea) {
-        new Sortable(listArea, { 
-            handle: '.drag-handle', 
-            animation: 150,
-            ghostClass: 'sortable-ghost',
-            chosenClass: 'sortable-chosen',
-            onStart: function(evt) {
-                isDragging = true;
-                evt.item.classList.add('dragging');
-            },
-            onEnd: function(evt) {
-                isDragging = false;
-                evt.item.classList.remove('dragging');
-                
-                const newOrder = [];
-                const cards = listArea.querySelectorAll('.course-card');
-                cards.forEach((card, index) => {
-                    const oldIndex = parseInt(card.dataset.index || index);
-                    if (items[oldIndex]) {
-                        newOrder.push(items[oldIndex]);
-                    }
-                });
-                items = newOrder;
-                
-                updateList();
-                autoSaveData();
-                showToast("項目順序已更新", "success");
-            }
+    document.getElementById('planKeyboard').style.display = 'grid';
+    document.getElementById('percentageKeyboard').style.display = 'grid';
+    
+    document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
+    
+    document.getElementById('classTime').value = '0';
+    
+    setFocus('classTime');
+    
+    if (percentageMainRange) {
+        percentageMainRange.addEventListener('input', function() {
+            percentageState.currentPct = parseInt(this.value);
+            updateBubblePosition('percentageAthleteBubble', this, percentageState.currentPct);
+            updatePercentageResult();
+            autoSaveData();
         });
     }
     
-    initPercentage();
-    initSegment();
-    checkOrientation();
+    if (percentageMRange) {
+        percentageMRange.addEventListener('input', function() {
+            percentageState.multiPct = parseInt(this.value);
+            updateBubblePosition('percentageMultiBubble', this, percentageState.multiPct);
+            updatePercentageMultiCards();
+            autoSaveData();
+        });
+    }
     
-    window.addEventListener('resize', () => {
-        checkOrientation();
-        
-        setTimeout(() => {
-            if (percentageState.mode === 'athlete') {
-                updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
-            } else if (percentageState.mode === 'multi') {
-                updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
-            }
-        }, 100);
+    document.getElementById('segmentBtnManualClear').addEventListener('click', function() {
+        deleteIndex = -3;
+        document.getElementById('confirmMessage').textContent = "確定要清空所有手動紀錄嗎？此動作無法復原！";
+        document.getElementById('confirmDialog').classList.add('active');
     });
     
+    document.getElementById('segmentBtnSWClear').addEventListener('click', function() {
+        deleteIndex = -4;
+        document.getElementById('confirmMessage').textContent = "確定要重置碼錶並清空所有紀錄嗎？此動作無法復原！";
+        document.getElementById('confirmDialog').classList.add('active');
+    });
+    
+    document.querySelectorAll('.segment-k-num').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const num = this.textContent;
+            segmentManualInput(num);
+        });
+    });
+    
+    document.getElementById('segmentKeyDel').addEventListener('click', segmentManualDelete);
+    document.getElementById('segmentKeySave').addEventListener('click', segmentManualSave);
+    
+    document.getElementById('segmentSwStart').addEventListener('click', segmentSwStart);
+    document.getElementById('segmentSwLap').addEventListener('click', segmentSwLap);
+    document.getElementById('segmentSwPause').addEventListener('click', segmentSwPause);
+    document.getElementById('segmentSwStop').addEventListener('click', segmentSwStop);
+    
+    window.addEventListener('resize', checkOrientation);
     window.addEventListener('orientationchange', checkOrientation);
     
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && audioContext && audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-    });
-    
-    // 處理名稱編輯輸入框的Enter鍵
-    document.getElementById('nameEditInput').addEventListener('keydown', (e) => {
+    document.getElementById('nameEditInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
-            e.preventDefault();
             saveAthleteName();
         }
     });
-    
-    initAudioContext();
-    switchTab('planner');
-    
-    setTimeout(() => {
-        showToast('游泳教練全能工作台 v4.9 已就緒', 'success', 2000);
-    }, 500);
-};
+});
 
-window.oncontextmenu = e => { e.preventDefault(); return false; };
-</script>
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
+function segmentManualInput(num) {
+    const field = segmentFields[segmentFieldIdx];
+    const input = document.getElementById(field);
+    
+    if (!input) return;
+    
+    if (segmentInputCount === 0) {
+        input.textContent = num;
+        segmentInputCount = 1;
+    } else if (segmentInputCount === 1) {
+        input.textContent += num;
+        segmentInputCount = 0;
+        
+        segmentFieldIdx = (segmentFieldIdx + 1) % segmentFields.length;
+        document.querySelectorAll('.segment-time-input').forEach((el, idx) => {
+            el.classList.toggle('active', idx === segmentFieldIdx);
+        });
+    }
+}
+
+function segmentManualDelete() {
+    const field = segmentFields[segmentFieldIdx];
+    const input = document.getElementById(field);
+    
+    if (!input) return;
+    
+    if (segmentInputCount === 0) {
+        if (segmentFieldIdx > 0) {
+            segmentFieldIdx--;
+            const prevField = segmentFields[segmentFieldIdx];
+            const prevInput = document.getElementById(prevField);
+            if (prevInput) {
+                prevInput.textContent = prevInput.textContent.slice(0, -1) || "00";
+                segmentInputCount = 1;
+            }
+        }
+    } else {
+        segmentInputCount = 0;
+    }
+    
+    document.querySelectorAll('.segment-time-input').forEach((el, idx) => {
+        el.classList.toggle('active', idx === segmentFieldIdx);
+    });
+}
+
+function segmentManualSave() {
+    const min = parseInt(document.getElementById('segment-m_min').textContent) || 0;
+    const sec = parseInt(document.getElementById('segment-m_sec').textContent) || 0;
+    const ms = parseInt(document.getElementById('segment-m_ms').textContent) || 0;
+    
+    if (min === 0 && sec === 0 && ms === 0) {
+        showToast("請輸入有效的時間", "error");
+        return;
+    }
+    
+    segmentManualData.push({
+        min: min,
+        sec: sec,
+        ms: ms,
+        timestamp: new Date().toISOString()
+    });
+    
+    segmentManualRender();
+    autoSaveData();
+    
+    document.getElementById('segment-m_min').textContent = "00";
+    document.getElementById('segment-m_sec').textContent = "00";
+    document.getElementById('segment-m_ms').textContent = "00";
+    
+    segmentFieldIdx = 0;
+    segmentInputCount = 0;
+    
+    document.querySelectorAll('.segment-time-input').forEach((el, idx) => {
+        el.classList.toggle('active', idx === segmentFieldIdx);
+    });
+    
+    const scrollArea = document.getElementById('segmentManualScrollArea');
+    if (scrollArea) {
+        setTimeout(() => {
+            scrollArea.scrollTop = scrollArea.scrollHeight;
+        }, 100);
+    }
+    
+    showToast("分段紀錄已儲存", "success");
+}
+
+function confirmDelete() {
+    if (deleteIndex === -2) {
+        clearPercentageMultiConfirmed();
+    } else if (deleteIndex === -3) {
+        segmentManualData = [];
+        segmentManualRender();
+        showToast("已清空手動紀錄", "warning");
+    } else if (deleteIndex === -4) {
+        segmentSwData = [];
+        segmentSwStop();
+        segmentSwRender();
+        showToast("已重置碼錶並清空紀錄", "warning");
+    } else if (deleteIndex >= 0 && percentageState.athletes[deleteIndex]) {
+        const deletedName = percentageState.athletes[deleteIndex].name;
+        percentageState.athletes.splice(deleteIndex, 1);
+        
+        if (percentageState.multiIdx >= percentageState.athletes.length) {
+            percentageState.multiIdx = Math.max(0, percentageState.athletes.length - 1);
+        }
+        
+        updatePercentageMultiCards();
+        showToast(`已刪除選手: ${deletedName}`, "warning");
+    } else {
+        const deletedItem = items[deleteIndex];
+        items.splice(deleteIndex, 1);
+        updateList();
+        renderHUD();
+        showToast(`已刪除: ${deletedItem?.title || '項目'}`, "warning");
+    }
+    
+    autoSaveData();
+    cancelDelete();
 }
 </script>
-
 </body>
 </html>
