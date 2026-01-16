@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>游泳教練全能工作台 v4.9</title>
-  <link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -834,21 +834,57 @@ body {
     box-shadow: 0 0 15px rgba(76,217,100,0.2); 
 }
 
-.percentage-multi-card-name { 
-    font-size: 14px; 
-    color: #999; 
-    flex-shrink: 0; 
+/* 名稱編輯相關樣式 */
+.percentage-multi-card-name-edit {
+    background: transparent;
+    border: 1px solid var(--neon-green);
+    border-radius: 4px;
+    color: var(--neon-green);
+    font-size: 14px;
+    font-weight: bold;
+    padding: 4px 6px;
+    width: 100%;
+    min-width: 70px;
+    outline: none;
+    cursor: text;
+}
+
+.percentage-multi-card-name-edit:focus {
+    background: rgba(76,217,100,0.1);
+    box-shadow: 0 0 8px rgba(76,217,100,0.3);
+}
+
+.percentage-multi-card-name-display {
     min-width: 70px;
     padding: 4px 6px;
     border-radius: 4px;
     transition: all 0.2s;
     margin-right: 10px;
-    position: relative;
+    cursor: pointer;
+    border: 1px solid transparent;
 }
 
-.percentage-multi-card.selected .percentage-multi-card-name { 
-    color: var(--neon-green); 
-    font-weight: bold; 
+.percentage-multi-card-name-display:hover {
+    background: rgba(255,255,255,0.05);
+    border-color: #444;
+}
+
+.percentage-multi-card.selected .percentage-multi-card-name-display {
+    color: var(--neon-green);
+    font-weight: bold;
+    background: rgba(76,217,100,0.1);
+    border-color: var(--neon-green);
+}
+
+.name-edit-hint {
+    font-size: 10px;
+    color: #aaa;
+    text-align: center;
+    padding: 4px 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    margin-top: 4px;
+    display: none;
 }
 
 .percentage-multi-card-info {
@@ -1449,6 +1485,11 @@ body {
         font-size: 50px;
     }
     
+    /* 名稱編輯提示在橫屏顯示 */
+    .name-edit-hint {
+        display: block;
+    }
+    
     /* 分段記錄器桌面版調整 */
     @media (min-width:768px){ 
         .segment-content-wrapper {
@@ -1888,8 +1929,9 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                                 <button onclick="clearAllPercentageMulti()">清空數據</button>
                                 <button class="add-btn" onclick="addPercentageAthlete()">+ 新增選手</button>
                             </div>
+                            <div class="name-edit-hint">點擊選手名稱可修改，向左滑動可刪除選手</div>
                         </div>
-                        <div class="percentage-multi-hint">點擊選擇選手，向左滑動可刪除選手</div>
+                        <div class="percentage-multi-hint">點擊卡片選擇選手，點擊名稱可編輯</div>
                         <div class="percentage-range-wrapper">
                             <div class="percentage-range-track"></div>
                             <div class="percentage-bubble" id="percentageMultiBubble">100%</div>
@@ -2031,7 +2073,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 <script>
 // ===============================
 // 游泳教練全能工作台 v4.9
-// 完全修正版 - 修復百分比工具網頁版與桌面版問題
+// 完全修正版 - 新增百分比多人模式選手名稱編輯功能
 // ===============================
 
 // 全域變數
@@ -2063,7 +2105,7 @@ let percentageState = {
     mode: 'athlete', 
     multiIdx: 0,
     base: ["00", "00", "00"],
-    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`})),
+    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false})),
     isNew: true,
     currentPct: 100,
     multiPct: 100
@@ -2293,6 +2335,7 @@ function loadSavedData() {
                         if (!athlete.name) {
                             athlete.name = `選手 ${i+1}`;
                         }
+                        athlete.isEditing = false; // 確保編輯狀態重置
                     });
                 }
             }
@@ -3270,7 +3313,7 @@ function timerResetSelect() {
 }
 
 // ===============================
-// 百分比工具功能 - 完全重新設計多人模式
+// 百分比工具功能 - 新增名稱編輯功能
 // ===============================
 
 function initPercentage() {
@@ -3460,7 +3503,7 @@ function addPercentageAthlete() {
         showToast("最多 20 位選手", "warning");
         return; 
     }
-    percentageState.athletes.push({vals: ["00", "00", "00"], name: `選手 ${percentageState.athletes.length + 1}`}); 
+    percentageState.athletes.push({vals: ["00", "00", "00"], name: `選手 ${percentageState.athletes.length + 1}`, isEditing: false}); 
     percentageState.multiIdx = percentageState.athletes.length - 1; 
     updatePercentageDisplay(); 
     updatePercentageUI();
@@ -3473,6 +3516,7 @@ function clearAllPercentageMulti() {
         percentageState.athletes.forEach((a, i) => {
             a.vals = ["00","00","00"];
             a.name = `選手 ${i+1}`;
+            a.isEditing = false;
         }); 
         updatePercentageDisplay(); 
         updatePercentageUI(); 
@@ -3507,16 +3551,75 @@ function deletePercentageAthlete(idx, event) {
     showToast("選手已刪除", "warning");
 }
 
-function updatePercentageAthleteName(idx, newName) {
+// 新增：開始編輯選手名稱
+function startEditPercentageAthleteName(idx, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    // 先儲存當前正在編輯的選手的修改（如果有的話）
+    saveCurrentEditingName();
+    
+    // 設定新的編輯狀態
+    percentageState.athletes[idx].isEditing = true;
+    renderPercentageCards();
+    
+    // 聚焦到輸入框
+    setTimeout(() => {
+        const input = document.querySelector(`[data-athlete-idx="${idx}"] .percentage-multi-card-name-edit`);
+        if (input) {
+            input.focus();
+            input.select();
+        }
+    }, 10);
+}
+
+// 新增：儲存當前編輯中的名稱
+function saveCurrentEditingName() {
+    percentageState.athletes.forEach((athlete, idx) => {
+        if (athlete.isEditing) {
+            const input = document.querySelector(`[data-athlete-idx="${idx}"] .percentage-multi-card-name-edit`);
+            if (input) {
+                athlete.name = input.value.trim() || `選手 ${idx + 1}`;
+                athlete.isEditing = false;
+                renderPercentageCards();
+                autoSaveData();
+            }
+        }
+    });
+}
+
+// 新增：結束名稱編輯
+function finishEditPercentageAthleteName(idx) {
     if (idx >= 0 && idx < percentageState.athletes.length) {
-        percentageState.athletes[idx].name = newName || `選手 ${idx+1}`;
+        const input = document.querySelector(`[data-athlete-idx="${idx}"] .percentage-multi-card-name-edit`);
+        if (input) {
+            percentageState.athletes[idx].name = input.value.trim() || `選手 ${idx + 1}`;
+            percentageState.athletes[idx].isEditing = false;
+        }
         renderPercentageCards();
         autoSaveData();
     }
 }
 
+// 新增：處理名稱輸入框的鍵盤事件
+function handleNameInputKeydown(idx, event) {
+    if (event.key === 'Enter') {
+        finishEditPercentageAthleteName(idx);
+    } else if (event.key === 'Escape') {
+        percentageState.athletes[idx].isEditing = false;
+        renderPercentageCards();
+    }
+}
+
 // 百分比選手卡滑動刪除功能
 function handlePercentageSwipeStart(event, index) {
+    // 如果正在編輯名稱，不觸發滑動
+    if (percentageState.athletes[index]?.isEditing) {
+        return;
+    }
+    
     const touch = event.touches[0];
     percentageSwipeStartX = touch.clientX;
     percentageSwipeStartY = touch.clientY;
@@ -3565,10 +3668,17 @@ function handlePercentageSwipeEnd(event, index) {
 }
 
 function handlePercentageCardClick(event, index) {
-    // 如果正在滑動，不要觸發點擊事件
+    // 如果正在滑動或正在編輯名稱，不要觸發點擊事件
     if (currentPercentageSwipeCard && Math.abs(percentageSwipeStartX - event.clientX) > 10) {
         return;
     }
+    
+    if (percentageState.athletes[index]?.isEditing) {
+        return;
+    }
+    
+    // 儲存當前編輯的名稱
+    saveCurrentEditingName();
     
     percentageState.multiIdx = index; 
     updatePercentageDisplay(); 
@@ -3586,6 +3696,7 @@ function renderPercentageCards() {
         const card = document.createElement('div');
         card.className = `percentage-multi-card ${i === percentageState.multiIdx ? 'selected' : ''}`;
         card.setAttribute('data-index', i);
+        card.setAttribute('data-athlete-idx', i);
         
         // 添加觸控事件
         card.addEventListener('touchstart', (e) => handlePercentageSwipeStart(e, i));
@@ -3594,6 +3705,11 @@ function renderPercentageCards() {
         
         // 添加滑鼠事件
         card.addEventListener('mousedown', (e) => {
+            // 如果正在編輯名稱，不觸發滑動
+            if (percentageState.athletes[i]?.isEditing) {
+                return;
+            }
+            
             percentageSwipeStartX = e.clientX;
             percentageSwipeStartY = e.clientY;
             currentPercentageSwipeCard = card;
@@ -3649,10 +3765,30 @@ function renderPercentageCards() {
             }
         });
         
+        // 點擊卡片主體選擇選手
+        card.addEventListener('click', (e) => {
+            // 防止點擊名稱區域時觸發卡片選擇
+            if (!e.target.closest('.percentage-multi-card-name-display') && 
+                !e.target.closest('.percentage-multi-card-name-edit')) {
+                handlePercentageCardClick(e, i);
+            }
+        });
+        
+        // 名稱顯示/編輯部分
+        let nameContent;
+        if (a.isEditing) {
+            nameContent = `<input type="text" class="percentage-multi-card-name-edit" 
+                                  value="${a.name}" 
+                                  onblur="finishEditPercentageAthleteName(${i})"
+                                  onkeydown="handleNameInputKeydown(${i}, event)"
+                                  onclick="event.stopPropagation()">`;
+        } else {
+            nameContent = `<div class="percentage-multi-card-name-display" 
+                                onclick="startEditPercentageAthleteName(${i}, event)">${a.name}</div>`;
+        }
+        
         card.innerHTML = `
-            <div class="percentage-multi-card-name" contenteditable="true" 
-                 onblur="updatePercentageAthleteName(${i}, this.innerText)"
-                 onclick="event.stopPropagation()">${a.name}</div>
+            ${nameContent}
             <div class="percentage-multi-card-info">
                 <div class="percentage-multi-card-base">
                     <span>基時: ${a.vals[0]}:${a.vals[1]}.${a.vals[2]}</span>
@@ -4028,6 +4164,14 @@ window.onload = () => {
         }
     });
     
+    // 點擊頁面其他地方時儲存正在編輯的名稱
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.percentage-multi-card-name-edit') && 
+            !e.target.closest('.percentage-multi-card-name-display')) {
+            saveCurrentEditingName();
+        }
+    });
+    
     initAudioContext();
     switchTab('planner');
     
@@ -4038,7 +4182,7 @@ window.onload = () => {
 
 window.oncontextmenu = e => { e.preventDefault(); return false; };
 </script>
-  <script>
+<script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
