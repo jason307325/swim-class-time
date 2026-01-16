@@ -1,0 +1,9 @@
+{
+  "name": "游泳教練全能工作台",
+  "short_name": "游泳計時",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": []
+}
