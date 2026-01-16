@@ -1295,21 +1295,6 @@ body {
     opacity: 1;
 }
 
-.course-card-swipe-delete-btn {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: var(--neon-red);
-    border: none;
-    color: white;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform: scale(0.8);
-    transition: transform 0.2s;
-}
-
 .course-card.swipe-delete-ready .course-card-swipe-delete-btn {
     transform: scale(1);
 }
@@ -3438,6 +3423,82 @@ function addPercentageAthlete() {
     showToast(`新增選手 ${percentageState.athletes.length}`, "success");
 }
 
+// 百分比選手卡滑動刪除功能
+function handlePercentageSwipeStart(event, index) {
+    const touch = event.touches[0];
+    percentageSwipeStartX = touch.clientX;
+    percentageSwipeStartY = touch.clientY;
+    currentPercentageSwipeCard = event.currentTarget;
+}
+
+function handlePercentageSwipeMove(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    const deltaY = touch.clientY - percentageSwipeStartY;
+    
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return;
+    }
+    
+    if (deltaX < 0) {
+        event.preventDefault();
+        const translateX = Math.max(deltaX, -80);
+        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
+        
+        if (translateX < -30) {
+            currentPercentageSwipeCard.classList.add('swiping');
+            if (translateX < -60) {
+                currentPercentageSwipeCard.classList.add('swipe-delete-ready');
+            } else {
+                currentPercentageSwipeCard.classList.remove('swipe-delete-ready');
+            }
+        } else {
+            currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
+        }
+    }
+}
+
+function handlePercentageSwipeEnd(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    
+    if (deltaX < -60) {
+        deletePercentageAthlete(index);
+    } else {
+        currentPercentageSwipeCard.style.transform = 'translateX(0)';
+        currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
+    }
+    
+    currentPercentageSwipeCard = null;
+}
+
+function deletePercentageAthlete(idx, event) {
+    if (event) event.stopPropagation();
+    
+    if (percentageState.athletes.length <= 1) {
+        showToast("至少需要保留一位選手！", "error");
+        return;
+    }
+    
+    percentageState.athletes.splice(idx, 1);
+    
+    // 調整當前選中的選手索引
+    if (percentageState.multiIdx >= idx) {
+        if (percentageState.multiIdx > 0) {
+            percentageState.multiIdx--;
+        }
+    }
+    
+    renderPercentageCards();
+    updatePercentageUI();
+    autoSaveData();
+    showToast("選手已刪除", "warning");
+}
+
 function updatePercentageAthleteName(idx, newName) {
     if (idx >= 0 && idx < percentageState.athletes.length) {
         percentageState.athletes[idx].name = newName || `選手 ${idx+1}`;
@@ -3457,11 +3518,10 @@ function renderPercentageCards() {
         card.className = `percentage-multi-card ${i === percentageState.multiIdx ? 'selected' : ''}`;
         card.setAttribute('data-index', i);
         
-        if (i >= 4) {
-            card.setAttribute('ontouchstart', `handlePercentageSwipeStart(event, ${i})`);
-            card.setAttribute('ontouchmove', `handlePercentageSwipeMove(event, ${i})`);
-            card.setAttribute('ontouchend', `handlePercentageSwipeEnd(event, ${i})`);
-        }
+        // 為所有卡片添加滑動事件
+        card.setAttribute('ontouchstart', `handlePercentageSwipeStart(event, ${i})`);
+        card.setAttribute('ontouchmove', `handlePercentageSwipeMove(event, ${i})`);
+        card.setAttribute('ontouchend', `handlePercentageSwipeEnd(event, ${i})`);
         
         card.onclick = (e) => { 
             if (!card.classList.contains('swiping')) {
@@ -3472,18 +3532,14 @@ function renderPercentageCards() {
             }
         };
         
-        const deleteBtnHtml = i >= 4 ? `
-            <div class="percentage-multi-card-swipe-overlay">
-                <button class="course-card-swipe-delete-btn" onclick="deletePercentageAthlete(${i}, event)">🗑️</button>
-            </div>
-        ` : '';
-        
         card.innerHTML = `
             <div class="percentage-multi-card-name" contenteditable="true" 
                  onblur="updatePercentageAthleteName(${i}, this.innerText)"
                  onclick="event.stopPropagation()">${a.name}</div>
             <div class="percentage-multi-res">${percentageFmt(ms)}</div>
-            ${deleteBtnHtml}
+            <div class="percentage-multi-card-swipe-overlay">
+                <button class="course-card-swipe-delete-btn" onclick="deletePercentageAthlete(${i}, event)">🗑️</button>
+            </div>
         `;
         l.appendChild(card);
     });
