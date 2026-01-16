@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練全能工作台 v4.8</title>
+<title>游泳教練全能工作台 v4.9</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -246,10 +246,10 @@ body {
 
 .btn-slim { 
     width: 100%; 
-    height: 32px; /* 從36px調整為32px */
+    height: 32px;
     background: var(--neon-blue); 
     border: none; 
-    border-radius: 16px; /* 從18px調整為16px */
+    border-radius: 16px;
     color: #fff; 
     font-weight: 900; 
     font-size: 13px;
@@ -267,7 +267,7 @@ body {
 .plan-list-area { 
     flex: 1; 
     overflow-y: auto; 
-    padding: 5px 12px 2px; /* 減少底部內邊距 */
+    padding: 5px 12px 2px;
     margin-bottom: 0;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
@@ -281,7 +281,7 @@ body {
 .course-card { 
     background: rgba(255,255,255,0.03); 
     border-radius: 8px; 
-    padding: 10px 12px; /* 減少內邊距 */
+    padding: 10px 12px;
     margin-bottom: 8px; 
     display: flex; 
     align-items: center; 
@@ -289,7 +289,7 @@ body {
     gap: 8px; 
     position: relative; 
     flex-shrink: 0;
-    min-height: 70px; /* 設定最小高度 */
+    min-height: 68px;
     transition: transform 0.2s ease, opacity 0.2s ease;
     overflow: hidden;
     cursor: pointer;
@@ -323,8 +323,8 @@ body {
 
 .drag-handle { 
     color: #666; 
-    font-size: 18px; /* 從20px調整為18px */
-    padding: 0 4px; /* 減少內邊距 */
+    font-size: 18px;
+    padding: 0 4px;
     cursor: grab; 
     flex-shrink: 0;
     display: flex;
@@ -343,20 +343,20 @@ body {
     min-width: 0; 
     display: flex;
     flex-direction: column;
-    gap: 4px; /* 減少間距 */
+    gap: 4px;
     margin-left: 10px;
 }
 
 .card-title { 
-    font-size: 13px; /* 從14px調整為13px */
+    font-size: 13px;
     font-weight: bold; 
-    margin-bottom: 2px; /* 減少間距 */
+    margin-bottom: 2px;
     white-space: nowrap; 
     overflow: hidden; 
     text-overflow: ellipsis; 
 }
 
-/* 修改課程卡資訊排版 - 改為單行顯示 */
+/* 修正：課程卡資訊排版 - 改為單行顯示，加入組數 */
 .card-info-compact {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -371,11 +371,20 @@ body {
     align-items: center;
     gap: 3px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .card-info-label {
     color: #666;
     margin-right: 2px;
+}
+
+/* 特別優化距離顯示 - 讓標籤和數值在同一行 */
+.card-info-item.distance-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 3px;
 }
 
 .card-right { 
@@ -384,14 +393,14 @@ body {
     display: flex; 
     flex-direction: column; 
     align-items: flex-end; 
-    gap: 4px; /* 減少間距 */
+    gap: 4px;
     min-width: 60px;
 }
 
 .card-distance { 
     font-weight: 900; 
     color: var(--neon-blue); 
-    font-size: 14px; /* 從16px調整為14px */
+    font-size: 14px;
 }
 
 .card-total-time {
@@ -408,7 +417,7 @@ body {
 .plan-function-buttons { 
     display: flex; 
     gap: 8px; 
-    padding: 6px 12px 8px; /* 調整內邊距 */
+    padding: 6px 12px 8px;
     flex-shrink: 0; 
     border-top: 1px solid #1a2028;
     margin-top: 4px;
@@ -416,11 +425,11 @@ body {
 
 .function-btn { 
     flex: 1; 
-    height: 32px; /* 從36px調整為32px */
-    border-radius: 16px; /* 從18px調整為16px */
+    height: 32px;
+    border-radius: 16px;
     border: none; 
     font-weight: 900; 
-    font-size: 12px; /* 從13px調整為12px */
+    font-size: 12px;
     color: white; 
 }
 
@@ -466,10 +475,10 @@ body {
 }
 
 .timer-info-card { 
-    width: 90%; /* 從95%調整為90% */
-    max-width: 500px; /* 從600px調整為500px */
+    width: 90%;
+    max-width: 500px;
     background: rgba(255,255,255,0.05); 
-    padding: 12px; /* 從15px調整為12px */
+    padding: 12px;
     border-radius: 15px; 
     border-left: 6px solid var(--neon-blue); 
     margin-top: 10px;
@@ -491,7 +500,7 @@ body {
 }
 
 .sub-val { 
-    font-size: 16px; /* 從18px調整為16px */
+    font-size: 16px;
     font-weight: 900; 
     color: #ff9500; 
     display: block; 
@@ -862,20 +871,20 @@ body {
     transition: all 0.2s;
 }
 
-/* 統一鍵盤樣式 - 進一步調整高度 */
+/* 統一鍵盤樣式 */
 .unified-keyboard {
     flex-shrink: 0; 
     display: grid; 
     grid-template-columns: repeat(3, 1fr); 
-    gap: 5px; /* 從6px調整為5px */
-    padding: 5px 8px calc(5px + env(safe-area-inset-bottom)); /* 減少內邊距 */
+    gap: 5px;
+    padding: 5px 8px calc(5px + env(safe-area-inset-bottom));
     background: #000; 
     border-top: 1px solid #333;
 }
 
 .unified-keyboard button { 
-    padding: 10px 0; /* 從12px調整為10px */
-    font-size: 18px; /* 從20px調整為18px */
+    padding: 10px 0;
+    font-size: 18px;
     font-weight: 800; 
     color: #fff; 
     background: #1a1f26; 
@@ -891,7 +900,7 @@ body {
 }
 
 .unified-keyboard .key-cmd {
-    font-size: 13px !important; /* 從14px調整為13px */
+    font-size: 13px !important;
 }
 
 .key-clear { 
@@ -1186,7 +1195,7 @@ body {
     color: var(--neon-green); 
 }
 
-/* 音效控制按鈕 - 移動到計時鐘頁面 */
+/* 音效控制按鈕 */
 .sound-toggle-btn {
     position: absolute;
     right: 15px;
@@ -1198,7 +1207,7 @@ body {
     border: 1px solid #333;
     color: #fff;
     font-size: 20px;
-    display: none; /* 預設隱藏，只在計時鐘頁面顯示 */
+    display: none;
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -1328,7 +1337,7 @@ body {
         height: calc(100vh - 44px);
     }
     
-    /* 計時鐘頁面橫屏佈局 - 修正靈動島問題 */
+    /* 計時鐘頁面橫屏佈局 */
     .timer-container {
         flex-direction: row;
         align-items: stretch;
@@ -1348,14 +1357,14 @@ body {
     }
     
     .time-display {
-        font-size: 10vw; /* 從12vw調整為10vw，再縮小 */
+        font-size: 10vw;
         margin: 0;
         line-height: 1;
         padding: 5px 0;
     }
     
     .timer-info-card {
-        flex: 0.8; /* 從1調整為0.8，縮小1/3 */
+        flex: 0.8;
         max-width: 50%;
         margin: 0;
         display: flex;
@@ -1563,7 +1572,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     }
 }
 
-/* 鍵盤高度優化 - 給課程卡更多空間 */
+/* 鍵盤高度優化 */
 @media (orientation: portrait) {
     .plan-list-area {
         margin-bottom: 0;
@@ -1597,9 +1606,9 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 
 /* 計時器當前項目標示 - 加大字體 */
 .timer-current-item {
-    font-size: 14px; /* 從10px調整為14px */
-    color: #fff; /* 從aaa調整為白色 */
-    margin-bottom: 8px; /* 從5px調整為8px */
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 8px;
     text-align: center;
     font-weight: bold;
     text-shadow: 0 0 10px rgba(0,162,255,0.5);
@@ -1608,7 +1617,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 .timer-current-item span {
     color: var(--neon-blue);
     font-weight: bold;
-    font-size: 16px; /* 加大字體 */
+    font-size: 16px;
 }
 
 /* 課程卡長按編輯提示 */
@@ -1673,6 +1682,13 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     opacity: 0.8;
     transform: rotate(2deg);
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* 距離顯示優化 - 讓標籤和數值在同一行 */
+.distance-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
 }
 </style>
 </head>
@@ -1982,8 +1998,8 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 
 <script>
 // ===============================
-// 游泳教練全能工作台 v4.8
-// 修正版 - 優化課程卡介面與拖曳功能
+// 游泳教練全能工作台 v4.9
+// 最終修正版 - 優化課程卡顯示與螢幕保持亮起功能
 // ===============================
 
 // 全域變數
@@ -1999,7 +2015,6 @@ let timerState = {
     distRemaining: 0, 
     intervalId: null,
     completedDistance: 0,
-    // 修正：追蹤每組完成的狀態
     currentLapInSet: 0,
     totalLapsInSet: 0,
     totalItems: 0
@@ -2041,7 +2056,7 @@ let currentPercentageSwipeCard = null;
 
 // 課程卡長按編輯狀態
 let longPressTimer = null;
-let longPressDuration = 1000; // 1秒
+let longPressDuration = 1000;
 let isLongPressActive = false;
 
 // 儲存相關
@@ -2062,7 +2077,6 @@ function showToast(message, type = 'info', duration = 3000) {
     toast.className = 'toast';
     toast.classList.add(type);
     
-    // 移除之前的計時器
     if (toast._timeout) clearTimeout(toast._timeout);
     
     setTimeout(() => {
@@ -2085,7 +2099,7 @@ function toggleSound() {
     autoSaveData();
 }
 
-// 音效系統 - 修正手機版音效問題
+// 音效系統
 let audioContext = null;
 let audioInitialized = false;
 
@@ -2097,9 +2111,6 @@ function initAudioContext() {
         if (AudioContext) {
             audioContext = new AudioContext();
             audioInitialized = true;
-            console.log('音效系統初始化成功');
-        } else {
-            console.warn('Web Audio API not supported');
         }
     } catch (e) {
         console.log('音效系統初始化失敗:', e);
@@ -2109,7 +2120,6 @@ function initAudioContext() {
 function playBeep(type) {
     if (!soundEnabled) return;
     
-    // 初始化音效系統
     if (!audioInitialized) {
         initAudioContext();
     }
@@ -2117,7 +2127,6 @@ function playBeep(type) {
     if (!audioContext) return;
     
     try {
-        // 確保音效上下文已啟動
         if (audioContext.state === 'suspended') {
             audioContext.resume();
         }
@@ -2168,32 +2177,52 @@ function playBeep(type) {
     }
 }
 
-// 螢幕喚醒鎖系統
+// 螢幕喚醒鎖系統 - 強化版本
 async function requestWakeLock() {
     if ('wakeLock' in navigator) {
         try {
+            // 如果已經有喚醒鎖，先釋放
+            if (wakeLock) {
+                await releaseWakeLock();
+            }
+            
             wakeLock = await navigator.wakeLock.request('screen');
             console.log('螢幕保持亮起已啟用');
             
+            // 監聽釋放事件
             wakeLock.addEventListener('release', () => {
                 console.log('螢幕喚醒鎖已釋放');
+                wakeLock = null;
+                
+                // 如果計時器仍在運行，重新請求喚醒鎖
+                if (timerState.running && !timerState.paused) {
+                    setTimeout(requestWakeLock, 100);
+                }
             });
+            
+            return true;
         } catch (err) {
             console.log(`無法啟用螢幕保持亮起: ${err.name}, ${err.message}`);
+            
+            // 如果失敗，嘗試使用較寬鬆的策略
+            if (err.name === 'NotAllowedError') {
+                showToast('請允許螢幕保持亮起功能', 'warning', 2000);
+            }
+            return false;
         }
     }
+    return false;
 }
 
-function releaseWakeLock() {
+async function releaseWakeLock() {
     if (wakeLock !== null) {
-        wakeLock.release()
-            .then(() => {
-                wakeLock = null;
-                console.log('螢幕喚醒鎖已釋放');
-            })
-            .catch(err => {
-                console.log('釋放螢幕喚醒鎖失敗:', err);
-            });
+        try {
+            await wakeLock.release();
+            wakeLock = null;
+            console.log('螢幕喚醒鎖已釋放');
+        } catch (err) {
+            console.log('釋放螢幕喚醒鎖失敗:', err);
+        }
     }
 }
 
@@ -2225,10 +2254,8 @@ function loadSavedData() {
             selectedZones = data.selectedZones || [];
             selectedCats = data.selectedCats || [];
             
-            // 恢復百分比狀態
             if (data.percentageState) {
                 percentageState = data.percentageState;
-                // 確保選手有name屬性
                 if (percentageState.athletes) {
                     percentageState.athletes.forEach((athlete, i) => {
                         if (!athlete.name) {
@@ -2238,7 +2265,6 @@ function loadSavedData() {
                 }
             }
             
-            // 恢復分段記錄器數據
             if (data.segmentManualData) {
                 segmentManualData = data.segmentManualData;
             }
@@ -2247,7 +2273,6 @@ function loadSavedData() {
                 segmentSwData = data.segmentSwData;
             }
             
-            // 恢復音效設置
             if (data.soundEnabled !== undefined) {
                 soundEnabled = data.soundEnabled;
                 const soundBtn = document.getElementById('soundToggleBtn');
@@ -2256,12 +2281,10 @@ function loadSavedData() {
                 }
             }
             
-            // 更新UI
             updateList();
             renderHUD();
             updateZoneAndCatButtons();
             
-            // 恢復百分比UI
             if (percentageState.mode === 'athlete') {
                 if (percentageMainRange) percentageMainRange.value = percentageState.currentPct;
             } else if (percentageState.mode === 'multi') {
@@ -2275,21 +2298,7 @@ function loadSavedData() {
     }
 }
 
-function clearSavedData() {
-    if (confirm('確定要清除所有儲存的資料嗎？此操作無法復原！')) {
-        localStorage.removeItem(STORAGE_KEY);
-        showToast('所有資料已清除', 'warning', 2000);
-        
-        // 重新載入頁面
-        setTimeout(() => {
-            location.reload();
-        }, 500);
-    }
-}
-
-// 更新區域和分類按鈕狀態
 function updateZoneAndCatButtons() {
-    // 重置所有按鈕
     document.querySelectorAll('.zone-grid .tag-btn').forEach(btn => {
         btn.classList.remove('active');
     });
@@ -2298,13 +2307,11 @@ function updateZoneAndCatButtons() {
         btn.classList.remove('active');
     });
     
-    // 恢復區域選擇
     selectedZones.forEach(zone => {
         const btn = document.getElementById('btn-z' + zone.id);
         if (btn) btn.classList.add('active');
     });
     
-    // 恢復分類選擇
     selectedCats.forEach(cat => {
         let catId = '';
         if (cat === 'WarmUp') catId = 'warmup';
@@ -2335,39 +2342,32 @@ function checkOrientation() {
 
 // 切換分頁
 function switchTab(t) {
-    // 停止任何正在運行的計時器
     if (timerState.intervalId) {
         clearInterval(timerState.intervalId);
     }
     
-    // 如果離開計時器頁面，釋放喚醒鎖
     if (t !== 'clock') {
         releaseWakeLock();
     }
     
-    // 隱藏所有頁面
     document.querySelectorAll('.page').forEach(page => {
         page.style.display = 'none';
         page.classList.remove('active');
     });
     
-    // 隱藏所有導航按鈕活動狀態
     document.querySelectorAll('.tab-btn, .landscape-tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
-    // 顯示目標頁面
     const targetPage = document.getElementById('page-' + t);
     if (targetPage) {
         targetPage.style.display = 'flex';
         targetPage.classList.add('active');
     }
     
-    // 更新導航按鈕狀態
     document.getElementById('tab-' + t)?.classList.add('active');
     document.getElementById('landscape-tab-' + t)?.classList.add('active');
     
-    // 顯示或隱藏音效控制按鈕
     const soundBtn = document.getElementById('soundToggleBtn');
     if (soundBtn) {
         if (t === 'clock') {
@@ -2377,13 +2377,11 @@ function switchTab(t) {
         }
     }
     
-    // 如果是計時鐘頁面，重置計時器狀態
     if (t !== 'clock') {
         timerState.running = false;
         timerState.paused = false;
     }
     
-    // 更新泡泡位置
     setTimeout(() => {
         if (percentageState.mode === 'athlete') {
             updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
@@ -2392,7 +2390,6 @@ function switchTab(t) {
         }
     }, 100);
     
-    // 保存當前狀態
     autoSaveData();
 }
 
@@ -2411,11 +2408,9 @@ function press(n) {
     const input = document.getElementById(currentFocus);
     if (!input) return;
     
-    // 如果當前值是0，直接替換；否則追加
     if (input.value === "0" || input.value === "") {
         input.value = n;
     } else {
-        // 限制輸入長度
         if (input.value.length < 4) {
             input.value += n;
         }
@@ -2468,17 +2463,14 @@ function toggleCat(id, n) {
     autoSaveData();
 }
 
-// 計算單項課程總用時（修正：包含所有組間休息，包括最後一組後的休息）
 function calculateItemTotalTime(item) {
     const lapTime = item.lapMin * 60 + item.lapSec;
     const totalWorkTime = lapTime * item.laps * item.sets;
     const restTime = item.resMin * 60 + item.resSec;
-    // 修正：所有組間都有休息（包括最後一組後）
     const totalRestTime = restTime * item.sets;
     return totalWorkTime + totalRestTime;
 }
 
-// 將秒數轉換為分:秒格式
 function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -2523,7 +2515,7 @@ function addItem() {
     const totalTime = calculateItemTotalTime({ lapMin: lm, lapSec: ls, laps: lp, sets: st, resMin: rm, resSec: rs });
     
     items.push({ 
-        seconds: ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * st), // 修正：包含所有組間休息
+        seconds: ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * st),
         lapMin: lm, lapSec: ls, resMin: rm, resSec: rs, laps: lp, sets: st, 
         dist: d * lp * st, singleDist: d, title: document.getElementById('courseNote').value || "訓練項目", tags: allTags, 
         color: color,
@@ -2538,6 +2530,7 @@ function addItem() {
     showToast("項目已添加！", "success");
 }
 
+// 更新：修正課程卡顯示，加入組數，優化排版
 function updateList() {
     const listArea = document.getElementById('listArea');
     if (!listArea) return;
@@ -2569,9 +2562,9 @@ function updateList() {
             <div style="font-size:9px; color:${typeof it.color === 'string' && it.color.includes('gradient') ? '#ff9500' : it.color}; font-weight:900; margin-bottom:2px;">${it.tags}</div>
             <div class="card-title">${it.title}</div>
             <div class="card-info-compact">
-                <div class="card-info-item">
+                <div class="card-info-item distance-item">
                     <span class="card-info-label">距離:</span>
-                    <span>${it.singleDist}m × ${it.laps}</span>
+                    <span class="distance-value">${it.singleDist}m × ${it.laps}趟 × ${it.sets}組</span>
                 </div>
                 <div class="card-info-item">
                     <span class="card-info-label">配速:</span>
@@ -2598,7 +2591,6 @@ function updateList() {
 
 // 課程卡長按編輯功能
 function handleCardTouchStart(event, index) {
-    // 防止拖曳時觸發長按
     if (event.target.closest('.drag-handle')) return;
     
     const touch = event.touches[0];
@@ -2606,7 +2598,6 @@ function handleCardTouchStart(event, index) {
     swipeStartY = touch.clientY;
     currentSwipeCard = event.currentTarget;
     
-    // 啟動長按計時器
     clearTimeout(longPressTimer);
     longPressTimer = setTimeout(() => {
         isLongPressActive = true;
@@ -2616,7 +2607,6 @@ function handleCardTouchStart(event, index) {
 }
 
 function handleCardMouseDown(event, index) {
-    // 防止拖曳時觸發長按
     if (event.target.closest('.drag-handle')) return;
     
     swipeStartX = event.clientX;
@@ -2624,7 +2614,6 @@ function handleCardMouseDown(event, index) {
     currentSwipeCard = event.currentTarget;
     event.preventDefault();
     
-    // 啟動長按計時器
     clearTimeout(longPressTimer);
     longPressTimer = setTimeout(() => {
         isLongPressActive = true;
@@ -2641,7 +2630,6 @@ function handleCardTouchEnd(event, index) {
     const touch = event.changedTouches[0];
     const deltaX = touch.clientX - swipeStartX;
     
-    // 檢查是否為長按觸發編輯
     if (isLongPressActive) {
         isLongPressActive = false;
         currentSwipeCard.classList.remove('long-press-active');
@@ -2650,11 +2638,9 @@ function handleCardTouchEnd(event, index) {
         return;
     }
     
-    // 否則檢查滑動刪除
     if (deltaX < -60) {
         deleteItemWithSwipe(index);
     } else {
-        // 否則重置位置
         currentSwipeCard.style.transform = 'translateX(0)';
         currentSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
     }
@@ -2669,7 +2655,6 @@ function handleCardMouseUp(event, index) {
     
     const deltaX = event.clientX - swipeStartX;
     
-    // 檢查是否為長按觸發編輯
     if (isLongPressActive) {
         isLongPressActive = false;
         currentSwipeCard.classList.remove('long-press-active');
@@ -2678,11 +2663,9 @@ function handleCardMouseUp(event, index) {
         return;
     }
     
-    // 否則檢查滑動刪除
     if (deltaX < -60) {
         deleteItemWithSwipe(index);
     } else {
-        // 否則重置位置
         currentSwipeCard.style.transform = 'translateX(0)';
         currentSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
     }
@@ -2690,7 +2673,6 @@ function handleCardMouseUp(event, index) {
     currentSwipeCard = null;
 }
 
-// 滑動刪除功能
 function handleSwipeMove(event, index) {
     if (!currentSwipeCard || currentSwipeCard.dataset.index != index) return;
     
@@ -2698,25 +2680,21 @@ function handleSwipeMove(event, index) {
     const deltaX = touch.clientX - swipeStartX;
     const deltaY = touch.clientY - swipeStartY;
     
-    // 如果檢測到滑動，取消長按計時器
     if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
         clearTimeout(longPressTimer);
         isLongPressActive = false;
         currentSwipeCard.classList.remove('long-press-active');
     }
     
-    // 防止垂直滾動時觸發滑動
     if (Math.abs(deltaY) > Math.abs(deltaX)) {
         return;
     }
     
-    // 只允許向左滑動
     if (deltaX < 0) {
         event.preventDefault();
         const translateX = Math.max(deltaX, -80);
         currentSwipeCard.style.transform = `translateX(${translateX}px)`;
         
-        // 添加滑動狀態類
         if (translateX < -30) {
             currentSwipeCard.classList.add('swiping');
             if (translateX < -60) {
@@ -2736,25 +2714,21 @@ function handleSwipeMoveMouse(event, index) {
     const deltaX = event.clientX - swipeStartX;
     const deltaY = event.clientY - swipeStartY;
     
-    // 如果檢測到滑動，取消長按計時器
     if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
         clearTimeout(longPressTimer);
         isLongPressActive = false;
         currentSwipeCard.classList.remove('long-press-active');
     }
     
-    // 防止垂直滾動時觸發滑動
     if (Math.abs(deltaY) > Math.abs(deltaX)) {
         return;
     }
     
-    // 只允許向左滑動
     if (deltaX < 0) {
         event.preventDefault();
         const translateX = Math.max(deltaX, -80);
         currentSwipeCard.style.transform = `translateX(${translateX}px)`;
         
-        // 添加滑動狀態類
         if (translateX < -30) {
             currentSwipeCard.classList.add('swiping');
             if (translateX < -60) {
@@ -2794,16 +2768,13 @@ function deleteItemWithSwipe(index) {
     }
 }
 
-// 修正拖曳功能
 function handleDragStart(event, index) {
     event.preventDefault();
-    event.stopPropagation(); // 防止觸發滑動刪除
+    event.stopPropagation();
     
-    // 取消任何長按計時器
     clearTimeout(longPressTimer);
     isLongPressActive = false;
     
-    // 添加拖曳視覺回饋
     const card = event.target.closest('.course-card');
     if (card) {
         card.classList.add('dragging');
@@ -2813,7 +2784,6 @@ function handleDragStart(event, index) {
         document.removeEventListener('mouseup', handleDragEnd);
         document.removeEventListener('touchend', handleDragEnd);
         
-        // 移除拖曳視覺回饋
         if (card) {
             card.classList.remove('dragging');
         }
@@ -2887,7 +2857,7 @@ function saveEdit() {
     items[i].resMin = g('editResMin'); 
     items[i].resSec = g('editResSec');
     items[i].dist = items[i].singleDist * items[i].laps * items[i].sets;
-    items[i].seconds = ((items[i].lapMin * 60 + items[i].lapSec) * items[i].laps * items[i].sets) + ((items[i].resMin * 60 + items[i].resSec) * items[i].sets); // 修正：包含所有組間休息
+    items[i].seconds = ((items[i].lapMin * 60 + items[i].lapSec) * items[i].laps * items[i].sets) + ((items[i].resMin * 60 + items[i].resSec) * items[i].sets);
     
     items[i].totalTime = calculateItemTotalTime(items[i]);
     
@@ -2903,7 +2873,6 @@ function closeEdit() {
     document.getElementById('editModal').classList.remove('active'); 
 }
 
-// 複製課程到剪貼簿
 function copyCoursesToClipboard() {
     if (items.length === 0) {
         showToast("沒有課程項目可以複製！", "error");
@@ -2972,7 +2941,7 @@ function clearInputs() {
 }
 
 // ===============================
-// 計時器功能 - 修正休息邏輯
+// 計時器功能 - 強化螢幕保持亮起
 // ===============================
 
 function timerStart() { 
@@ -2982,8 +2951,13 @@ function timerStart() {
     }
     
     if (!timerState.running) {
-        requestWakeLock();
-        // 直接從第一項開始，不再顯示選擇對話框
+        // 請求螢幕保持亮起
+        requestWakeLock().then(success => {
+            if (success) {
+                showToast("螢幕保持亮起已啟用", "success", 2000);
+            }
+        });
+        
         timerState.running = true;
         timerState.paused = false;
         timerState.currentItemIndex = 0;
@@ -3009,7 +2983,6 @@ function showCourseSelection() {
         return;
     }
     
-    // 如果計時器正在運行，預設選擇當前項目
     if (timerState.running && timerState.currentItemIndex < items.length) {
         selectedCourseIndex = timerState.currentItemIndex;
     } else {
@@ -3064,6 +3037,13 @@ function confirmCourseSelection() {
     timerState.completedDistance = 0;
     timerState.totalItems = items.length;
     
+    // 請求螢幕保持亮起
+    requestWakeLock().then(success => {
+        if (success) {
+            showToast("螢幕保持亮起已啟用", "success", 2000);
+        }
+    });
+    
     startStep();
     showToast("計時開始！", "success");
 }
@@ -3080,21 +3060,18 @@ function startStep() {
         return;
     }
     
-    // 初始化第一組的趟數 - 修正邏輯
     if (timerState.currentLap === 0 && timerState.currentSet === 1 && !timerState.isResting) { 
         timerState.totalLapsInSet = it.laps;
         timerState.currentLapInSet = 0;
-        timerState.currentLap = it.laps; // 設定剩餘趟數為總趟數
+        timerState.currentLap = it.laps;
         timerState.distRemaining = it.dist; 
         timerState.completedDistance = 0;
     }
     
     if (timerState.isResting) {
-        // 休息時間
         timerState.timeRemaining = (it.resMin * 60 + it.resSec);
         playBeep('rest');
     } else {
-        // 游泳時間
         timerState.timeRemaining = (it.lapMin * 60 + it.lapSec);
         playBeep('start');
     }
@@ -3108,7 +3085,6 @@ function runTimer() {
     timerState.intervalId = setInterval(() => {
         if (timerState.paused) return;
         
-        // 在最後3秒播放滴答聲
         if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) {
             playBeep('tick');
         }
@@ -3127,37 +3103,29 @@ function handleStepComplete() {
     const it = items[timerState.currentItemIndex];
     
     if (!timerState.isResting) {
-        // 剛完成一趟游泳
         timerState.currentLap--; 
         timerState.currentLapInSet++;
         timerState.completedDistance += it.singleDist;
         
-        // 更新剩餘距離 = 總距離 - 已完成距離
         timerState.distRemaining = it.dist - timerState.completedDistance;
         
         if (timerState.currentLapInSet < it.laps) {
-            // 還有本組的趟數要游，直接開始下一趟
             startStep();
         } else if (timerState.currentSet < it.sets) { 
-            // 本組完成，還有下一組，進入組間休息
             timerState.isResting = true; 
             startStep(); 
         } else {
-            // 最後一組完成，進入最後的休息
             timerState.isResting = true; 
             startStep();
         }
     } else { 
-        // 休息完成
         if (timerState.currentSet < it.sets) { 
-            // 準備開始下一組
             timerState.isResting = false; 
             timerState.currentSet++; 
-            timerState.currentLapInSet = 0; // 重置本組趟數計數
-            timerState.currentLap = it.laps; // 重置剩餘趟數為總趟數 - 修正這裡
+            timerState.currentLapInSet = 0;
+            timerState.currentLap = it.laps;
             startStep(); 
         } else {
-            // 最後一組的休息完成，進入下一項目
             nextItem();
         }
     }
@@ -3166,12 +3134,11 @@ function handleStepComplete() {
 function nextItem() {
     timerState.currentItemIndex++;
     if (timerState.currentItemIndex < items.length) { 
-        // 重置狀態開始下一個項目
         timerState.currentSet = 1; 
         timerState.currentLap = 0; 
         timerState.currentLapInSet = 0;
         timerState.isResting = false; 
-        timerState.completedDistance = 0; // 新項目重置已完成距離
+        timerState.completedDistance = 0;
         
         startStep(); 
         showToast(`開始第 ${timerState.currentItemIndex + 1} 個項目`, "info");
@@ -3195,11 +3162,9 @@ function updateTimerUI() {
         document.getElementById('distRem').innerText = timerState.distRemaining + "m";
         document.getElementById('restTime').innerText = `${it.resMin}:${it.resSec.toString().padStart(2,'0')}`;
         
-        // 更新當前項目資訊 - 使用加大字體
         document.getElementById('currentItemNum').innerText = timerState.currentItemIndex + 1;
         document.getElementById('totalItems').innerText = items.length;
     } else {
-        // 如果沒有當前項目，顯示初始狀態
         document.getElementById('currentItemNum').innerText = "0";
         document.getElementById('totalItems').innerText = items.length;
     }
@@ -3215,12 +3180,18 @@ function timerPause() {
         clearInterval(timerState.intervalId);
         pauseBtn.textContent = '繼續';
         pauseBtn.style.background = 'var(--neon-green)';
-        // 暫停時釋放喚醒鎖以節省電量
+        
+        // 暫停時釋放喚醒鎖
         releaseWakeLock();
         showToast("計時暫停", "warning");
     } else {
         // 繼續時重新請求喚醒鎖
-        requestWakeLock();
+        requestWakeLock().then(success => {
+            if (success) {
+                showToast("螢幕保持亮起已啟用", "success", 1000);
+            }
+        });
+        
         pauseBtn.textContent = '暫停';
         pauseBtn.style.background = 'var(--neon-blue)';
         runTimer();
@@ -3252,16 +3223,15 @@ function timerEnd() {
         pauseBtn.style.background = 'var(--neon-blue)';
     }
     
+    // 結束時釋放喚醒鎖
     releaseWakeLock();
     
     updateTimerUI(); 
     showToast("計時結束", "warning");
 }
 
-// 修正重選功能 - 允許選擇任一課程繼續
 function timerResetSelect() { 
     if (timerState.running) {
-        // 如果計時器正在運行，先暫停
         if (!timerState.paused) {
             timerPause();
         }
@@ -3293,20 +3263,16 @@ function initPercentage() {
     switchPercentageMode('athlete');
     renderPercentageTable();
     
-    // 初始化後立即更新UI以確保泡泡位置正確
     setTimeout(() => {
         updatePercentageUI();
-        // 確保泡泡在100%位置
         updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
         updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
     }, 100);
 }
 
-// 更新泡泡位置的專用函數
 function updateBubblePosition(bubbleId, rangeElement, percentageValue) {
     const bubble = document.getElementById(bubbleId);
     if (bubble && rangeElement) {
-        // 等待DOM完全渲染
         setTimeout(() => {
             const rangeRect = rangeElement.getBoundingClientRect();
             if (rangeRect.width === 0) return;
@@ -3314,7 +3280,6 @@ function updateBubblePosition(bubbleId, rangeElement, percentageValue) {
             const min = 50, max = 110;
             const normalizedValue = (percentageValue - min) / (max - min);
             
-            // 計算泡泡位置，確保在滑桿範圍內
             const bubbleWidth = 50;
             const trackWidth = rangeRect.width - bubbleWidth;
             const position = normalizedValue * trackWidth;
@@ -3344,10 +3309,8 @@ function switchPercentageMode(m) {
         renderPercentageCards();
     }
     
-    // 切換模式後立即更新UI
     requestAnimationFrame(() => {
         updatePercentageUI();
-        // 確保泡泡位置正確
         if (m === 'athlete') {
             updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
         } else if (m === 'multi') {
@@ -3369,7 +3332,6 @@ function updatePercentageUI() {
 
     const mp = percentageState.multiPct;
     
-    // 確保泡泡位置正確
     if (percentageState.mode === 'athlete') {
         updateBubblePosition('percentageAthleteBubble', percentageMainRange, cp);
     } else if (percentageState.mode === 'multi') {
@@ -3475,128 +3437,6 @@ function addPercentageAthlete() {
     showToast(`新增選手 ${percentageState.athletes.length}`, "success");
 }
 
-// 百分比選手卡滑動刪除功能
-function handlePercentageSwipeStart(event, idx) {
-    if (idx < 4) return; // 前4位選手不能刪除
-    
-    const touch = event.touches[0];
-    percentageSwipeStartX = touch.clientX;
-    percentageSwipeStartY = touch.clientY;
-    currentPercentageSwipeCard = event.currentTarget;
-    event.stopPropagation();
-}
-
-function handlePercentageSwipeMove(event, idx) {
-    if (!currentPercentageSwipeCard || idx < 4) return;
-    
-    const touch = event.touches[0];
-    const deltaX = touch.clientX - percentageSwipeStartX;
-    const deltaY = touch.clientY - percentageSwipeStartY;
-    
-    // 防止垂直滾動時觸發滑動
-    if (Math.abs(deltaY) > Math.abs(deltaX)) {
-        return;
-    }
-    
-    // 只允許向左滑動
-    if (deltaX < 0) {
-        event.preventDefault();
-        const translateX = Math.max(deltaX, -80);
-        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
-        
-        // 添加滑動狀態類
-        if (translateX < -30) {
-            currentPercentageSwipeCard.classList.add('swiping');
-            if (translateX < -60) {
-                currentPercentageSwipeCard.classList.add('swipe-delete-ready');
-            } else {
-                currentPercentageSwipeCard.classList.remove('swipe-delete-ready');
-            }
-        } else {
-            currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
-        }
-    }
-}
-
-function handlePercentageSwipeEnd(event, idx) {
-    if (!currentPercentageSwipeCard || idx < 4) return;
-    
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - percentageSwipeStartX;
-    
-    // 如果滑動距離足夠，執行刪除
-    if (deltaX < -60) {
-        deletePercentageAthleteWithSwipe(idx);
-    } else {
-        // 否則重置位置
-        currentPercentageSwipeCard.style.transform = 'translateX(0)';
-        currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
-    }
-    
-    currentPercentageSwipeCard = null;
-}
-
-function handlePercentageSwipeCancel(idx) {
-    const card = document.querySelector(`.percentage-multi-card[data-index="${idx}"]`);
-    if (card) {
-        card.style.transform = 'translateX(0)';
-        card.classList.remove('swiping', 'swipe-delete-ready');
-    }
-    currentPercentageSwipeCard = null;
-}
-
-function deletePercentageAthleteWithSwipe(idx) {
-    if (idx < 4) {
-        showToast("前4位選手不能刪除", "error");
-        return;
-    }
-    
-    const card = document.querySelector(`.percentage-multi-card[data-index="${idx}"]`);
-    if (card) {
-        card.classList.add('swipe-delete');
-        setTimeout(() => {
-            percentageState.athletes.splice(idx, 1);
-            if (percentageState.multiIdx >= idx && percentageState.multiIdx > 0) percentageState.multiIdx--;
-            updatePercentageDisplay(); 
-            updatePercentageUI();
-            autoSaveData();
-            showToast("選手已刪除", "warning");
-        }, 200);
-    }
-}
-
-function deletePercentageAthlete(idx, event) {
-    if (event) event.stopPropagation();
-    
-    if(idx < 4) {
-        showToast("前4位選手不能刪除", "warning");
-        return;
-    }
-    
-    if(confirm(`確定刪除選手 ${idx + 1}？`)) {
-        percentageState.athletes.splice(idx, 1);
-        if (percentageState.multiIdx >= idx && percentageState.multiIdx > 0) percentageState.multiIdx--;
-        updatePercentageDisplay(); 
-        updatePercentageUI();
-        autoSaveData();
-        showToast("選手已刪除", "warning");
-    }
-}
-
-function clearAllPercentageMulti() { 
-    if(confirm("重置所有選手數據？")) { 
-        percentageState.athletes.forEach((a, i) => {
-            a.vals = ["00","00","00"];
-            a.name = `選手 ${i+1}`;
-        }); 
-        updatePercentageDisplay(); 
-        updatePercentageUI(); 
-        autoSaveData();
-        showToast("所有選手數據已重置", "warning");
-    } 
-}
-
-// 更新選手名稱
 function updatePercentageAthleteName(idx, newName) {
     if (idx >= 0 && idx < percentageState.athletes.length) {
         percentageState.athletes[idx].name = newName || `選手 ${idx+1}`;
@@ -3616,7 +3456,6 @@ function renderPercentageCards() {
         card.className = `percentage-multi-card ${i === percentageState.multiIdx ? 'selected' : ''}`;
         card.setAttribute('data-index', i);
         
-        // 為可以刪除的選手添加滑動事件
         if (i >= 4) {
             card.setAttribute('ontouchstart', `handlePercentageSwipeStart(event, ${i})`);
             card.setAttribute('ontouchmove', `handlePercentageSwipeMove(event, ${i})`);
@@ -3647,6 +3486,19 @@ function renderPercentageCards() {
         `;
         l.appendChild(card);
     });
+}
+
+function clearAllPercentageMulti() { 
+    if(confirm("重置所有選手數據？")) { 
+        percentageState.athletes.forEach((a, i) => {
+            a.vals = ["00","00","00"];
+            a.name = `選手 ${i+1}`;
+        }); 
+        updatePercentageDisplay(); 
+        updatePercentageUI(); 
+        autoSaveData();
+        showToast("所有選手數據已重置", "warning");
+    } 
 }
 
 // ===============================
@@ -3742,7 +3594,6 @@ function initSegment() {
         } 
     };
 
-    // 碼錶邏輯
     const sBtn = document.getElementById("segmentSwStart");
     const lBtn = document.getElementById("segmentSwLap");
     const pBtn = document.getElementById("segmentSwPause");
@@ -3952,12 +3803,9 @@ function scrollSegmentToBottom(id){
 // 初始化與通用函數
 // ===============================
 
-// 初始化所有功能
 window.onload = () => { 
-    // 載入保存的資料
     loadSavedData();
     
-    // 初始化課程規劃拖曳排序 - 修正版本
     const listArea = document.getElementById('listArea');
     if (listArea) {
         new Sortable(listArea, { 
@@ -3967,15 +3815,12 @@ window.onload = () => {
             chosenClass: 'sortable-chosen',
             onStart: function(evt) {
                 isDragging = true;
-                // 添加拖曳視覺回饋
                 evt.item.classList.add('dragging');
             },
             onEnd: function(evt) {
                 isDragging = false;
-                // 移除拖曳視覺回饋
                 evt.item.classList.remove('dragging');
                 
-                // 更新項目順序
                 const newOrder = [];
                 const cards = listArea.querySelectorAll('.course-card');
                 cards.forEach((card, index) => {
@@ -3986,7 +3831,6 @@ window.onload = () => {
                 });
                 items = newOrder;
                 
-                // 重新渲染列表以更新序號
                 updateList();
                 autoSaveData();
                 showToast("項目順序已更新", "success");
@@ -3994,20 +3838,13 @@ window.onload = () => {
         });
     }
     
-    // 初始化百分比工具
     initPercentage();
-    
-    // 初始化分段記錄器
     initSegment();
-    
-    // 初始方向檢測
     checkOrientation();
     
-    // 監聽方向變化
     window.addEventListener('resize', () => {
         checkOrientation();
         
-        // 更新泡泡位置
         setTimeout(() => {
             if (percentageState.mode === 'athlete') {
                 updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
@@ -4019,26 +3856,20 @@ window.onload = () => {
     
     window.addEventListener('orientationchange', checkOrientation);
     
-    // 監聽頁面可見性變化
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && audioContext && audioContext.state === 'suspended') {
             audioContext.resume();
         }
     });
     
-    // 初始化音效系統
     initAudioContext();
-    
-    // 初始化頁面顯示
     switchTab('planner');
     
-    // 顯示歡迎訊息
     setTimeout(() => {
-        showToast('游泳教練全能工作台 v4.8 已就緒', 'success', 2000);
+        showToast('游泳教練全能工作台 v4.9 已就緒', 'success', 2000);
     }, 500);
 };
 
-// 全域封鎖預設長按選單
 window.oncontextmenu = e => { e.preventDefault(); return false; };
 </script>
 </body>
