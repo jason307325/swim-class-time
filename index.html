@@ -2673,6 +2673,9 @@ function updateList() {
             <button class="course-card-swipe-delete-btn" onclick="deleteItemWithSwipe(${i})">🗑️</button>
         </div>
     </div>`).join('');
+    
+    // 初始化Sortable拖曳功能
+    initializeSortable();
 }
 
 function handleCardTouchStart(event, index) {
@@ -2878,6 +2881,45 @@ function handleDragStart(event, index) {
     document.addEventListener('touchend', handleDragEnd);
 }
 
+// 修復：添加初始化Sortable拖曳功能
+function initializeSortable() {
+    const listArea = document.getElementById('listArea');
+    if (!listArea || items.length === 0) return;
+    
+    // 移除現有的Sortable實例
+    if (window.sortableInstance) {
+        window.sortableInstance.destroy();
+    }
+    
+    // 創建新的Sortable實例
+    window.sortableInstance = Sortable.create(listArea, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        dragClass: 'dragging',
+        handle: '.drag-handle',
+        filter: '.course-card-swipe-overlay, .course-card-swipe-delete-btn',
+        preventOnFilter: false,
+        onEnd: function(evt) {
+            const oldIndex = evt.oldIndex;
+            const newIndex = evt.newIndex;
+            
+            if (oldIndex !== newIndex) {
+                // 重新排序items陣列
+                const movedItem = items.splice(oldIndex, 1)[0];
+                items.splice(newIndex, 0, movedItem);
+                
+                // 更新列表顯示
+                updateList();
+                renderHUD();
+                autoSaveData();
+                
+                showToast("項目順序已更新", "success");
+            }
+        }
+    });
+}
+
 function openEdit(i) {
     editingIndex = i; 
     const it = items[i];
@@ -2913,7 +2955,7 @@ function confirmDelete() {
     if (deleteIndex === -1) {
         items = [];
         showToast("所有項目已刪除", "warning");
-    } else {
+    } else if (deleteIndex >= 0 && deleteIndex < items.length) {
         const deletedItem = items[deleteIndex];
         items.splice(deleteIndex, 1);
         showToast(`已刪除: ${deletedItem.title}`, "warning");
@@ -3575,6 +3617,7 @@ function closeNameEdit() {
     document.getElementById('nameEditModal').classList.remove('active');
 }
 
+// 修復：添加刪除百分比選手的函數
 function deletePercentageAthlete(idx, event) {
     event.stopPropagation();
     
@@ -3584,8 +3627,51 @@ function deletePercentageAthlete(idx, event) {
     }
     
     deleteIndex = idx;
-    document.getElementById('confirmMessage').textContent = `確定要刪除「${percentageState.athletes[idx].name}」嗎？`;
+    const athleteName = percentageState.athletes[idx].name;
+    document.getElementById('confirmMessage').textContent = `確定要刪除選手「${athleteName}」嗎？`;
     document.getElementById('confirmDialog').classList.add('active');
+}
+
+// 修復：修正confirmDelete函數以處理選手刪除
+function confirmDelete() {
+    if (deleteIndex === -2) {
+        clearPercentageMultiConfirmed();
+    } else if (deleteIndex === -3) {
+        segmentManualData = [];
+        segmentManualRender();
+        showToast("已清空手動紀錄", "warning");
+    } else if (deleteIndex === -4) {
+        segmentSwData = [];
+        segmentSwStop();
+        segmentSwRender();
+        showToast("已重置碼錶並清空紀錄", "warning");
+    } else if (deleteIndex >= 0 && percentageState.athletes[deleteIndex]) {
+        const deletedName = percentageState.athletes[deleteIndex].name;
+        percentageState.athletes.splice(deleteIndex, 1);
+        
+        if (percentageState.multiIdx >= percentageState.athletes.length) {
+            percentageState.multiIdx = Math.max(0, percentageState.athletes.length - 1);
+        }
+        
+        updatePercentageMultiCards();
+        showToast(`已刪除選手: ${deletedName}`, "warning");
+        autoSaveData();
+    } else if (deleteIndex >= 0 && deleteIndex < items.length) {
+        const deletedItem = items[deleteIndex];
+        items.splice(deleteIndex, 1);
+        updateList();
+        renderHUD();
+        showToast(`已刪除: ${deletedItem.title}`, "warning");
+        autoSaveData();
+    } else if (deleteIndex === -1) {
+        items = [];
+        showToast("所有項目已刪除", "warning");
+        updateList();
+        renderHUD();
+        autoSaveData();
+    }
+    
+    cancelDelete();
 }
 
 // ===============================
@@ -3954,40 +4040,6 @@ function segmentManualSave() {
     }
     
     showToast("分段紀錄已儲存", "success");
-}
-
-function confirmDelete() {
-    if (deleteIndex === -2) {
-        clearPercentageMultiConfirmed();
-    } else if (deleteIndex === -3) {
-        segmentManualData = [];
-        segmentManualRender();
-        showToast("已清空手動紀錄", "warning");
-    } else if (deleteIndex === -4) {
-        segmentSwData = [];
-        segmentSwStop();
-        segmentSwRender();
-        showToast("已重置碼錶並清空紀錄", "warning");
-    } else if (deleteIndex >= 0 && percentageState.athletes[deleteIndex]) {
-        const deletedName = percentageState.athletes[deleteIndex].name;
-        percentageState.athletes.splice(deleteIndex, 1);
-        
-        if (percentageState.multiIdx >= percentageState.athletes.length) {
-            percentageState.multiIdx = Math.max(0, percentageState.athletes.length - 1);
-        }
-        
-        updatePercentageMultiCards();
-        showToast(`已刪除選手: ${deletedName}`, "warning");
-    } else {
-        const deletedItem = items[deleteIndex];
-        items.splice(deleteIndex, 1);
-        updateList();
-        renderHUD();
-        showToast(`已刪除: ${deletedItem?.title || '項目'}`, "warning");
-    }
-    
-    autoSaveData();
-    cancelDelete();
 }
 </script>
 </body>
