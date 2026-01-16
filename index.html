@@ -753,11 +753,26 @@ body {
     font-size: 22px;
 }
 
+/* 百分比多人模式全新樣式 */
+.percentage-multi-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .percentage-multi-header { 
     display: flex; 
     justify-content: space-between; 
+    align-items: center;
     margin-bottom: 8px; 
     flex-shrink: 0; 
+    padding: 0 5px;
+}
+
+.percentage-multi-header .btn-group {
+    display: flex;
+    gap: 8px;
 }
 
 .percentage-multi-hint {
@@ -779,25 +794,38 @@ body {
     border-radius: 8px; 
     font-weight: bold; 
     cursor: pointer;
+    font-size: 12px;
+}
+
+.percentage-multi-header button.add-btn {
+    background: var(--neon-green);
+    color: #fff;
 }
 
 .percentage-multi-cards-container { 
     flex: 1; 
     overflow-y: auto; 
-    padding-bottom: 20px; 
+    padding: 0 5px 20px; 
+    -webkit-overflow-scrolling: touch;
 }
+
+.percentage-multi-cards-container::-webkit-scrollbar { width: 4px; }
+.percentage-multi-cards-container::-webkit-scrollbar-track { background: transparent; }
+.percentage-multi-cards-container::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
 
 .percentage-multi-card { 
     background: #111; 
     border-left: 4px solid var(--neon-green); 
     border-radius: 10px; 
-    padding: 14px; 
+    padding: 12px 14px; 
     margin-bottom: 10px; 
     display: flex; 
     align-items: center; 
     position: relative; 
     transition: all 0.2s;
     overflow: hidden;
+    min-height: 70px;
+    cursor: pointer;
 }
 
 .percentage-multi-card.selected { 
@@ -810,41 +838,12 @@ body {
     font-size: 14px; 
     color: #999; 
     flex-shrink: 0; 
-    min-width: 60px;
-    cursor: text;
-    padding: 2px 4px;
+    min-width: 70px;
+    padding: 4px 6px;
     border-radius: 4px;
     transition: all 0.2s;
+    margin-right: 10px;
     position: relative;
-}
-
-.percentage-multi-card-name:after {
-    content: "點擊編輯名字";
-    position: absolute;
-    top: -20px;
-    left: 0;
-    background: rgba(0,0,0,0.8);
-    color: #aaa;
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-}
-
-.percentage-multi-card:hover .percentage-multi-card-name:after {
-    opacity: 1;
-}
-
-.percentage-multi-card-name:hover {
-    background: rgba(255,255,255,0.05);
-}
-
-.percentage-multi-card-name:focus {
-    outline: 1px solid var(--neon-green);
-    background: rgba(255,255,255,0.1);
 }
 
 .percentage-multi-card.selected .percentage-multi-card-name { 
@@ -852,28 +851,74 @@ body {
     font-weight: bold; 
 }
 
+.percentage-multi-card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 10px;
+}
+
+.percentage-multi-card-base {
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.percentage-multi-card-base span {
+    font-family: monospace;
+    color: #aaa;
+}
+
 .percentage-multi-res { 
     font-family: monospace; 
-    font-size: 24px; 
+    font-size: 22px; 
     color: var(--neon-green); 
     font-weight: 900; 
     margin-left: auto; 
     margin-right: 10px;
+    text-align: right;
+}
+
+.percentage-multi-card-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    background: linear-gradient(90deg, transparent, rgba(255, 59, 48, 0.1));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.percentage-multi-card.swiping .percentage-multi-card-actions {
+    opacity: 1;
 }
 
 .percentage-btn-delete-athlete {
-    background: rgba(255, 59, 48, 0.1); 
+    background: rgba(255, 59, 48, 0.2); 
     color: var(--neon-red); 
     border: 1px solid var(--neon-red);
     border-radius: 50%; 
-    width: 24px; 
-    height: 24px; 
-    font-size: 16px; 
+    width: 40px; 
+    height: 40px; 
+    font-size: 18px; 
     line-height: 1;
     display: flex; 
     align-items: center; 
     justify-content: center; 
     transition: all 0.2s;
+    cursor: pointer;
+}
+
+.percentage-btn-delete-athlete:active {
+    background: rgba(255, 59, 48, 0.4);
 }
 
 /* 統一鍵盤樣式 */
@@ -897,6 +942,7 @@ body {
     border-radius: 8px; 
     cursor: pointer; 
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    touch-action: manipulation;
 }
 
 .unified-keyboard button:active { 
@@ -1415,6 +1461,38 @@ body {
             flex: 0.7;
         } 
     }
+    
+    /* 百分比多人模式橫屏優化 */
+    .percentage-multi-content {
+        flex-direction: row;
+        gap: 15px;
+    }
+    
+    .percentage-multi-cards-container {
+        flex: 1;
+        padding-right: 10px;
+    }
+    
+    .percentage-range-wrapper {
+        width: 300px;
+        flex-shrink: 0;
+        margin-bottom: 0;
+        align-self: center;
+    }
+    
+    .percentage-multi-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .percentage-multi-header .btn-group {
+        width: 100%;
+    }
+    
+    .percentage-multi-header button {
+        flex: 1;
+    }
 }
 
 /* 新增橫屏導航列 */
@@ -1568,46 +1646,6 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
         margin-bottom: 0;
         padding-bottom: 0px;
     }
-}
-
-/* 百分比選手卡滑動刪除樣式 */
-.percentage-multi-card-swipe-overlay {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 80px;
-    background: linear-gradient(90deg, transparent, rgba(255, 59, 48, 0.1));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-}
-
-.percentage-multi-card.swiping .percentage-multi-card-swipe-overlay {
-    opacity: 1;
-}
-
-.percentage-multi-card.swipe-delete-ready .percentage-multi-card-swipe-delete-btn {
-    transform: scale(1);
-}
-
-/* 計時器當前項目標示 - 加大字體 */
-.timer-current-item {
-    font-size: 14px;
-    color: #fff;
-    margin-bottom: 8px;
-    text-align: center;
-    font-weight: bold;
-    text-shadow: 0 0 10px rgba(0,162,255,0.5);
-}
-
-.timer-current-item span {
-    color: var(--neon-blue);
-    font-weight: bold;
-    font-size: 16px;
 }
 
 /* 課程卡長按編輯提示 */
@@ -1844,18 +1882,22 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                 </div>
                 
                 <div id="percentageMultiView">
-                    <div class="percentage-multi-header">
-                        <button onclick="clearAllPercentageMulti()">清空數據</button>
-                        <button style="color:var(--neon-green)" onclick="addPercentageAthlete()">+ 新增選手</button>
-                    </div>
-                    <div class="percentage-multi-hint">選手姓名可點擊編輯，向左滑動可刪除選手</div>
-                    <div class="percentage-range-wrapper">
-                        <div class="percentage-range-track"></div>
-                        <div class="percentage-bubble" id="percentageMultiBubble">100%</div>
-                        <input type="range" class="percentage-range-input" id="percentageMRange" min="50" max="110" step="1" value="100">
-                    </div>
-                    <div class="percentage-multi-cards-container">
-                        <div id="percentageMultiCardsList"></div>
+                    <div class="percentage-multi-content">
+                        <div class="percentage-multi-header">
+                            <div class="btn-group">
+                                <button onclick="clearAllPercentageMulti()">清空數據</button>
+                                <button class="add-btn" onclick="addPercentageAthlete()">+ 新增選手</button>
+                            </div>
+                        </div>
+                        <div class="percentage-multi-hint">點擊選擇選手，向左滑動可刪除選手</div>
+                        <div class="percentage-range-wrapper">
+                            <div class="percentage-range-track"></div>
+                            <div class="percentage-bubble" id="percentageMultiBubble">100%</div>
+                            <input type="range" class="percentage-range-input" id="percentageMRange" min="50" max="110" step="1" value="100">
+                        </div>
+                        <div class="percentage-multi-cards-container">
+                            <div id="percentageMultiCardsList"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1989,7 +2031,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 <script>
 // ===============================
 // 游泳教練全能工作台 v4.9
-// 最終修正版 - 修復百分比工具網頁版按鈕點擊問題
+// 完全修正版 - 修復百分比工具網頁版與桌面版問題
 // ===============================
 
 // 全域變數
@@ -2520,7 +2562,6 @@ function addItem() {
     showToast("項目已添加！", "success");
 }
 
-// 更新：修正課程卡顯示，加入組數，優化排版
 function updateList() {
     const listArea = document.getElementById('listArea');
     if (!listArea) return;
@@ -2579,7 +2620,6 @@ function updateList() {
     </div>`).join('');
 }
 
-// 課程卡長按編輯功能
 function handleCardTouchStart(event, index) {
     if (event.target.closest('.drag-handle')) return;
     
@@ -3230,7 +3270,7 @@ function timerResetSelect() {
 }
 
 // ===============================
-// 百分比工具功能 - 修復網頁版按鈕點擊問題
+// 百分比工具功能 - 完全重新設計多人模式
 // ===============================
 
 function initPercentage() {
@@ -3414,6 +3454,7 @@ function scrollToPercentageHighlight() {
     if(target) target.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
+// 全新的百分比多人模式功能
 function addPercentageAthlete() {
     if(percentageState.athletes.length >= 20) { 
         showToast("最多 20 位選手", "warning");
@@ -3427,62 +3468,8 @@ function addPercentageAthlete() {
     showToast(`新增選手 ${percentageState.athletes.length}`, "success");
 }
 
-// 百分比選手卡滑動刪除功能
-function handlePercentageSwipeStart(event, index) {
-    const touch = event.touches[0];
-    percentageSwipeStartX = touch.clientX;
-    percentageSwipeStartY = touch.clientY;
-    currentPercentageSwipeCard = event.currentTarget;
-}
-
-function handlePercentageSwipeMove(event, index) {
-    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
-    
-    const touch = event.touches[0];
-    const deltaX = touch.clientX - percentageSwipeStartX;
-    const deltaY = touch.clientY - percentageSwipeStartY;
-    
-    if (Math.abs(deltaY) > Math.abs(deltaX)) {
-        return;
-    }
-    
-    if (deltaX < 0) {
-        event.preventDefault();
-        const translateX = Math.max(deltaX, -80);
-        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
-        
-        if (translateX < -30) {
-            currentPercentageSwipeCard.classList.add('swiping');
-            if (translateX < -60) {
-                currentPercentageSwipeCard.classList.add('swipe-delete-ready');
-            } else {
-                currentPercentageSwipeCard.classList.remove('swipe-delete-ready');
-            }
-        } else {
-            currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
-        }
-    }
-}
-
-function handlePercentageSwipeEnd(event, index) {
-    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
-    
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - percentageSwipeStartX;
-    
-    if (deltaX < -60) {
-        deletePercentageAthlete(index);
-    } else {
-        currentPercentageSwipeCard.style.transform = 'translateX(0)';
-        currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
-    }
-    
-    currentPercentageSwipeCard = null;
-}
-
-// 修復網頁版清空數據按鈕點擊問題
 function clearAllPercentageMulti() { 
-    if(confirm("重置所有選手數據？")) { 
+    if(confirm("確定要重置所有選手數據嗎？此操作無法復原！")) { 
         percentageState.athletes.forEach((a, i) => {
             a.vals = ["00","00","00"];
             a.name = `選手 ${i+1}`;
@@ -3494,7 +3481,6 @@ function clearAllPercentageMulti() {
     } 
 }
 
-// 修復網頁版刪除選手按鈕點擊問題
 function deletePercentageAthlete(idx, event) {
     if (event) {
         event.preventDefault();
@@ -3529,6 +3515,67 @@ function updatePercentageAthleteName(idx, newName) {
     }
 }
 
+// 百分比選手卡滑動刪除功能
+function handlePercentageSwipeStart(event, index) {
+    const touch = event.touches[0];
+    percentageSwipeStartX = touch.clientX;
+    percentageSwipeStartY = touch.clientY;
+    currentPercentageSwipeCard = event.currentTarget;
+    event.currentTarget.classList.add('swiping');
+}
+
+function handlePercentageSwipeMove(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    const deltaY = touch.clientY - percentageSwipeStartY;
+    
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return;
+    }
+    
+    if (deltaX < 0) {
+        event.preventDefault();
+        const translateX = Math.max(deltaX, -80);
+        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
+        
+        if (translateX < -60) {
+            currentPercentageSwipeCard.classList.add('swipe-delete-ready');
+        } else {
+            currentPercentageSwipeCard.classList.remove('swipe-delete-ready');
+        }
+    }
+}
+
+function handlePercentageSwipeEnd(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    
+    if (deltaX < -60) {
+        deletePercentageAthlete(index);
+    } else {
+        currentPercentageSwipeCard.style.transform = 'translateX(0)';
+        currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
+    }
+    
+    currentPercentageSwipeCard = null;
+}
+
+function handlePercentageCardClick(event, index) {
+    // 如果正在滑動，不要觸發點擊事件
+    if (currentPercentageSwipeCard && Math.abs(percentageSwipeStartX - event.clientX) > 10) {
+        return;
+    }
+    
+    percentageState.multiIdx = index; 
+    updatePercentageDisplay(); 
+    updatePercentageUI(); 
+    autoSaveData();
+}
+
 function renderPercentageCards() {
     const l = document.getElementById('percentageMultiCardsList');
     if(!l) return;
@@ -3540,27 +3587,80 @@ function renderPercentageCards() {
         card.className = `percentage-multi-card ${i === percentageState.multiIdx ? 'selected' : ''}`;
         card.setAttribute('data-index', i);
         
-        // 為所有卡片添加滑動事件
-        card.setAttribute('ontouchstart', `handlePercentageSwipeStart(event, ${i})`);
-        card.setAttribute('ontouchmove', `handlePercentageSwipeMove(event, ${i})`);
-        card.setAttribute('ontouchend', `handlePercentageSwipeEnd(event, ${i})`);
+        // 添加觸控事件
+        card.addEventListener('touchstart', (e) => handlePercentageSwipeStart(e, i));
+        card.addEventListener('touchmove', (e) => handlePercentageSwipeMove(e, i));
+        card.addEventListener('touchend', (e) => handlePercentageSwipeEnd(e, i));
         
-        card.onclick = (e) => { 
-            if (!card.classList.contains('swiping')) {
-                percentageState.multiIdx = i; 
-                updatePercentageDisplay(); 
-                updatePercentageUI(); 
-                autoSaveData();
+        // 添加滑鼠事件
+        card.addEventListener('mousedown', (e) => {
+            percentageSwipeStartX = e.clientX;
+            percentageSwipeStartY = e.clientY;
+            currentPercentageSwipeCard = card;
+            card.classList.add('swiping');
+        });
+        
+        card.addEventListener('mousemove', (e) => {
+            if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != i) return;
+            
+            const deltaX = e.clientX - percentageSwipeStartX;
+            const deltaY = e.clientY - percentageSwipeStartY;
+            
+            if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+            
+            if (deltaX < 0) {
+                e.preventDefault();
+                const translateX = Math.max(deltaX, -80);
+                card.style.transform = `translateX(${translateX}px)`;
+                
+                if (translateX < -60) {
+                    card.classList.add('swipe-delete-ready');
+                } else {
+                    card.classList.remove('swipe-delete-ready');
+                }
             }
-        };
+        });
+        
+        card.addEventListener('mouseup', (e) => {
+            if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != i) return;
+            
+            const deltaX = e.clientX - percentageSwipeStartX;
+            
+            if (deltaX < -60) {
+                deletePercentageAthlete(i);
+            } else {
+                card.style.transform = 'translateX(0)';
+                card.classList.remove('swiping', 'swipe-delete-ready');
+                
+                // 如果沒有滑動，執行點擊選擇
+                if (Math.abs(deltaX) < 10) {
+                    handlePercentageCardClick(e, i);
+                }
+            }
+            
+            currentPercentageSwipeCard = null;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            if (currentPercentageSwipeCard && currentPercentageSwipeCard.dataset.index == i) {
+                card.style.transform = 'translateX(0)';
+                card.classList.remove('swiping', 'swipe-delete-ready');
+                currentPercentageSwipeCard = null;
+            }
+        });
         
         card.innerHTML = `
             <div class="percentage-multi-card-name" contenteditable="true" 
                  onblur="updatePercentageAthleteName(${i}, this.innerText)"
                  onclick="event.stopPropagation()">${a.name}</div>
+            <div class="percentage-multi-card-info">
+                <div class="percentage-multi-card-base">
+                    <span>基時: ${a.vals[0]}:${a.vals[1]}.${a.vals[2]}</span>
+                </div>
+            </div>
             <div class="percentage-multi-res">${percentageFmt(ms)}</div>
-            <div class="percentage-multi-card-swipe-overlay">
-                <button class="course-card-swipe-delete-btn" onclick="deletePercentageAthlete(${i}, event)">🗑️</button>
+            <div class="percentage-multi-card-actions">
+                <button class="percentage-btn-delete-athlete" onclick="deletePercentageAthlete(${i}, event)">🗑️</button>
             </div>
         `;
         l.appendChild(card);
