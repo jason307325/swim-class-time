@@ -680,7 +680,7 @@ body {
 
 .percentage-bubble {
     position: absolute; 
-    left: 5px; 
+    left: 0; 
     top: 50%;
     width: 50px; 
     height: 50px; 
@@ -695,6 +695,7 @@ body {
     color: #fff;
     transition: transform 0.1s ease-out;
     border: 3px solid rgba(255,255,255,0.3);
+    will-change: transform;
 }
 
 #percentageAthleteBubble { 
@@ -3317,7 +3318,7 @@ function updateTimerDisplay() {
 }
 
 // ===============================
-// 百分比工具功能
+// 百分比工具功能 - 修復版
 // ===============================
 
 function switchPercentageMode(mode) {
@@ -3337,6 +3338,7 @@ function switchPercentageMode(mode) {
         if (percentageMainRange) {
             percentageMainRange.value = percentageState.currentPct;
             updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
+            updatePercentageResult();
         }
     } else if (mode === 'coach') {
         document.getElementById('percentageKeyboard').style.display = 'grid';
@@ -3390,6 +3392,8 @@ function percentagePress(key) {
         }
         
         updatePercentageDisplay();
+        updatePercentageResult();
+        generatePercentageTable(); // 修復：個人版修改時同步更新教練版表格
     } else if (percentageState.mode === 'coach') {
         percentageFocusBox(idx);
     } else if (percentageState.mode === 'multi') {
@@ -3432,8 +3436,25 @@ function updatePercentageDisplay() {
     document.getElementById('percentage-box-0').textContent = percentageState.base[0];
     document.getElementById('percentage-box-1').textContent = percentageState.base[1];
     document.getElementById('percentage-box-2').textContent = percentageState.base[2];
+}
+
+// 修復：更新泡泡位置函數 - 使用transform提升性能
+function updateBubblePosition(bubbleId, rangeElement, value) {
+    const bubble = document.getElementById(bubbleId);
+    if (!bubble || !rangeElement) return;
     
-    updatePercentageResult();
+    const rangeWidth = rangeElement.offsetWidth;
+    const thumbWidth = 50;
+    const min = parseInt(rangeElement.min);
+    const max = parseInt(rangeElement.max);
+    
+    // 計算百分比位置
+    const percentage = (value - min) / (max - min);
+    // 計算translateX距離
+    const translateX = percentage * (rangeWidth - thumbWidth);
+    
+    bubble.style.transform = `translateX(${translateX}px)`;
+    bubble.textContent = value + "%";
 }
 
 function updatePercentageResult() {
@@ -3450,23 +3471,6 @@ function updatePercentageResult() {
     
     const resultStr = `${resultMins.toString().padStart(2,'0')}:${resultSecs.toString().padStart(2,'0')}.${resultCents.toString().padStart(2,'0')}`;
     document.getElementById('percentageResText').textContent = resultStr;
-}
-
-function updateBubblePosition(bubbleId, rangeElement, value) {
-    const bubble = document.getElementById(bubbleId);
-    if (!bubble || !rangeElement) return;
-    
-    const rangeRect = rangeElement.getBoundingClientRect();
-    const rangeWidth = rangeElement.offsetWidth;
-    const thumbWidth = 50;
-    const min = parseInt(rangeElement.min);
-    const max = parseInt(rangeElement.max);
-    
-    const percentage = (value - min) / (max - min);
-    const left = (rangeWidth - thumbWidth) * percentage;
-    
-    bubble.style.left = `${left}px`;
-    bubble.textContent = value + "%";
 }
 
 function generatePercentageTable() {
@@ -3487,7 +3491,7 @@ function generatePercentageTable() {
         
         const resultStr = `${resultMins.toString().padStart(2,'0')}:${resultSecs.toString().padStart(2,'0')}.${resultCents.toString().padStart(2,'0')}`;
         
-        const isHighlight = pct === 100;
+        const isHighlight = pct === (percentageMainRange ? parseInt(percentageMainRange.value) : 100);
         
         html += `<tr ${isHighlight ? 'class="highlight"' : ''}>
             <td>${pct}%</td>
@@ -3531,6 +3535,7 @@ function clearPercentageMultiConfirmed() {
     showToast("已清空所有選手資料", "warning");
 }
 
+// 修復：更新百分比多人卡片顯示，包含滑動刪除功能
 function updatePercentageMultiCards() {
     const container = document.getElementById('percentageMultiCardsList');
     if (!container) return;
@@ -3556,7 +3561,13 @@ function updatePercentageMultiCards() {
         html += `
         <div class="percentage-multi-card ${isSelected ? 'selected' : ''}" 
              data-index="${idx}"
-             onclick="selectPercentageAthlete(${idx})">
+             ontouchstart="handlePercentageCardTouchStart(event, ${idx})"
+             ontouchmove="handlePercentageSwipeMove(event, ${idx})"
+             ontouchend="handlePercentageCardTouchEnd(event, ${idx})"
+             onmousedown="handlePercentageCardMouseDown(event, ${idx})"
+             onmousemove="handlePercentageSwipeMoveMouse(event, ${idx})"
+             onmouseup="handlePercentageCardMouseUp(event, ${idx})"
+             onmouseleave="handlePercentageSwipeCancel(${idx})">
             <div class="percentage-multi-card-name-display" onclick="editAthleteName(${idx}, event)">
                 ${athlete.name}
             </div>
@@ -3568,7 +3579,7 @@ function updatePercentageMultiCards() {
             </div>
             <div class="percentage-multi-res">${resultStr}</div>
             <div class="percentage-multi-card-actions">
-                <button class="percentage-btn-delete-athlete" onclick="deletePercentageAthlete(${idx}, event)">✕</button>
+                <button class="percentage-btn-delete-athlete" onclick="deletePercentageAthleteWithSwipe(${idx})">🗑️</button>
             </div>
         </div>`;
     });
@@ -3590,6 +3601,153 @@ function selectPercentageAthlete(idx) {
     
     updatePercentageMultiCards();
     autoSaveData();
+}
+
+// 修復：百分比選手卡片滑動刪除相關函數
+function handlePercentageCardTouchStart(event, index) {
+    if (event.target.closest('.percentage-multi-card-name-display')) return;
+    
+    const touch = event.touches[0];
+    percentageSwipeStartX = touch.clientX;
+    percentageSwipeStartY = touch.clientY;
+    currentPercentageSwipeCard = event.currentTarget;
+}
+
+function handlePercentageCardMouseDown(event, index) {
+    if (event.target.closest('.percentage-multi-card-name-display')) return;
+    
+    percentageSwipeStartX = event.clientX;
+    percentageSwipeStartY = event.clientY;
+    currentPercentageSwipeCard = event.currentTarget;
+    event.preventDefault();
+}
+
+function handlePercentageCardTouchEnd(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    
+    if (deltaX < -60) {
+        deletePercentageAthleteWithSwipe(index);
+    } else {
+        currentPercentageSwipeCard.style.transform = 'translateX(0)';
+        currentPercentageSwipeCard.classList.remove('swiping');
+    }
+    
+    currentPercentageSwipeCard = null;
+}
+
+function handlePercentageCardMouseUp(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const deltaX = event.clientX - percentageSwipeStartX;
+    
+    if (deltaX < -60) {
+        deletePercentageAthleteWithSwipe(index);
+    } else {
+        currentPercentageSwipeCard.style.transform = 'translateX(0)';
+        currentPercentageSwipeCard.classList.remove('swiping');
+    }
+    
+    currentPercentageSwipeCard = null;
+}
+
+function handlePercentageSwipeMove(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    const deltaY = touch.clientY - percentageSwipeStartY;
+    
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return;
+    }
+    
+    if (deltaX < 0) {
+        event.preventDefault();
+        const translateX = Math.max(deltaX, -80);
+        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
+        
+        if (translateX < -30) {
+            currentPercentageSwipeCard.classList.add('swiping');
+        } else {
+            currentPercentageSwipeCard.classList.remove('swiping');
+        }
+    }
+}
+
+function handlePercentageSwipeMoveMouse(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const deltaX = event.clientX - percentageSwipeStartX;
+    const deltaY = event.clientY - percentageSwipeStartY;
+    
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return;
+    }
+    
+    if (deltaX < 0) {
+        event.preventDefault();
+        const translateX = Math.max(deltaX, -80);
+        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
+        
+        if (translateX < -30) {
+            currentPercentageSwipeCard.classList.add('swiping');
+        } else {
+            currentPercentageSwipeCard.classList.remove('swiping');
+        }
+    }
+}
+
+function handlePercentageSwipeCancel(index) {
+    const card = document.querySelector(`.percentage-multi-card[data-index="${index}"]`);
+    if (card) {
+        card.style.transform = 'translateX(0)';
+        card.classList.remove('swiping');
+    }
+    currentPercentageSwipeCard = null;
+}
+
+function deletePercentageAthleteWithSwipe(index) {
+    const card = document.querySelector(`.percentage-multi-card[data-index="${index}"]`);
+    if (card) {
+        card.style.transform = 'translateX(-100px)';
+        card.style.opacity = '0';
+        setTimeout(() => {
+            if (percentageState.athletes.length <= 1) {
+                showToast("至少需要保留一位選手", "error");
+                card.style.transform = 'translateX(0)';
+                card.style.opacity = '1';
+                return;
+            }
+            
+            const deletedName = percentageState.athletes[index].name;
+            percentageState.athletes.splice(index, 1);
+            
+            if (percentageState.multiIdx >= percentageState.athletes.length) {
+                percentageState.multiIdx = Math.max(0, percentageState.athletes.length - 1);
+            }
+            
+            updatePercentageMultiCards();
+            showToast(`已刪除選手: ${deletedName}`, "warning");
+            autoSaveData();
+        }, 200);
+    }
+}
+
+function deletePercentageAthlete(idx, event) {
+    event.stopPropagation();
+    
+    if (percentageState.athletes.length <= 1) {
+        showToast("至少需要保留一位選手", "error");
+        return;
+    }
+    
+    deleteIndex = idx;
+    const athleteName = percentageState.athletes[idx].name;
+    document.getElementById('confirmMessage').textContent = `確定要刪除選手「${athleteName}」嗎？`;
+    document.getElementById('confirmDialog').classList.add('active');
 }
 
 function editAthleteName(idx, event) {
@@ -3617,34 +3775,22 @@ function closeNameEdit() {
     document.getElementById('nameEditModal').classList.remove('active');
 }
 
-// 修復：添加刪除百分比選手的函數
-function deletePercentageAthlete(idx, event) {
-    event.stopPropagation();
-    
-    if (percentageState.athletes.length <= 1) {
-        showToast("至少需要保留一位選手", "error");
-        return;
-    }
-    
-    deleteIndex = idx;
-    const athleteName = percentageState.athletes[idx].name;
-    document.getElementById('confirmMessage').textContent = `確定要刪除選手「${athleteName}」嗎？`;
-    document.getElementById('confirmDialog').classList.add('active');
-}
-
 // 修復：修正confirmDelete函數以處理選手刪除
 function confirmDelete() {
     if (deleteIndex === -2) {
         clearPercentageMultiConfirmed();
+        cancelDelete();
     } else if (deleteIndex === -3) {
         segmentManualData = [];
         segmentManualRender();
         showToast("已清空手動紀錄", "warning");
+        cancelDelete();
     } else if (deleteIndex === -4) {
         segmentSwData = [];
         segmentSwStop();
         segmentSwRender();
         showToast("已重置碼錶並清空紀錄", "warning");
+        cancelDelete();
     } else if (deleteIndex >= 0 && percentageState.athletes[deleteIndex]) {
         const deletedName = percentageState.athletes[deleteIndex].name;
         percentageState.athletes.splice(deleteIndex, 1);
@@ -3656,6 +3802,7 @@ function confirmDelete() {
         updatePercentageMultiCards();
         showToast(`已刪除選手: ${deletedName}`, "warning");
         autoSaveData();
+        cancelDelete();
     } else if (deleteIndex >= 0 && deleteIndex < items.length) {
         const deletedItem = items[deleteIndex];
         items.splice(deleteIndex, 1);
@@ -3663,15 +3810,15 @@ function confirmDelete() {
         renderHUD();
         showToast(`已刪除: ${deletedItem.title}`, "warning");
         autoSaveData();
+        cancelDelete();
     } else if (deleteIndex === -1) {
         items = [];
         showToast("所有項目已刪除", "warning");
         updateList();
         renderHUD();
         autoSaveData();
+        cancelDelete();
     }
-    
-    cancelDelete();
 }
 
 // ===============================
@@ -3885,7 +4032,7 @@ function segmentSwUpdate() {
 }
 
 // ===============================
-// 頁面初始化
+// 頁面初始化 - 修復版
 // ===============================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3901,23 +4048,64 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setFocus('classTime');
     
+    // 修復：百分比滑桿事件監聽 - 使用requestAnimationFrame優化性能
     if (percentageMainRange) {
+        let rangeUpdatePending = false;
+        
         percentageMainRange.addEventListener('input', function() {
             percentageState.currentPct = parseInt(this.value);
-            updateBubblePosition('percentageAthleteBubble', this, percentageState.currentPct);
-            updatePercentageResult();
-            autoSaveData();
+            
+            if (!rangeUpdatePending) {
+                rangeUpdatePending = true;
+                requestAnimationFrame(() => {
+                    updateBubblePosition('percentageAthleteBubble', this, percentageState.currentPct);
+                    updatePercentageResult();
+                    generatePercentageTable(); // 修復：滑動時同步更新教練版表格
+                    autoSaveData();
+                    rangeUpdatePending = false;
+                });
+            }
         });
+        
+        // 修復：初始化泡泡位置
+        setTimeout(() => {
+            updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
+        }, 100);
     }
     
     if (percentageMRange) {
+        let multiRangeUpdatePending = false;
+        
         percentageMRange.addEventListener('input', function() {
             percentageState.multiPct = parseInt(this.value);
-            updateBubblePosition('percentageMultiBubble', this, percentageState.multiPct);
-            updatePercentageMultiCards();
-            autoSaveData();
+            
+            if (!multiRangeUpdatePending) {
+                multiRangeUpdatePending = true;
+                requestAnimationFrame(() => {
+                    updateBubblePosition('percentageMultiBubble', this, percentageState.multiPct);
+                    updatePercentageMultiCards();
+                    autoSaveData();
+                    multiRangeUpdatePending = false;
+                });
+            }
         });
+        
+        // 修復：初始化泡泡位置
+        setTimeout(() => {
+            updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
+        }, 100);
     }
+    
+    // 修復：窗口大小改變時更新泡泡位置
+    window.addEventListener('resize', function() {
+        setTimeout(() => {
+            if (percentageState.mode === 'athlete' && percentageMainRange) {
+                updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
+            } else if (percentageState.mode === 'multi' && percentageMRange) {
+                updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
+            }
+        }, 100);
+    });
     
     document.getElementById('segmentBtnManualClear').addEventListener('click', function() {
         deleteIndex = -3;
