@@ -746,46 +746,130 @@ let timerState = { running: false, paused: false, currentItemIndex: 0, currentSe
 let selectedCourseIndex = 0;
 let deleteIndex = -1;
 let isDragging = false;
+let wakeLock = null; // 螢幕喚醒鎖
 
 // 全域封鎖預設長按選單
 window.oncontextmenu = e => { e.preventDefault(); return false; };
 
-// 創建音效
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-function playBeep(frequency, duration, volume = 0.7) {
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    
-    oscillator.frequency.value = frequency;
-    oscillator.type = 'square';
-    
-    const now = audioCtx.currentTime;
-    gainNode.gain.setValueAtTime(0, now);
-    gainNode.gain.linearRampToValueAtTime(volume, now + 0.001);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
-    
-    oscillator.start(now);
-    oscillator.stop(now + duration);
+// 音效系統改進 - 使用更真實的計時鐘音效
+function createAudioContext() {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) {
+        console.warn('Web Audio API not supported');
+        return null;
+    }
+    return new AudioContext();
 }
 
-function playShortBeep() {
-    playBeep(1500, 0.15, 0.8);
+const audioContext = createAudioContext();
+
+// 改進的音效函數 - 使用更真實的計時器音效
+function playBeep(type) {
+    if (!audioContext) return;
+    
+    try {
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // 根據類型調整音效
+        if (type === 'start') {
+            // 開始音效 - 類似哨音
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+            oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.2);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.9, audioContext.currentTime + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+            
+        } else if (type === 'rest') {
+            // 休息開始音效 - 雙音提示
+            oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.9, audioContext.currentTime + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+            
+            // 添加第二個音
+            setTimeout(() => {
+                if (audioContext.state === 'closed') return;
+                const oscillator2 = audioContext.createOscillator();
+                const gainNode2 = audioContext.createGain();
+                
+                oscillator2.connect(gainNode2);
+                gainNode2.connect(audioContext.destination);
+                
+                oscillator2.frequency.setValueAtTime(800, audioContext.currentTime);
+                oscillator2.type = 'sine';
+                
+                gainNode2.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode2.gain.linearRampToValueAtTime(0.9, audioContext.currentTime + 0.05);
+                gainNode2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+                
+                oscillator2.start(audioContext.currentTime);
+                oscillator2.stop(audioContext.currentTime + 0.3);
+            }, 150);
+            
+        } else if (type === 'tick') {
+            // 計時器滴答聲（用於倒數最後幾秒）
+            oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.6, audioContext.currentTime + 0.02);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+    } catch (e) {
+        console.log('音效播放失敗:', e);
+    }
 }
 
-function playLongBeep() {
-    playBeep(1000, 0.4, 0.8);
+// 請求螢幕保持亮起
+async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('螢幕保持亮起已啟用');
+            
+            // 監聽喚醒鎖釋放事件
+            wakeLock.addEventListener('release', () => {
+                console.log('螢幕喚醒鎖已釋放');
+            });
+        } catch (err) {
+            console.log(`無法啟用螢幕保持亮起: ${err.name}, ${err.message}`);
+        }
+    }
 }
 
-function playWhistle(type) {
-    if (type === 'start') {
-        playShortBeep();
-    } else if (type === 'rest') {
-        playLongBeep();
+// 釋放螢幕喚醒鎖
+function releaseWakeLock() {
+    if (wakeLock !== null) {
+        wakeLock.release()
+            .then(() => {
+                wakeLock = null;
+                console.log('螢幕喚醒鎖已釋放');
+            })
+            .catch(err => {
+                console.log('釋放螢幕喚醒鎖失敗:', err);
+            });
     }
 }
 
@@ -794,6 +878,11 @@ function switchTab(t) {
     // 停止任何正在運行的計時器
     if (timerState.intervalId) {
         clearInterval(timerState.intervalId);
+    }
+    
+    // 如果離開計時器頁面，釋放喚醒鎖
+    if (t !== 'clock') {
+        releaseWakeLock();
     }
     
     // 隱藏所有頁面
@@ -1139,6 +1228,8 @@ function timerStart() {
     }
     
     if (!timerState.running) {
+        // 請求螢幕保持亮起
+        requestWakeLock();
         showCourseSelection();
     } else if (timerState.paused) {
         timerPause();
@@ -1218,10 +1309,10 @@ function startStep() {
     
     if (timerState.isResting) {
         timerState.timeRemaining = (it.resMin * 60 + it.resSec);
-        playWhistle('rest');
+        playBeep('rest');
     } else {
         timerState.timeRemaining = (it.lapMin * 60 + it.lapSec);
-        playWhistle('start');
+        playBeep('start');
     }
     
     updateTimerUI(); 
@@ -1232,6 +1323,12 @@ function runTimer() {
     clearInterval(timerState.intervalId);
     timerState.intervalId = setInterval(() => {
         if (timerState.paused) return;
+        
+        // 在最後3秒播放滴答聲
+        if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) {
+            playBeep('tick');
+        }
+        
         timerState.timeRemaining--;
         if (timerState.timeRemaining <= 0) { 
             clearInterval(timerState.intervalId); 
@@ -1328,6 +1425,9 @@ function timerEnd() {
     pauseBtn.textContent = '暫停';
     pauseBtn.style.background = 'var(--neon-blue)';
     
+    // 釋放螢幕喚醒鎖
+    releaseWakeLock();
+    
     updateTimerUI(); 
 }
 
@@ -1382,6 +1482,13 @@ window.onload = () => {
     // 監聽方向變化
     window.addEventListener('resize', handleOrientationChange);
     window.addEventListener('orientationchange', handleOrientationChange);
+    
+    // 監聽頁面可見性變化，當頁面重新可見時恢復音效上下文
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && audioContext && audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+    });
 };
 </script>
 </body>
