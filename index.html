@@ -2073,7 +2073,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 <script>
 // ===============================
 // 游泳教練全能工作台 v4.9
-// 完全修正版 - 新增百分比多人模式選手名稱編輯功能
+// 完全修正版 - 修正百分比多人模式選手名稱編輯功能
 // ===============================
 
 // 全域變數
@@ -3313,7 +3313,7 @@ function timerResetSelect() {
 }
 
 // ===============================
-// 百分比工具功能 - 新增名稱編輯功能
+// 百分比工具功能 - 修正名稱編輯功能
 // ===============================
 
 function initPercentage() {
@@ -3551,7 +3551,7 @@ function deletePercentageAthlete(idx, event) {
     showToast("選手已刪除", "warning");
 }
 
-// 新增：開始編輯選手名稱
+// 新增：開始編輯選手名稱 - 修正版
 function startEditPercentageAthleteName(idx, event) {
     if (event) {
         event.stopPropagation();
@@ -3565,12 +3565,41 @@ function startEditPercentageAthleteName(idx, event) {
     percentageState.athletes[idx].isEditing = true;
     renderPercentageCards();
     
-    // 聚焦到輸入框
+    // 聚焦到輸入框並觸發鍵盤
     setTimeout(() => {
         const input = document.querySelector(`[data-athlete-idx="${idx}"] .percentage-multi-card-name-edit`);
         if (input) {
+            // 移除 readonly 屬性，讓鍵盤可以彈出
+            input.removeAttribute('readonly');
+            
+            // 強制聚焦並觸發鍵盤
             input.focus();
             input.select();
+            
+            // 對於 iOS 設備，需要額外處理
+            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                // iOS 可能需要設定 selection range
+                input.setSelectionRange(0, input.value.length);
+                
+                // 觸發虛擬鍵盤
+                setTimeout(() => {
+                    input.click();
+                }, 100);
+            }
+            
+            // 監聽失去焦點事件
+            input.addEventListener('blur', function onBlur() {
+                finishEditPercentageAthleteName(idx);
+                input.removeEventListener('blur', onBlur);
+            });
+            
+            // 監聽 Enter 鍵
+            input.addEventListener('keydown', function onKeyDown(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    finishEditPercentageAthleteName(idx);
+                }
+            });
         }
     }, 10);
 }
@@ -3581,9 +3610,9 @@ function saveCurrentEditingName() {
         if (athlete.isEditing) {
             const input = document.querySelector(`[data-athlete-idx="${idx}"] .percentage-multi-card-name-edit`);
             if (input) {
-                athlete.name = input.value.trim() || `選手 ${idx + 1}`;
+                const newName = input.value.trim();
+                athlete.name = newName || `選手 ${idx + 1}`;
                 athlete.isEditing = false;
-                renderPercentageCards();
                 autoSaveData();
             }
         }
@@ -3595,21 +3624,17 @@ function finishEditPercentageAthleteName(idx) {
     if (idx >= 0 && idx < percentageState.athletes.length) {
         const input = document.querySelector(`[data-athlete-idx="${idx}"] .percentage-multi-card-name-edit`);
         if (input) {
-            percentageState.athletes[idx].name = input.value.trim() || `選手 ${idx + 1}`;
+            const newName = input.value.trim();
+            percentageState.athletes[idx].name = newName || `選手 ${idx + 1}`;
             percentageState.athletes[idx].isEditing = false;
+            
+            // 重新渲染卡片
+            setTimeout(() => {
+                renderPercentageCards();
+                autoSaveData();
+                showToast("選手名稱已更新", "success", 1500);
+            }, 100);
         }
-        renderPercentageCards();
-        autoSaveData();
-    }
-}
-
-// 新增：處理名稱輸入框的鍵盤事件
-function handleNameInputKeydown(idx, event) {
-    if (event.key === 'Enter') {
-        finishEditPercentageAthleteName(idx);
-    } else if (event.key === 'Escape') {
-        percentageState.athletes[idx].isEditing = false;
-        renderPercentageCards();
     }
 }
 
@@ -3779,8 +3804,7 @@ function renderPercentageCards() {
         if (a.isEditing) {
             nameContent = `<input type="text" class="percentage-multi-card-name-edit" 
                                   value="${a.name}" 
-                                  onblur="finishEditPercentageAthleteName(${i})"
-                                  onkeydown="handleNameInputKeydown(${i}, event)"
+                                  maxlength="20"
                                   onclick="event.stopPropagation()">`;
         } else {
             nameContent = `<div class="percentage-multi-card-name-display" 
