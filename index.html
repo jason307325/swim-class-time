@@ -621,6 +621,10 @@ body {
     position: absolute;
     inset: 0;
     display: none;
+}
+
+#percentageAthleteView {
+    display: flex;
     flex-direction: column;
 }
 
@@ -1985,7 +1989,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 <script>
 // ===============================
 // 游泳教練全能工作台 v4.9
-// 最終修正版 - 優化課程卡顯示與螢幕保持亮起功能
+// 最終修正版 - 修復百分比工具網頁版按鈕點擊問題
 // ===============================
 
 // 全域變數
@@ -3226,7 +3230,7 @@ function timerResetSelect() {
 }
 
 // ===============================
-// 百分比工具功能
+// 百分比工具功能 - 修復網頁版按鈕點擊問題
 // ===============================
 
 function initPercentage() {
@@ -3476,8 +3480,26 @@ function handlePercentageSwipeEnd(event, index) {
     currentPercentageSwipeCard = null;
 }
 
+// 修復網頁版清空數據按鈕點擊問題
+function clearAllPercentageMulti() { 
+    if(confirm("重置所有選手數據？")) { 
+        percentageState.athletes.forEach((a, i) => {
+            a.vals = ["00","00","00"];
+            a.name = `選手 ${i+1}`;
+        }); 
+        updatePercentageDisplay(); 
+        updatePercentageUI(); 
+        autoSaveData();
+        showToast("所有選手數據已重置", "warning");
+    } 
+}
+
+// 修復網頁版刪除選手按鈕點擊問題
 function deletePercentageAthlete(idx, event) {
-    if (event) event.stopPropagation();
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     
     if (percentageState.athletes.length <= 1) {
         showToast("至少需要保留一位選手！", "error");
@@ -3543,19 +3565,6 @@ function renderPercentageCards() {
         `;
         l.appendChild(card);
     });
-}
-
-function clearAllPercentageMulti() { 
-    if(confirm("重置所有選手數據？")) { 
-        percentageState.athletes.forEach((a, i) => {
-            a.vals = ["00","00","00"];
-            a.name = `選手 ${i+1}`;
-        }); 
-        updatePercentageDisplay(); 
-        updatePercentageUI(); 
-        autoSaveData();
-        showToast("所有選手數據已重置", "warning");
-    } 
 }
 
 // ===============================
