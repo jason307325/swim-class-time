@@ -834,26 +834,7 @@ body {
     box-shadow: 0 0 15px rgba(76,217,100,0.2); 
 }
 
-/* 名稱編輯相關樣式 */
-.percentage-multi-card-name-edit {
-    background: transparent;
-    border: 1px solid var(--neon-green);
-    border-radius: 4px;
-    color: var(--neon-green);
-    font-size: 14px;
-    font-weight: bold;
-    padding: 4px 6px;
-    width: 100%;
-    min-width: 70px;
-    outline: none;
-    cursor: text;
-}
-
-.percentage-multi-card-name-edit:focus {
-    background: rgba(76,217,100,0.1);
-    box-shadow: 0 0 8px rgba(76,217,100,0.3);
-}
-
+/* 名稱顯示部分 - 簡化版，移除編輯功能 */
 .percentage-multi-card-name-display {
     min-width: 70px;
     padding: 4px 6px;
@@ -862,6 +843,9 @@ body {
     margin-right: 10px;
     cursor: pointer;
     border: 1px solid transparent;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--neon-green);
 }
 
 .percentage-multi-card-name-display:hover {
@@ -1196,16 +1180,6 @@ body {
     grid-template-rows: 1fr 1fr; 
     gap: 8px;
     margin-top: 10px;
-}
-
-.segment-sw-actions button { 
-    padding: 14px 0; 
-    border-radius: 10px; 
-    font-size: 16px; 
-    font-weight: 700; 
-    color: #fff; 
-    width: 100%; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .segment-btn-start { 
@@ -1559,7 +1533,7 @@ body {
 }
 
 /* 模態框樣式 */
-.edit-modal, .course-select-modal, .confirm-dialog { 
+.edit-modal, .course-select-modal, .confirm-dialog, .name-edit-modal { 
     display: none; 
     position: fixed; 
     top: 0; 
@@ -1572,7 +1546,7 @@ body {
     justify-content: center; 
 }
 
-.edit-modal.active, .course-select-modal.active, .confirm-dialog.active { 
+.edit-modal.active, .course-select-modal.active, .confirm-dialog.active, .name-edit-modal.active { 
     display: flex; 
 }
 
@@ -1929,7 +1903,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                                 <button onclick="clearAllPercentageMulti()">清空數據</button>
                                 <button class="add-btn" onclick="addPercentageAthlete()">+ 新增選手</button>
                             </div>
-                            <div class="name-edit-hint">點擊選手名稱可修改，向左滑動可刪除選手</div>
+                            <div class="name-edit-hint">點擊選手名稱可修改名稱</div>
                         </div>
                         <div class="percentage-multi-hint">點擊卡片選擇選手，點擊名稱可編輯</div>
                         <div class="percentage-range-wrapper">
@@ -2046,6 +2020,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     </div>
 </div>
 
+<!-- 課程選擇模態框 -->
 <div id="courseSelectModal" class="course-select-modal">
     <div class="modal-box" style="max-width: 400px;">
         <h3 style="color:var(--neon-blue); text-align:center; margin-bottom:15px;">選擇開始項目</h3>
@@ -2057,6 +2032,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     </div>
 </div>
 
+<!-- 確認刪除對話框 -->
 <div id="confirmDialog" class="confirm-dialog">
     <div class="confirm-box">
       <h3 style="color:var(--neon-red); margin-bottom:15px;">確認刪除</h3>
@@ -2068,12 +2044,24 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     </div>
 </div>
 
+<!-- 選手名稱編輯模態框 -->
+<div id="nameEditModal" class="name-edit-modal">
+    <div class="modal-box" style="max-width: 350px;">
+        <h3 style="color:var(--neon-green); text-align:center; margin-bottom:15px;">編輯選手名稱</h3>
+        <input type="text" id="nameEditInput" class="text-input-box" placeholder="輸入選手名稱" maxlength="20">
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button onclick="saveAthleteName()" class="btn-slim" style="background:var(--neon-green)">儲存</button>
+            <button onclick="closeNameEdit()" class="btn-slim" style="background:#444">取消</button>
+        </div>
+    </div>
+</div>
+
 <div id="segmentLoadingHint" class="segment-loading-hint">處理中...</div>
 
 <script>
 // ===============================
 // 游泳教練全能工作台 v4.9
-// 完全修正版 - 修正百分比多人模式選手名稱編輯功能
+// 修正版 - 使用模態框編輯選手名稱
 // ===============================
 
 // 全域變數
@@ -2105,7 +2093,7 @@ let percentageState = {
     mode: 'athlete', 
     multiIdx: 0,
     base: ["00", "00", "00"],
-    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false})),
+    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`})),
     isNew: true,
     currentPct: 100,
     multiPct: 100
@@ -2132,6 +2120,9 @@ let currentPercentageSwipeCard = null;
 let longPressTimer = null;
 let longPressDuration = 1000;
 let isLongPressActive = false;
+
+// 選手名稱編輯狀態
+let editingAthleteIndex = -1;
 
 // 儲存相關
 const STORAGE_KEY = 'swim_coach_v4_data';
@@ -2251,11 +2242,10 @@ function playBeep(type) {
     }
 }
 
-// 螢幕喚醒鎖系統 - 強化版本
+// 螢幕喚醒鎖系統
 async function requestWakeLock() {
     if ('wakeLock' in navigator) {
         try {
-            // 如果已經有喚醒鎖，先釋放
             if (wakeLock) {
                 await releaseWakeLock();
             }
@@ -2263,12 +2253,10 @@ async function requestWakeLock() {
             wakeLock = await navigator.wakeLock.request('screen');
             console.log('螢幕保持亮起已啟用');
             
-            // 監聽釋放事件
             wakeLock.addEventListener('release', () => {
                 console.log('螢幕喚醒鎖已釋放');
                 wakeLock = null;
                 
-                // 如果計時器仍在運行，重新請求喚醒鎖
                 if (timerState.running && !timerState.paused) {
                     setTimeout(requestWakeLock, 100);
                 }
@@ -2278,7 +2266,6 @@ async function requestWakeLock() {
         } catch (err) {
             console.log(`無法啟用螢幕保持亮起: ${err.name}, ${err.message}`);
             
-            // 如果失敗，嘗試使用較寬鬆的策略
             if (err.name === 'NotAllowedError') {
                 showToast('請允許螢幕保持亮起功能', 'warning', 2000);
             }
@@ -2335,7 +2322,6 @@ function loadSavedData() {
                         if (!athlete.name) {
                             athlete.name = `選手 ${i+1}`;
                         }
-                        athlete.isEditing = false; // 確保編輯狀態重置
                     });
                 }
             }
@@ -3014,7 +3000,7 @@ function clearInputs() {
 }
 
 // ===============================
-// 計時器功能 - 強化螢幕保持亮起
+// 計時器功能
 // ===============================
 
 function timerStart() { 
@@ -3024,7 +3010,6 @@ function timerStart() {
     }
     
     if (!timerState.running) {
-        // 請求螢幕保持亮起
         requestWakeLock().then(success => {
             if (success) {
                 showToast("螢幕保持亮起已啟用", "success", 2000);
@@ -3110,7 +3095,6 @@ function confirmCourseSelection() {
     timerState.completedDistance = 0;
     timerState.totalItems = items.length;
     
-    // 請求螢幕保持亮起
     requestWakeLock().then(success => {
         if (success) {
             showToast("螢幕保持亮起已啟用", "success", 2000);
@@ -3254,11 +3238,9 @@ function timerPause() {
         pauseBtn.textContent = '繼續';
         pauseBtn.style.background = 'var(--neon-green)';
         
-        // 暫停時釋放喚醒鎖
         releaseWakeLock();
         showToast("計時暫停", "warning");
     } else {
-        // 繼續時重新請求喚醒鎖
         requestWakeLock().then(success => {
             if (success) {
                 showToast("螢幕保持亮起已啟用", "success", 1000);
@@ -3296,7 +3278,6 @@ function timerEnd() {
         pauseBtn.style.background = 'var(--neon-blue)';
     }
     
-    // 結束時釋放喚醒鎖
     releaseWakeLock();
     
     updateTimerUI(); 
@@ -3313,7 +3294,7 @@ function timerResetSelect() {
 }
 
 // ===============================
-// 百分比工具功能 - 修正名稱編輯功能
+// 百分比工具功能 - 使用模態框編輯名稱
 // ===============================
 
 function initPercentage() {
@@ -3497,13 +3478,13 @@ function scrollToPercentageHighlight() {
     if(target) target.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
-// 全新的百分比多人模式功能
+// 百分比多人模式功能
 function addPercentageAthlete() {
     if(percentageState.athletes.length >= 20) { 
         showToast("最多 20 位選手", "warning");
         return; 
     }
-    percentageState.athletes.push({vals: ["00", "00", "00"], name: `選手 ${percentageState.athletes.length + 1}`, isEditing: false}); 
+    percentageState.athletes.push({vals: ["00", "00", "00"], name: `選手 ${percentageState.athletes.length + 1}`}); 
     percentageState.multiIdx = percentageState.athletes.length - 1; 
     updatePercentageDisplay(); 
     updatePercentageUI();
@@ -3516,7 +3497,6 @@ function clearAllPercentageMulti() {
         percentageState.athletes.forEach((a, i) => {
             a.vals = ["00","00","00"];
             a.name = `選手 ${i+1}`;
-            a.isEditing = false;
         }); 
         updatePercentageDisplay(); 
         updatePercentageUI(); 
@@ -3538,7 +3518,6 @@ function deletePercentageAthlete(idx, event) {
     
     percentageState.athletes.splice(idx, 1);
     
-    // 調整當前選中的選手索引
     if (percentageState.multiIdx >= idx) {
         if (percentageState.multiIdx > 0) {
             percentageState.multiIdx--;
@@ -3551,100 +3530,56 @@ function deletePercentageAthlete(idx, event) {
     showToast("選手已刪除", "warning");
 }
 
-// 新增：開始編輯選手名稱 - 修正版
-function startEditPercentageAthleteName(idx, event) {
+// 開啟選手名稱編輯模態框
+function openAthleteNameEdit(idx, event) {
     if (event) {
         event.stopPropagation();
         event.preventDefault();
     }
     
-    // 先儲存當前正在編輯的選手的修改（如果有的話）
-    saveCurrentEditingName();
+    editingAthleteIndex = idx;
+    const athlete = percentageState.athletes[idx];
+    document.getElementById('nameEditInput').value = athlete.name;
+    document.getElementById('nameEditModal').classList.add('active');
     
-    // 設定新的編輯狀態
-    percentageState.athletes[idx].isEditing = true;
-    renderPercentageCards();
-    
-    // 聚焦到輸入框並觸發鍵盤
+    // 聚焦到輸入框
     setTimeout(() => {
-        const input = document.querySelector(`[data-athlete-idx="${idx}"] .percentage-multi-card-name-edit`);
+        const input = document.getElementById('nameEditInput');
         if (input) {
-            // 移除 readonly 屬性，讓鍵盤可以彈出
-            input.removeAttribute('readonly');
-            
-            // 強制聚焦並觸發鍵盤
             input.focus();
             input.select();
-            
-            // 對於 iOS 設備，需要額外處理
-            if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                // iOS 可能需要設定 selection range
-                input.setSelectionRange(0, input.value.length);
-                
-                // 觸發虛擬鍵盤
-                setTimeout(() => {
-                    input.click();
-                }, 100);
-            }
-            
-            // 監聽失去焦點事件
-            input.addEventListener('blur', function onBlur() {
-                finishEditPercentageAthleteName(idx);
-                input.removeEventListener('blur', onBlur);
-            });
-            
-            // 監聽 Enter 鍵
-            input.addEventListener('keydown', function onKeyDown(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    finishEditPercentageAthleteName(idx);
-                }
-            });
         }
-    }, 10);
+    }, 100);
 }
 
-// 新增：儲存當前編輯中的名稱
-function saveCurrentEditingName() {
-    percentageState.athletes.forEach((athlete, idx) => {
-        if (athlete.isEditing) {
-            const input = document.querySelector(`[data-athlete-idx="${idx}"] .percentage-multi-card-name-edit`);
-            if (input) {
-                const newName = input.value.trim();
-                athlete.name = newName || `選手 ${idx + 1}`;
-                athlete.isEditing = false;
-                autoSaveData();
-            }
-        }
-    });
-}
-
-// 新增：結束名稱編輯
-function finishEditPercentageAthleteName(idx) {
-    if (idx >= 0 && idx < percentageState.athletes.length) {
-        const input = document.querySelector(`[data-athlete-idx="${idx}"] .percentage-multi-card-name-edit`);
-        if (input) {
-            const newName = input.value.trim();
-            percentageState.athletes[idx].name = newName || `選手 ${idx + 1}`;
-            percentageState.athletes[idx].isEditing = false;
-            
-            // 重新渲染卡片
-            setTimeout(() => {
-                renderPercentageCards();
-                autoSaveData();
-                showToast("選手名稱已更新", "success", 1500);
-            }, 100);
+// 儲存選手名稱
+function saveAthleteName() {
+    if (editingAthleteIndex >= 0 && editingAthleteIndex < percentageState.athletes.length) {
+        const input = document.getElementById('nameEditInput');
+        const newName = input.value.trim();
+        
+        if (newName) {
+            percentageState.athletes[editingAthleteIndex].name = newName;
+            renderPercentageCards();
+            autoSaveData();
+            showToast("選手名稱已更新", "success");
+        } else {
+            showToast("名稱不能為空", "error");
+            return;
         }
     }
+    
+    closeNameEdit();
+}
+
+// 關閉名稱編輯模態框
+function closeNameEdit() {
+    document.getElementById('nameEditModal').classList.remove('active');
+    editingAthleteIndex = -1;
 }
 
 // 百分比選手卡滑動刪除功能
 function handlePercentageSwipeStart(event, index) {
-    // 如果正在編輯名稱，不觸發滑動
-    if (percentageState.athletes[index]?.isEditing) {
-        return;
-    }
-    
     const touch = event.touches[0];
     percentageSwipeStartX = touch.clientX;
     percentageSwipeStartY = touch.clientY;
@@ -3693,17 +3628,9 @@ function handlePercentageSwipeEnd(event, index) {
 }
 
 function handlePercentageCardClick(event, index) {
-    // 如果正在滑動或正在編輯名稱，不要觸發點擊事件
     if (currentPercentageSwipeCard && Math.abs(percentageSwipeStartX - event.clientX) > 10) {
         return;
     }
-    
-    if (percentageState.athletes[index]?.isEditing) {
-        return;
-    }
-    
-    // 儲存當前編輯的名稱
-    saveCurrentEditingName();
     
     percentageState.multiIdx = index; 
     updatePercentageDisplay(); 
@@ -3721,7 +3648,6 @@ function renderPercentageCards() {
         const card = document.createElement('div');
         card.className = `percentage-multi-card ${i === percentageState.multiIdx ? 'selected' : ''}`;
         card.setAttribute('data-index', i);
-        card.setAttribute('data-athlete-idx', i);
         
         // 添加觸控事件
         card.addEventListener('touchstart', (e) => handlePercentageSwipeStart(e, i));
@@ -3730,11 +3656,6 @@ function renderPercentageCards() {
         
         // 添加滑鼠事件
         card.addEventListener('mousedown', (e) => {
-            // 如果正在編輯名稱，不觸發滑動
-            if (percentageState.athletes[i]?.isEditing) {
-                return;
-            }
-            
             percentageSwipeStartX = e.clientX;
             percentageSwipeStartY = e.clientY;
             currentPercentageSwipeCard = card;
@@ -3773,7 +3694,6 @@ function renderPercentageCards() {
                 card.style.transform = 'translateX(0)';
                 card.classList.remove('swiping', 'swipe-delete-ready');
                 
-                // 如果沒有滑動，執行點擊選擇
                 if (Math.abs(deltaX) < 10) {
                     handlePercentageCardClick(e, i);
                 }
@@ -3792,27 +3712,13 @@ function renderPercentageCards() {
         
         // 點擊卡片主體選擇選手
         card.addEventListener('click', (e) => {
-            // 防止點擊名稱區域時觸發卡片選擇
-            if (!e.target.closest('.percentage-multi-card-name-display') && 
-                !e.target.closest('.percentage-multi-card-name-edit')) {
+            if (!e.target.closest('.percentage-multi-card-name-display')) {
                 handlePercentageCardClick(e, i);
             }
         });
         
-        // 名稱顯示/編輯部分
-        let nameContent;
-        if (a.isEditing) {
-            nameContent = `<input type="text" class="percentage-multi-card-name-edit" 
-                                  value="${a.name}" 
-                                  maxlength="20"
-                                  onclick="event.stopPropagation()">`;
-        } else {
-            nameContent = `<div class="percentage-multi-card-name-display" 
-                                onclick="startEditPercentageAthleteName(${i}, event)">${a.name}</div>`;
-        }
-        
         card.innerHTML = `
-            ${nameContent}
+            <div class="percentage-multi-card-name-display" onclick="openAthleteNameEdit(${i}, event)">${a.name}</div>
             <div class="percentage-multi-card-info">
                 <div class="percentage-multi-card-base">
                     <span>基時: ${a.vals[0]}:${a.vals[1]}.${a.vals[2]}</span>
@@ -4188,11 +4094,11 @@ window.onload = () => {
         }
     });
     
-    // 點擊頁面其他地方時儲存正在編輯的名稱
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.percentage-multi-card-name-edit') && 
-            !e.target.closest('.percentage-multi-card-name-display')) {
-            saveCurrentEditingName();
+    // 處理名稱編輯輸入框的Enter鍵
+    document.getElementById('nameEditInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveAthleteName();
         }
     });
     
