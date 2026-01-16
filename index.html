@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練全能工作台 v4.7</title>
+<title>游泳教練全能工作台 v4.8</title>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -292,6 +292,7 @@ body {
     min-height: 70px; /* 設定最小高度 */
     transition: transform 0.2s ease, opacity 0.2s ease;
     overflow: hidden;
+    cursor: pointer;
 }
 
 .course-card.active { 
@@ -355,23 +356,26 @@ body {
     text-overflow: ellipsis; 
 }
 
+/* 修改課程卡資訊排版 - 改為單行顯示 */
 .card-info-compact {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 4px;
     font-size: 10px;
     color: #aaa;
+    margin-top: 4px;
 }
 
 .card-info-item {
     display: flex;
     align-items: center;
     gap: 3px;
+    justify-content: center;
 }
 
 .card-info-label {
     color: #666;
-    min-width: 30px;
+    margin-right: 2px;
 }
 
 .card-right { 
@@ -396,43 +400,9 @@ body {
     font-weight: bold;
 }
 
+/* 移除編輯和刪除按鈕區塊 */
 .card-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 4px; /* 減少間距 */
-    flex-shrink: 0;
-    margin-left: 5px;
-}
-
-.card-btn {
-    width: 28px; /* 從32px調整為28px */
-    height: 28px; /* 從32px調整為28px */
-    border-radius: 6px;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px; /* 從14px調整為12px */
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.edit-btn {
-    background: rgba(0, 162, 255, 0.2);
-    color: var(--neon-blue);
-}
-
-.edit-btn:active {
-    background: rgba(0, 162, 255, 0.4);
-}
-
-.delete-btn {
-    background: rgba(255, 59, 48, 0.2);
-    color: var(--neon-red);
-}
-
-.delete-btn:active {
-    background: rgba(255, 59, 48, 0.4);
+    display: none;
 }
 
 .plan-function-buttons { 
@@ -1358,7 +1328,7 @@ body {
         height: calc(100vh - 44px);
     }
     
-    /* 計時鐘頁面橫屏佈局 */
+    /* 計時鐘頁面橫屏佈局 - 修正靈動島問題 */
     .timer-container {
         flex-direction: row;
         align-items: stretch;
@@ -1369,7 +1339,7 @@ body {
     .timer-main-area {
         flex: 1;
         justify-content: center;
-        max-width: 40%; /* 從45%調整為40% */
+        max-width: 40%;
         padding: 0;
         margin: 0;
         display: flex;
@@ -1378,15 +1348,15 @@ body {
     }
     
     .time-display {
-        font-size: 12vw; /* 從14vw調整為12vw */
+        font-size: 10vw; /* 從12vw調整為10vw，再縮小 */
         margin: 0;
         line-height: 1;
         padding: 5px 0;
     }
     
     .timer-info-card {
-        flex: 1;
-        max-width: 60%; /* 從55%調整為60% */
+        flex: 0.8; /* 從1調整為0.8，縮小1/3 */
+        max-width: 50%;
         margin: 0;
         display: flex;
         flex-direction: column;
@@ -1625,17 +1595,84 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     transform: scale(1);
 }
 
-/* 計時器當前項目標示 */
+/* 計時器當前項目標示 - 加大字體 */
 .timer-current-item {
-    font-size: 10px;
-    color: #aaa;
-    margin-bottom: 5px;
+    font-size: 14px; /* 從10px調整為14px */
+    color: #fff; /* 從aaa調整為白色 */
+    margin-bottom: 8px; /* 從5px調整為8px */
     text-align: center;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0,162,255,0.5);
 }
 
 .timer-current-item span {
     color: var(--neon-blue);
     font-weight: bold;
+    font-size: 16px; /* 加大字體 */
+}
+
+/* 課程卡長按編輯提示 */
+.course-card::after {
+    content: "長按1秒可編輯";
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,162,255,0.9);
+    color: white;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.course-card:hover::after {
+    opacity: 1;
+}
+
+/* 長按編輯的視覺回饋 */
+.course-card.long-press-active {
+    background: rgba(0,162,255,0.1) !important;
+    border-color: var(--neon-blue) !important;
+    transform: scale(0.98);
+    transition: all 0.2s;
+}
+
+/* 課程卡資訊單行顯示優化 */
+.card-info-compact {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    font-size: 10px;
+    color: #aaa;
+}
+
+.card-info-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+/* 修正拖曳排序樣式 */
+.sortable-ghost {
+    opacity: 0.4;
+    background: rgba(0,162,255,0.1);
+}
+
+.sortable-chosen {
+    background: rgba(0,162,255,0.05);
+    border-color: var(--neon-blue);
+}
+
+/* 為課程卡添加拖曳視覺回饋 */
+.course-card.dragging {
+    opacity: 0.8;
+    transform: rotate(2deg);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 </style>
 </head>
@@ -1720,7 +1757,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
           <button class="function-btn export" onclick="copyCoursesToClipboard()">複製課程文字</button>
         </div>
 
-        <div class="list-hint">⠿ 拖曳排序 | 向左滑動刪除項目 | 點擊編輯按鈕修改</div>
+        <div class="list-hint">⠿ 拖曳排序 | 向左滑動刪除項目 | 長按1秒可編輯</div>
         <div class="plan-list-area" id="listArea"></div>
 
         <!-- 統一鍵盤樣式 -->
@@ -1945,8 +1982,8 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 
 <script>
 // ===============================
-// 游泳教練全能工作台 v4.7
-// 修正版 - 修復計時器邏輯與介面優化
+// 游泳教練全能工作台 v4.8
+// 修正版 - 優化課程卡介面與拖曳功能
 // ===============================
 
 // 全域變數
@@ -2001,6 +2038,11 @@ let currentSwipeCard = null;
 let percentageSwipeStartX = 0;
 let percentageSwipeStartY = 0;
 let currentPercentageSwipeCard = null;
+
+// 課程卡長按編輯狀態
+let longPressTimer = null;
+let longPressDuration = 1000; // 1秒
+let isLongPressActive = false;
 
 // 儲存相關
 const STORAGE_KEY = 'swim_coach_v4_data';
@@ -2514,12 +2556,12 @@ function updateList() {
     listArea.innerHTML = items.map((it, i) => `
     <div class="course-card" style="border-left:6px solid ${typeof it.color === 'string' && it.color.includes('gradient') ? '#ff9500' : it.color}" 
          data-index="${i}"
-         ontouchstart="handleSwipeStart(event, ${i})"
+         ontouchstart="handleCardTouchStart(event, ${i})"
          ontouchmove="handleSwipeMove(event, ${i})"
-         ontouchend="handleSwipeEnd(event, ${i})"
-         onmousedown="handleSwipeStartMouse(event, ${i})"
+         ontouchend="handleCardTouchEnd(event, ${i})"
+         onmousedown="handleCardMouseDown(event, ${i})"
          onmousemove="handleSwipeMoveMouse(event, ${i})"
-         onmouseup="handleSwipeEndMouse(event, ${i})"
+         onmouseup="handleCardMouseUp(event, ${i})"
          onmouseleave="handleSwipeCancel(${i})">
         <div class="card-index">${i+1}</div>
         <div class="drag-handle" ontouchstart="handleDragStart(event, ${i})">⠿</div>
@@ -2527,19 +2569,19 @@ function updateList() {
             <div style="font-size:9px; color:${typeof it.color === 'string' && it.color.includes('gradient') ? '#ff9500' : it.color}; font-weight:900; margin-bottom:2px;">${it.tags}</div>
             <div class="card-title">${it.title}</div>
             <div class="card-info-compact">
-                <div class="card-info-item-compact">
+                <div class="card-info-item">
                     <span class="card-info-label">距離:</span>
-                    <span>${it.singleDist}m × ${it.laps}趟 × ${it.sets}組</span>
+                    <span>${it.singleDist}m × ${it.laps}</span>
                 </div>
-                <div class="card-info-item-compact">
+                <div class="card-info-item">
                     <span class="card-info-label">配速:</span>
                     <span>${it.lapMin}:${it.lapSec.toString().padStart(2,'0')}</span>
                 </div>
-                <div class="card-info-item-compact">
+                <div class="card-info-item">
                     <span class="card-info-label">休息:</span>
                     <span>${it.resMin}:${it.resSec.toString().padStart(2,'0')}</span>
                 </div>
-                <div class="card-info-item-compact">
+                <div class="card-info-item">
                     <span class="card-info-label">用時:</span>
                     <span class="card-total-time">${formatTime(it.totalTime)}</span>
                 </div>
@@ -2548,37 +2590,120 @@ function updateList() {
         <div class="card-right">
             <div class="card-distance">${it.dist}m</div>
         </div>
-        <div class="card-actions">
-            <button class="card-btn edit-btn" onclick="openEdit(${i})" title="編輯項目">✏️</button>
-            <button class="card-btn delete-btn" onclick="showDeleteConfirm(${i})" title="刪除項目">🗑️</button>
-        </div>
         <div class="course-card-swipe-overlay">
             <button class="course-card-swipe-delete-btn" onclick="deleteItemWithSwipe(${i})">🗑️</button>
         </div>
     </div>`).join('');
 }
 
-// 滑動刪除功能
-function handleSwipeStart(event, index) {
+// 課程卡長按編輯功能
+function handleCardTouchStart(event, index) {
+    // 防止拖曳時觸發長按
+    if (event.target.closest('.drag-handle')) return;
+    
     const touch = event.touches[0];
     swipeStartX = touch.clientX;
     swipeStartY = touch.clientY;
     currentSwipeCard = event.currentTarget;
+    
+    // 啟動長按計時器
+    clearTimeout(longPressTimer);
+    longPressTimer = setTimeout(() => {
+        isLongPressActive = true;
+        currentSwipeCard.classList.add('long-press-active');
+        showToast("釋放手指以編輯項目", "info", 1000);
+    }, longPressDuration);
 }
 
-function handleSwipeStartMouse(event, index) {
+function handleCardMouseDown(event, index) {
+    // 防止拖曳時觸發長按
+    if (event.target.closest('.drag-handle')) return;
+    
     swipeStartX = event.clientX;
     swipeStartY = event.clientY;
     currentSwipeCard = event.currentTarget;
     event.preventDefault();
+    
+    // 啟動長按計時器
+    clearTimeout(longPressTimer);
+    longPressTimer = setTimeout(() => {
+        isLongPressActive = true;
+        currentSwipeCard.classList.add('long-press-active');
+        showToast("釋放滑鼠以編輯項目", "info", 1000);
+    }, longPressDuration);
 }
 
+function handleCardTouchEnd(event, index) {
+    clearTimeout(longPressTimer);
+    
+    if (!currentSwipeCard || currentSwipeCard.dataset.index != index) return;
+    
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - swipeStartX;
+    
+    // 檢查是否為長按觸發編輯
+    if (isLongPressActive) {
+        isLongPressActive = false;
+        currentSwipeCard.classList.remove('long-press-active');
+        openEdit(index);
+        currentSwipeCard = null;
+        return;
+    }
+    
+    // 否則檢查滑動刪除
+    if (deltaX < -60) {
+        deleteItemWithSwipe(index);
+    } else {
+        // 否則重置位置
+        currentSwipeCard.style.transform = 'translateX(0)';
+        currentSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
+    }
+    
+    currentSwipeCard = null;
+}
+
+function handleCardMouseUp(event, index) {
+    clearTimeout(longPressTimer);
+    
+    if (!currentSwipeCard || currentSwipeCard.dataset.index != index) return;
+    
+    const deltaX = event.clientX - swipeStartX;
+    
+    // 檢查是否為長按觸發編輯
+    if (isLongPressActive) {
+        isLongPressActive = false;
+        currentSwipeCard.classList.remove('long-press-active');
+        openEdit(index);
+        currentSwipeCard = null;
+        return;
+    }
+    
+    // 否則檢查滑動刪除
+    if (deltaX < -60) {
+        deleteItemWithSwipe(index);
+    } else {
+        // 否則重置位置
+        currentSwipeCard.style.transform = 'translateX(0)';
+        currentSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
+    }
+    
+    currentSwipeCard = null;
+}
+
+// 滑動刪除功能
 function handleSwipeMove(event, index) {
     if (!currentSwipeCard || currentSwipeCard.dataset.index != index) return;
     
     const touch = event.touches[0];
     const deltaX = touch.clientX - swipeStartX;
     const deltaY = touch.clientY - swipeStartY;
+    
+    // 如果檢測到滑動，取消長按計時器
+    if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+        clearTimeout(longPressTimer);
+        isLongPressActive = false;
+        currentSwipeCard.classList.remove('long-press-active');
+    }
     
     // 防止垂直滾動時觸發滑動
     if (Math.abs(deltaY) > Math.abs(deltaX)) {
@@ -2611,6 +2736,13 @@ function handleSwipeMoveMouse(event, index) {
     const deltaX = event.clientX - swipeStartX;
     const deltaY = event.clientY - swipeStartY;
     
+    // 如果檢測到滑動，取消長按計時器
+    if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+        clearTimeout(longPressTimer);
+        isLongPressActive = false;
+        currentSwipeCard.classList.remove('long-press-active');
+    }
+    
     // 防止垂直滾動時觸發滑動
     if (Math.abs(deltaY) > Math.abs(deltaX)) {
         return;
@@ -2636,46 +2768,14 @@ function handleSwipeMoveMouse(event, index) {
     }
 }
 
-function handleSwipeEnd(event, index) {
-    if (!currentSwipeCard || currentSwipeCard.dataset.index != index) return;
-    
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - swipeStartX;
-    
-    // 如果滑動距離足夠，執行刪除
-    if (deltaX < -60) {
-        deleteItemWithSwipe(index);
-    } else {
-        // 否則重置位置
-        currentSwipeCard.style.transform = 'translateX(0)';
-        currentSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
-    }
-    
-    currentSwipeCard = null;
-}
-
-function handleSwipeEndMouse(event, index) {
-    if (!currentSwipeCard || currentSwipeCard.dataset.index != index) return;
-    
-    const deltaX = event.clientX - swipeStartX;
-    
-    // 如果滑動距離足夠，執行刪除
-    if (deltaX < -60) {
-        deleteItemWithSwipe(index);
-    } else {
-        // 否則重置位置
-        currentSwipeCard.style.transform = 'translateX(0)';
-        currentSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
-    }
-    
-    currentSwipeCard = null;
-}
-
 function handleSwipeCancel(index) {
+    clearTimeout(longPressTimer);
+    isLongPressActive = false;
+    
     const card = document.querySelector(`.course-card[data-index="${index}"]`);
     if (card) {
         card.style.transform = 'translateX(0)';
-        card.classList.remove('swiping', 'swipe-delete-ready');
+        card.classList.remove('swiping', 'swipe-delete-ready', 'long-press-active');
     }
     currentSwipeCard = null;
 }
@@ -2694,26 +2794,31 @@ function deleteItemWithSwipe(index) {
     }
 }
 
+// 修正拖曳功能
 function handleDragStart(event, index) {
     event.preventDefault();
     event.stopPropagation(); // 防止觸發滑動刪除
-    isDragging = false;
     
-    const handleDragMove = (e) => {
-        if (!isDragging) {
-            isDragging = true;
+    // 取消任何長按計時器
+    clearTimeout(longPressTimer);
+    isLongPressActive = false;
+    
+    // 添加拖曳視覺回饋
+    const card = event.target.closest('.course-card');
+    if (card) {
+        card.classList.add('dragging');
+    }
+    
+    const handleDragEnd = () => {
+        document.removeEventListener('mouseup', handleDragEnd);
+        document.removeEventListener('touchend', handleDragEnd);
+        
+        // 移除拖曳視覺回饋
+        if (card) {
+            card.classList.remove('dragging');
         }
     };
     
-    const handleDragEnd = () => {
-        document.removeEventListener('mousemove', handleDragMove);
-        document.removeEventListener('touchmove', handleDragMove);
-        document.removeEventListener('mouseup', handleDragEnd);
-        document.removeEventListener('touchend', handleDragEnd);
-    };
-    
-    document.addEventListener('mousemove', handleDragMove);
-    document.addEventListener('touchmove', handleDragMove);
     document.addEventListener('mouseup', handleDragEnd);
     document.addEventListener('touchend', handleDragEnd);
 }
@@ -3090,7 +3195,7 @@ function updateTimerUI() {
         document.getElementById('distRem').innerText = timerState.distRemaining + "m";
         document.getElementById('restTime').innerText = `${it.resMin}:${it.resSec.toString().padStart(2,'0')}`;
         
-        // 更新當前項目資訊
+        // 更新當前項目資訊 - 使用加大字體
         document.getElementById('currentItemNum').innerText = timerState.currentItemIndex + 1;
         document.getElementById('totalItems').innerText = items.length;
     } else {
@@ -3852,17 +3957,25 @@ window.onload = () => {
     // 載入保存的資料
     loadSavedData();
     
-    // 初始化課程規劃拖曳排序
+    // 初始化課程規劃拖曳排序 - 修正版本
     const listArea = document.getElementById('listArea');
     if (listArea) {
         new Sortable(listArea, { 
             handle: '.drag-handle', 
             animation: 150,
-            onStart: function() {
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onStart: function(evt) {
                 isDragging = true;
+                // 添加拖曳視覺回饋
+                evt.item.classList.add('dragging');
             },
-            onEnd: function() {
+            onEnd: function(evt) {
                 isDragging = false;
+                // 移除拖曳視覺回饋
+                evt.item.classList.remove('dragging');
+                
+                // 更新項目順序
                 const newOrder = [];
                 const cards = listArea.querySelectorAll('.course-card');
                 cards.forEach((card, index) => {
@@ -3872,8 +3985,11 @@ window.onload = () => {
                     }
                 });
                 items = newOrder;
+                
+                // 重新渲染列表以更新序號
                 updateList();
                 autoSaveData();
+                showToast("項目順序已更新", "success");
             }
         });
     }
@@ -3918,7 +4034,7 @@ window.onload = () => {
     
     // 顯示歡迎訊息
     setTimeout(() => {
-        showToast('游泳教練全能工作台 v4.7 已就緒', 'success', 2000);
+        showToast('游泳教練全能工作台 v4.8 已就緒', 'success', 2000);
     }, 500);
 };
 
