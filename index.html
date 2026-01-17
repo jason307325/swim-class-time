@@ -2039,11 +2039,10 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 
 <script>
 // ===============================
-// 游泳教練全能工作台 v4.9 - 完整修復版
-// 已修復以下問題：
-// 1. 碼錶計時分段差有誤，一鍵刪除所有秒數功能失效（已修復）
-// 2. 泡泡拉桿的起始位置跑掉（已修復）
-// 3. 百分比多人頁面選手刪除功能改為點選刪除，不影響課表拖曳和左滑刪除（已修復）
+// 游泳教練全能工作台 v4.9 - 修復版
+// 已修正：
+// 1. 計時鐘顏色邏輯：趟數倒數顯示紅色，休息時顯示綠色 ✓
+// 2. 趟數倒數邏輯：第一趟顯示X，第二趟顯示X-1 ✓
 // ===============================
 
 // 全域變數
@@ -3077,7 +3076,7 @@ function clearInputs() {
 }
 
 // ===============================
-// 計時器功能
+// 計時器功能 - 修正版
 // ===============================
 
 function timerStart() { 
@@ -3104,6 +3103,10 @@ function timerStart() {
         timerState.distRemaining = 0;
         timerState.completedDistance = 0;
         timerState.totalItems = items.length;
+        
+        // 修正：初始化當前項目的趟數
+        const currentItem = items[timerState.currentItemIndex];
+        timerState.totalLapsInSet = currentItem.laps;
         
         startStep();
         showToast("計時開始！", "success");
@@ -3171,6 +3174,10 @@ function confirmCourseSelection() {
         timerState.completedDistance += items[i].dist;
     }
     
+    // 修正：初始化當前項目的趟數
+    const currentItem = items[timerState.currentItemIndex];
+    timerState.totalLapsInSet = currentItem.laps;
+    
     startStep();
     document.getElementById('courseSelectModal').classList.remove('active');
     showToast("已從第 " + (selectedCourseIndex + 1) + " 項開始", "success");
@@ -3222,6 +3229,7 @@ function timerEnd() {
     showToast("訓練完成！", "success", 3000);
 }
 
+// 修正：startStep函數 - 修復趟數邏輯和顏色顯示
 function startStep() {
     if (timerState.currentItemIndex >= items.length) {
         timerEnd();
@@ -3230,38 +3238,59 @@ function startStep() {
     
     const currentItem = items[timerState.currentItemIndex];
     
+    // 修正：如果是新的一組，初始化趟數
     if (timerState.currentLapInSet === 0) {
-        timerState.currentLapInSet = currentItem.laps;
+        timerState.currentLapInSet = currentItem.laps; // 第一趟顯示X
         timerState.totalLapsInSet = currentItem.laps;
     }
     
     if (timerState.isResting) {
-        timerState.timeRemaining = currentItem.resMin * 60 + currentItem.resSec;
+        // 休息結束，開始工作（游泳）
+        timerState.timeRemaining = currentItem.lapMin * 60 + currentItem.lapSec;
         timerState.isResting = false;
         
-        timerState.currentSet++;
-        if (timerState.currentSet > currentItem.sets) {
-            timerState.currentSet = 1;
-            timerState.currentItemIndex++;
-            timerState.completedDistance += currentItem.dist;
-        }
+        // 修正：趟數顯示邏輯 - 第一趟顯示X，第二趟顯示X-1
+        // 這裡不遞減，因為是在開始工作時顯示當前的趟數
         
-        timerState.currentLapInSet = currentItem.laps;
-        
+        // 修正：時間顯示為紅色（工作時間）
         document.getElementById('timerDisplay').classList.remove('resting');
-        showToast("休息結束，開始下一組！", "info", 1500);
+        showToast("休息結束，開始游泳！", "info", 1500);
         playBeep('start');
     } else {
-        timerState.timeRemaining = currentItem.lapMin * 60 + currentItem.lapSec;
+        // 工作結束，開始休息
+        timerState.timeRemaining = currentItem.resMin * 60 + currentItem.resSec;
+        timerState.isResting = true;
         
+        // 修正：完成一趟後遞減趟數
         timerState.currentLapInSet--;
+        
+        // 如果這一組的所有趟數都完成了
         if (timerState.currentLapInSet <= 0) {
             timerState.currentLapInSet = 0;
-            timerState.isResting = true;
+            
+            // 進入下一組
+            timerState.currentSet++;
+            if (timerState.currentSet > currentItem.sets) {
+                // 這一項完成
+                timerState.currentSet = 1;
+                timerState.currentItemIndex++;
+                timerState.completedDistance += currentItem.dist;
+                
+                // 重置下一項的趟數
+                if (timerState.currentItemIndex < items.length) {
+                    const nextItem = items[timerState.currentItemIndex];
+                    timerState.currentLapInSet = nextItem.laps;
+                    timerState.totalLapsInSet = nextItem.laps;
+                }
+            } else {
+                // 重置為下一組的趟數
+                timerState.currentLapInSet = currentItem.laps;
+            }
         }
         
+        // 修正：時間顯示為綠色（休息時間）
         document.getElementById('timerDisplay').classList.add('resting');
-        playBeep('start');
+        playBeep('rest');
     }
     
     updateTimerDisplay();
@@ -3286,16 +3315,30 @@ function timerUpdateInterval() {
     updateTimerDisplay();
     
     if (timerState.timeRemaining <= 3) {
-        document.getElementById('timerDisplay').classList.add('resting');
+        if (timerState.isResting) {
+            // 休息倒數時使用綠色
+            document.getElementById('timerDisplay').classList.add('resting');
+        } else {
+            // 工作倒數時使用紅色
+            document.getElementById('timerDisplay').classList.remove('resting');
+        }
         playBeep('tick');
     }
 }
 
+// 修正：updateTimerDisplay函數 - 修復趟數顯示邏輯
 function updateTimerDisplay() {
     const mins = Math.floor(timerState.timeRemaining / 60);
     const secs = timerState.timeRemaining % 60;
     
     document.getElementById('timerDisplay').textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    
+    // 修正：根據是工作還是休息設置正確的顏色
+    if (timerState.isResting) {
+        document.getElementById('timerDisplay').classList.add('resting');
+    } else {
+        document.getElementById('timerDisplay').classList.remove('resting');
+    }
     
     if (timerState.currentItemIndex < items.length) {
         const currentItem = items[timerState.currentItemIndex];
@@ -3304,11 +3347,19 @@ function updateTimerDisplay() {
         document.getElementById('totalItems').textContent = items.length;
         document.getElementById('clock-tags').textContent = currentItem.tags;
         document.getElementById('clock-title').textContent = currentItem.title;
+        
+        // 修正：顯示剩餘趟數（第一趟顯示X，第二趟顯示X-1）
+        // 如果currentLapInSet為0，表示這一組已完成，顯示0
         document.getElementById('currentLap').textContent = timerState.currentLapInSet;
+        
+        // 修正：剩餘趟數顯示紅色
+        document.getElementById('currentLap').style.color = 'var(--neon-red)';
+        
         document.getElementById('currentSet').textContent = `${timerState.currentSet}/${currentItem.sets}`;
         
         const remainingDist = items.slice(timerState.currentItemIndex).reduce((sum, item, idx) => {
             if (idx === 0) {
+                // 修正：計算剩餘距離時考慮當前趟數
                 return sum + (item.singleDist * timerState.currentLapInSet) + 
                        (item.dist * (item.sets - timerState.currentSet));
             }
@@ -3317,10 +3368,15 @@ function updateTimerDisplay() {
         
         document.getElementById('distRem').textContent = remainingDist + "m";
         
+        // 修正：休息時間預覽
         if (timerState.isResting) {
             document.getElementById('restTime').textContent = `${currentItem.resMin}:${currentItem.resSec.toString().padStart(2,'0')}`;
+            // 修正：休息時間顯示綠色
+            document.getElementById('restTime').style.color = 'var(--neon-green)';
         } else {
             document.getElementById('restTime').textContent = `${currentItem.resMin}:${currentItem.resSec.toString().padStart(2,'0')}`;
+            // 工作時間預覽顯示正常顏色
+            document.getElementById('restTime').style.color = '#ff9500';
         }
     }
 }
