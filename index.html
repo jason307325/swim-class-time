@@ -3471,6 +3471,9 @@ function updatePercentageResult() {
     
     const resultStr = `${resultMins.toString().padStart(2,'0')}:${resultSecs.toString().padStart(2,'0')}.${resultCents.toString().padStart(2,'0')}`;
     document.getElementById('percentageResText').textContent = resultStr;
+    
+    // 每次更新結果時同步更新教練版表格
+    generatePercentageTable();
 }
 
 function generatePercentageTable() {
@@ -3483,7 +3486,8 @@ function generatePercentageTable() {
     
     let html = '';
     
-    for (let pct = 50; pct <= 110; pct += 5) {
+    // 修復：改為1%為單位，從50%到110%
+    for (let pct = 50; pct <= 110; pct++) {
         const resultMs = Math.round(baseMs * (pct / 100));
         const resultMins = Math.floor(resultMs / 60000);
         const resultSecs = Math.floor((resultMs % 60000) / 1000);
@@ -3628,8 +3632,8 @@ function handlePercentageCardTouchEnd(event, index) {
     const touch = event.changedTouches[0];
     const deltaX = touch.clientX - percentageSwipeStartX;
     
-    if (deltaX < -60) {
-        deletePercentageAthleteWithSwipe(index);
+    if (Math.abs(deltaX) > 60) {
+        selectPercentageAthlete(index);
     } else {
         currentPercentageSwipeCard.style.transform = 'translateX(0)';
         currentPercentageSwipeCard.classList.remove('swiping');
@@ -3643,8 +3647,8 @@ function handlePercentageCardMouseUp(event, index) {
     
     const deltaX = event.clientX - percentageSwipeStartX;
     
-    if (deltaX < -60) {
-        deletePercentageAthleteWithSwipe(index);
+    if (Math.abs(deltaX) < 10) {
+        selectPercentageAthlete(index);
     } else {
         currentPercentageSwipeCard.style.transform = 'translateX(0)';
         currentPercentageSwipeCard.classList.remove('swiping');
@@ -4060,7 +4064,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 requestAnimationFrame(() => {
                     updateBubblePosition('percentageAthleteBubble', this, percentageState.currentPct);
                     updatePercentageResult();
-                    generatePercentageTable(); // 修復：滑動時同步更新教練版表格
                     autoSaveData();
                     rangeUpdatePending = false;
                 });
@@ -4142,6 +4145,9 @@ document.addEventListener('DOMContentLoaded', function() {
             saveAthleteName();
         }
     });
+    
+    // 初始生成教練版表格
+    generatePercentageTable();
 });
 
 function segmentManualInput(num) {
