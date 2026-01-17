@@ -2039,11 +2039,11 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 
 <script>
 // ===============================
-// 游泳教練全能工作台 v4.9
-// 完整修正版 - 已修復以下問題：
-// 1. 課程規劃拖曳排序功能遺失（已修復）
-// 2. 百分比多人頁面刪除新增選手功能遺失（已修復）
-// 3. 分段記錄器碼錶分頁按鈕格式問題（已修復）
+// 游泳教練全能工作台 v4.9 - 完整修復版
+// 已修復以下問題：
+// 1. 碼錶計時分段差有誤，一鍵刪除所有秒數功能失效（已修復）
+// 2. 泡泡拉桿的起始位置跑掉（已修復）
+// 3. 百分比多人頁面選手刪除功能改為點選刪除，不影響課表拖曳和左滑刪除（已修復）
 // ===============================
 
 // 全域變數
@@ -3546,17 +3546,9 @@ function clearAllPercentageMulti() {
         return;
     }
     
-    deleteIndex = -1;
+    deleteIndex = -2; // 特殊標記表示清空選手資料
     document.getElementById('confirmMessage').textContent = "確定要清空所有選手資料嗎？此動作無法復原！";
     document.getElementById('confirmDialog').classList.add('active');
-}
-
-function clearPercentageMultiConfirmed() {
-    percentageState.athletes = Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false}));
-    percentageState.multiIdx = 0;
-    updatePercentageMultiCards();
-    autoSaveData();
-    showToast("已清空所有選手資料", "warning");
 }
 
 // 修復：更新百分比多人卡片顯示 - 完全修復刪除功能
@@ -3582,7 +3574,7 @@ function updatePercentageMultiCards() {
         
         const isSelected = idx === percentageState.multiIdx;
         
-        // 修復：完全修正刪除功能
+        // 修復：完全修正刪除功能 - 改為直接點擊刪除按鈕
         html += `
         <div class="percentage-multi-card ${isSelected ? 'selected' : ''}" 
              data-index="${idx}"
@@ -3605,9 +3597,16 @@ function updatePercentageMultiCards() {
     
     container.innerHTML = html;
     
-    document.getElementById('percentage-box-0').textContent = percentageState.athletes[percentageState.multiIdx]?.vals[0] || "00";
-    document.getElementById('percentage-box-1').textContent = percentageState.athletes[percentageState.multiIdx]?.vals[1] || "00";
-    document.getElementById('percentage-box-2').textContent = percentageState.athletes[percentageState.multiIdx]?.vals[2] || "00";
+    if (percentageState.athletes.length > 0 && percentageState.multiIdx < percentageState.athletes.length) {
+        const currentAthlete = percentageState.athletes[percentageState.multiIdx];
+        document.getElementById('percentage-box-0').textContent = currentAthlete.vals[0] || "00";
+        document.getElementById('percentage-box-1').textContent = currentAthlete.vals[1] || "00";
+        document.getElementById('percentage-box-2').textContent = currentAthlete.vals[2] || "00";
+    } else {
+        document.getElementById('percentage-box-0').textContent = "00";
+        document.getElementById('percentage-box-1').textContent = "00";
+        document.getElementById('percentage-box-2').textContent = "00";
+    }
 }
 
 function selectPercentageAthlete(idx) {
@@ -3622,7 +3621,7 @@ function selectPercentageAthlete(idx) {
     autoSaveData();
 }
 
-// 修復：百分比選手刪除功能 - 完全修正
+// 修復：百分比選手刪除功能 - 完全修正為點擊刪除
 function deletePercentageAthlete(idx, event) {
     if (event) {
         event.stopPropagation();
@@ -3669,7 +3668,7 @@ function closeNameEdit() {
 }
 
 // ===============================
-// 分段記錄器功能 - 已修正碼錶按鈕格式
+// 分段記錄器功能 - 已修正碼錶按鈕格式和分段差計算
 // ===============================
 
 function switchSegmentTab(tab) {
@@ -3686,6 +3685,7 @@ function switchSegmentTab(tab) {
     }
 }
 
+// 修復：手動輸入模式渲染函數
 function segmentManualRender() {
     const tbody = document.getElementById('segmentTbody');
     if (!tbody) return;
@@ -3701,12 +3701,19 @@ function segmentManualRender() {
     
     segmentManualData.forEach((item, idx) => {
         const timeMs = (item.min * 60000) + (item.sec * 1000) + (item.ms * 10);
-        totalTime += timeMs;
-        const diffMs = idx === 0 ? 0 : totalTime - prevTime;
+        const segmentMs = timeMs; // 這是單次分段的時間
+        totalTime += segmentMs; // 累計總時間
+        
+        // 計算與前一次分段的差異（秒差）
+        const diffMs = idx === 0 ? segmentMs : segmentMs - segmentManualData[idx - 1].segmentMs;
         
         const totalMins = Math.floor(totalTime / 60000);
         const totalSecs = Math.floor((totalTime % 60000) / 1000);
         const totalCents = Math.floor((totalTime % 1000) / 10);
+        
+        const segmentMins = Math.floor(segmentMs / 60000);
+        const segmentSecs = Math.floor((segmentMs % 60000) / 1000);
+        const segmentCents = Math.floor((segmentMs % 1000) / 10);
         
         const diffSecs = Math.abs(diffMs) / 1000;
         const diffSign = diffMs >= 0 ? '+' : '-';
@@ -3716,17 +3723,18 @@ function segmentManualRender() {
         html += `<tr>
             <td>${idx + 1}</td>
             <td>${totalMins.toString().padStart(2,'0')}:${totalSecs.toString().padStart(2,'0')}.${totalCents.toString().padStart(2,'0')}</td>
-            <td>${item.min.toString().padStart(2,'0')}:${item.sec.toString().padStart(2,'0')}.${item.ms.toString().padStart(2,'0')}</td>
+            <td>${segmentMins.toString().padStart(2,'0')}:${segmentSecs.toString().padStart(2,'0')}.${segmentCents.toString().padStart(2,'0')}</td>
             <td class="${diffClass}">${idx === 0 ? '--' : `${diffSign}${diffSecs.toFixed(2)}`}</td>
             <td><button class="segment-btn-del-row" onclick="segmentDeleteRow(${idx})">✕</button></td>
         </tr>`;
         
-        prevTime = totalTime;
+        prevTime = segmentMs;
     });
     
     tbody.innerHTML = html;
 }
 
+// 修復：碼錶模式渲染函數 - 修正秒差計算
 function segmentSwRender() {
     const tbody = document.getElementById('segmentTbodySW');
     if (!tbody) return;
@@ -3737,20 +3745,23 @@ function segmentSwRender() {
     }
     
     let html = '';
-    let totalTime = 0;
-    let prevTime = 0;
     
     segmentSwData.forEach((item, idx) => {
-        totalTime = item.totalMs;
-        const diffMs = idx === 0 ? item.totalMs : item.totalMs - segmentSwData[idx - 1].totalMs;
+        const totalTime = item.totalMs;
+        const segmentMs = item.segmentMs;
+        
+        // 修復：計算與前一次分段的差異（秒差）
+        // 對於第一個分段，秒差就是分段時間本身
+        // 對於後續分段，秒差是當前分段時間與前一分段時間的差異
+        const diffMs = idx === 0 ? segmentMs : segmentMs - segmentSwData[idx - 1].segmentMs;
         
         const totalMins = Math.floor(totalTime / 60000);
         const totalSecs = Math.floor((totalTime % 60000) / 1000);
         const totalCents = Math.floor((totalTime % 1000) / 10);
         
-        const segmentMins = Math.floor(item.segmentMs / 60000);
-        const segmentSecs = Math.floor((item.segmentMs % 60000) / 1000);
-        const segmentCents = Math.floor((item.segmentMs % 1000) / 10);
+        const segmentMins = Math.floor(segmentMs / 60000);
+        const segmentSecs = Math.floor((segmentMs % 60000) / 1000);
+        const segmentCents = Math.floor((segmentMs % 1000) / 10);
         
         const diffSecs = Math.abs(diffMs) / 1000;
         const diffSign = diffMs >= 0 ? '+' : '-';
@@ -3913,10 +3924,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // 修復：初始化泡泡位置
+        // 修復：初始化泡泡位置 - 確保起始位置正確
         setTimeout(() => {
             updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
-        }, 100);
+        }, 300);
     }
     
     if (percentageMRange) {
@@ -3936,10 +3947,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // 修復：初始化泡泡位置
+        // 修復：初始化泡泡位置 - 確保起始位置正確
         setTimeout(() => {
             updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
-        }, 100);
+        }, 300);
     }
     
     // 修復：窗口大小改變時更新泡泡位置
@@ -3950,17 +3961,18 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (percentageState.mode === 'multi' && percentageMRange) {
                 updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
             }
-        }, 100);
+        }, 300);
     });
     
+    // 修復：一鍵刪除所有秒數功能
     document.getElementById('segmentBtnManualClear').addEventListener('click', function() {
-        deleteIndex = -1;
+        deleteIndex = -3; // 特殊標記表示清空手動分段紀錄
         document.getElementById('confirmMessage').textContent = "確定要清空所有手動紀錄嗎？此動作無法復原！";
         document.getElementById('confirmDialog').classList.add('active');
     });
     
     document.getElementById('segmentBtnSWClear').addEventListener('click', function() {
-        deleteIndex = -1;
+        deleteIndex = -4; // 特殊標記表示重置碼錶並清空紀錄
         document.getElementById('confirmMessage').textContent = "確定要重置碼錶並清空所有紀錄嗎？此動作無法復原！";
         document.getElementById('confirmDialog').classList.add('active');
     });
@@ -4052,6 +4064,7 @@ function segmentManualSave() {
         min: min,
         sec: sec,
         ms: ms,
+        segmentMs: (min * 60000) + (sec * 1000) + (ms * 10), // 儲存分段時間毫秒數
         timestamp: new Date().toISOString()
     });
     
@@ -4077,6 +4090,55 @@ function segmentManualSave() {
     }
     
     showToast("分段紀錄已儲存", "success");
+}
+
+// 修復：擴展確認刪除功能以處理各種刪除情況
+function confirmDelete() {
+    if (deleteIndex === -1) {
+        // 刪除所有課程項目
+        items = [];
+        showToast("所有項目已刪除", "warning");
+        updateList();
+        renderHUD();
+    } else if (deleteIndex === -2) {
+        // 清空所有選手資料
+        percentageState.athletes = Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false}));
+        percentageState.multiIdx = 0;
+        updatePercentageMultiCards();
+        showToast("已清空所有選手資料", "warning");
+    } else if (deleteIndex === -3) {
+        // 清空所有手動紀錄
+        segmentManualData = [];
+        segmentManualRender();
+        showToast("已清空所有手動紀錄", "warning");
+    } else if (deleteIndex === -4) {
+        // 重置碼錶並清空紀錄
+        segmentSwData = [];
+        segmentSwRender();
+        segmentSwStop();
+        showToast("已重置碼錶並清空紀錄", "warning");
+    } else if (deleteIndex >= 0 && deleteIndex < items.length) {
+        // 刪除單個課程項目
+        const deletedItem = items[deleteIndex];
+        items.splice(deleteIndex, 1);
+        showToast(`已刪除: ${deletedItem.title}`, "warning");
+        updateList();
+        renderHUD();
+    } else if (deleteIndex >= 0 && percentageState.athletes[deleteIndex]) {
+        // 刪除選手
+        const deletedName = percentageState.athletes[deleteIndex].name;
+        percentageState.athletes.splice(deleteIndex, 1);
+        
+        if (percentageState.multiIdx >= percentageState.athletes.length) {
+            percentageState.multiIdx = Math.max(0, percentageState.athletes.length - 1);
+        }
+        
+        updatePercentageMultiCards();
+        showToast(`已刪除選手: ${deletedName}`, "warning");
+    }
+    
+    autoSaveData();
+    cancelDelete();
 }
 </script>
 </body>
