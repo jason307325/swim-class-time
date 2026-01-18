@@ -3635,7 +3635,7 @@ function cancelPercentageNameEdit() {
     document.getElementById('nameEditModal').classList.remove('active');
 }
 
-// 處理選手卡點擊和長按
+// 修正：處理選手卡點擊和長按 - 修復無法編輯第二位以後選手的問題
 function handlePercentageCardClick(event, index) {
     // 如果正在滑動或長按，不要觸發點擊事件
     if (currentPercentageSwipeCard || isNameEditLongPress) {
@@ -3643,9 +3643,25 @@ function handlePercentageCardClick(event, index) {
     }
     
     percentageState.multiIdx = index; 
+    
+    // 修正：更新編輯框顯示當前選手的數據
+    const athleteData = percentageState.athletes[index].vals;
+    for (let i = 0; i < 3; i++) {
+        const box = document.getElementById('percentage-box-' + i);
+        if (box) {
+            box.childNodes[0].nodeValue = athleteData[i];
+        }
+    }
+    
     updatePercentageDisplay(); 
     updatePercentageUI(); 
     autoSaveData();
+    
+    // 移除所有選中狀態，然後添加當前選中狀態
+    document.querySelectorAll('.percentage-multi-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
 }
 
 let isNameEditLongPress = false;
@@ -3748,6 +3764,14 @@ function renderPercentageCards() {
                 card.style.transform = 'translateX(0)';
                 card.classList.remove('swiping', 'swipe-delete-ready');
                 currentPercentageSwipeCard = null;
+            }
+        });
+        
+        // 修正：使用事件委派處理卡片點擊，防止刪除按鈕事件冒泡
+        card.addEventListener('click', (e) => {
+            // 防止刪除按鈕的點擊事件冒泡
+            if (!e.target.closest('.percentage-btn-delete-athlete')) {
+                handlePercentageCardClick(e, i);
             }
         });
         
