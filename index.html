@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>游泳教練全能工作台 v4.9</title>
-<link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -680,7 +680,7 @@ body {
 
 .percentage-bubble {
     position: absolute; 
-    left: 0; 
+    left: 5px; 
     top: 50%;
     width: 50px; 
     height: 50px; 
@@ -695,7 +695,6 @@ body {
     color: #fff;
     transition: transform 0.1s ease-out;
     border: 3px solid rgba(255,255,255,0.3);
-    will-change: transform;
 }
 
 #percentageAthleteBubble { 
@@ -835,41 +834,21 @@ body {
     box-shadow: 0 0 15px rgba(76,217,100,0.2); 
 }
 
-/* 名稱顯示部分 - 簡化版，移除編輯功能 */
-.percentage-multi-card-name-display {
+.percentage-multi-card-name { 
+    font-size: 14px; 
+    color: #999; 
+    flex-shrink: 0; 
     min-width: 70px;
     padding: 4px 6px;
     border-radius: 4px;
     transition: all 0.2s;
     margin-right: 10px;
-    cursor: pointer;
-    border: 1px solid transparent;
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--neon-green);
+    position: relative;
 }
 
-.percentage-multi-card-name-display:hover {
-    background: rgba(255,255,255,0.05);
-    border-color: #444;
-}
-
-.percentage-multi-card.selected .percentage-multi-card-name-display {
-    color: var(--neon-green);
-    font-weight: bold;
-    background: rgba(76,217,100,0.1);
-    border-color: var(--neon-green);
-}
-
-.name-edit-hint {
-    font-size: 10px;
-    color: #aaa;
-    text-align: center;
-    padding: 4px 8px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 4px;
-    margin-top: 4px;
-    display: none;
+.percentage-multi-card.selected .percentage-multi-card-name { 
+    color: var(--neon-green); 
+    font-weight: bold; 
 }
 
 .percentage-multi-card-info {
@@ -964,8 +943,6 @@ body {
     cursor: pointer; 
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     touch-action: manipulation;
-    -webkit-appearance: none;
-    -webkit-tap-highlight-color: transparent;
 }
 
 .unified-keyboard button:active { 
@@ -1086,7 +1063,7 @@ body {
 
 .segment-control-panel { 
     flex-shrink: 0; 
-    padding: 12px 15px calc(15px + env(safe-area-inset-bottom));
+    padding: 12px 15px 15px;
     background: var(--panel-dark); 
     border-top: 1px solid #1a2028; 
     display: flex; 
@@ -1167,24 +1144,16 @@ body {
 .segment-sw-view { 
     text-align: center; 
     padding: 8px 0;
-    margin-bottom: 5px;
 }
 
 #segmentSwDisplay { 
     font-family: "Courier New", monospace; 
-    font-size: clamp(2.8rem, 10vw, 3.5rem); 
+    font-size: clamp(3rem, 12vw, 4.2rem); 
     font-weight: 800; 
     font-variant-numeric: tabular-nums; 
     letter-spacing: -2px; 
-    color: var(--neon-blue);
-    text-shadow: 0 0 10px rgba(0,162,255,0.3);
-    background: rgba(0,0,0,0.3);
-    padding: 10px;
-    border-radius: 10px;
-    border: 2px solid #1a2028;
 }
 
-/* 修正分段記錄器按鈕樣式 */
 .segment-sw-actions { 
     display: grid; 
     grid-template-columns: 1fr 1fr; 
@@ -1193,28 +1162,14 @@ body {
     margin-top: 10px;
 }
 
-/* 新增分段記錄器按鈕通用樣式 */
-.segment-btn {
-    padding: 12px 0; 
-    border-radius: 8px; 
-    font-weight: 900; 
+.segment-sw-actions button { 
+    padding: 14px 0; 
+    border-radius: 10px; 
     font-size: 16px; 
-    border: none; 
-    color: white; 
-    min-height: 44px;
-    touch-action: manipulation;
-    -webkit-user-select: none;
-    user-select: none;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    transition: background-color 0.2s, transform 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.segment-btn:active { 
-    transform: scale(0.98); 
+    font-weight: 700; 
+    color: #fff; 
+    width: 100%; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .segment-btn-start { 
@@ -1250,9 +1205,9 @@ body {
 }
 
 .segment-btn-lock { 
-    opacity: 0.4; 
+    opacity: 0.15; 
     pointer-events: none; 
-    filter: grayscale(0.7); 
+    filter: grayscale(1); 
 }
 
 .segment-btn-del-row { 
@@ -1494,11 +1449,6 @@ body {
         font-size: 50px;
     }
     
-    /* 名稱編輯提示在橫屏顯示 */
-    .name-edit-hint {
-        display: block;
-    }
-    
     /* 分段記錄器桌面版調整 */
     @media (min-width:768px){ 
         .segment-content-wrapper {
@@ -1506,29 +1456,10 @@ body {
         } 
         .segment-table-container {
             flex: 1.3;
-            max-height: 100%;
         } 
         .segment-control-panel {
             flex: 0.7;
-            max-height: 100%;
-            overflow-y: auto;
-        }
-        
-        /* 碼錶計時模式橫屏優化 */
-        .segment-sw-view {
-            margin-bottom: 10px;
-        }
-        
-        .segment-sw-actions {
-            grid-template-columns: 1fr;
-            grid-template-rows: repeat(4, 1fr);
-            height: 100%;
-        }
-        
-        .segment-btn {
-            min-height: 60px;
-            font-size: 18px;
-        }
+        } 
     }
     
     /* 百分比多人模式橫屏優化 */
@@ -1587,7 +1518,7 @@ body {
 }
 
 /* 模態框樣式 */
-.edit-modal, .course-select-modal, .confirm-dialog, .name-edit-modal { 
+.edit-modal, .course-select-modal, .confirm-dialog { 
     display: none; 
     position: fixed; 
     top: 0; 
@@ -1600,7 +1531,7 @@ body {
     justify-content: center; 
 }
 
-.edit-modal.active, .course-select-modal.active, .confirm-dialog.active, .name-edit-modal.active { 
+.edit-modal.active, .course-select-modal.active, .confirm-dialog.active { 
     display: flex; 
 }
 
@@ -1685,6 +1616,81 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 .card-info-item-compact {
     display: flex;
     align-items: center;
+    gap: 2px;
+}
+
+/* 課程規劃鍵盤優化 - 直屏模式下避免被網址列擋住 */
+@media (orientation: portrait) and (max-height: 700px) {
+    .unified-keyboard {
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+    
+    .course-card {
+        min-height: 65px;
+        padding: 8px 12px;
+    }
+    
+    .plan-list-area {
+        padding: 5px 12px 0px;
+    }
+    
+    .unified-keyboard button {
+        padding: 8px 0;
+        font-size: 16px;
+    }
+}
+
+/* 鍵盤高度優化 */
+@media (orientation: portrait) {
+    .plan-list-area {
+        margin-bottom: 0;
+        padding-bottom: 0px;
+    }
+}
+
+/* 課程卡長按編輯提示 */
+.course-card::after {
+    content: "長按1秒可編輯";
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,162,255,0.9);
+    color: white;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.course-card:hover::after {
+    opacity: 1;
+}
+
+/* 長按編輯的視覺回饋 */
+.course-card.long-press-active {
+    background: rgba(0,162,255,0.1) !important;
+    border-color: var(--neon-blue) !important;
+    transform: scale(0.98);
+    transition: all 0.2s;
+}
+
+/* 課程卡資訊單行顯示優化 */
+.card-info-compact {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    font-size: 10px;
+    color: #aaa;
+}
+
+.card-info-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 2px;
 }
 
@@ -1882,9 +1888,8 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                                 <button onclick="clearAllPercentageMulti()">清空數據</button>
                                 <button class="add-btn" onclick="addPercentageAthlete()">+ 新增選手</button>
                             </div>
-                            <div class="name-edit-hint">點擊選手名稱可修改名稱</div>
                         </div>
-                        <div class="percentage-multi-hint">點擊卡片選擇選手，點擊名稱可編輯</div>
+                        <div class="percentage-multi-hint">點擊選擇選手，向左滑動可刪除選手</div>
                         <div class="percentage-range-wrapper">
                             <div class="percentage-range-track"></div>
                             <div class="percentage-bubble" id="percentageMultiBubble">100%</div>
@@ -1964,10 +1969,10 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                     <div class="segment-control-panel">
                         <div class="segment-sw-view"><div id="segmentSwDisplay">00:00.00</div></div>
                         <div class="segment-sw-actions">
-                            <button id="segmentSwStart" class="segment-btn segment-btn-start">開始</button>
-                            <button id="segmentSwLap" class="segment-btn segment-btn-lap segment-btn-lock">分段</button>
-                            <button id="segmentSwPause" class="segment-btn segment-btn-pause segment-btn-lock">暫停</button>
-                            <button id="segmentSwStop" class="segment-btn segment-btn-stop segment-btn-lock">結束</button>
+                            <button id="segmentSwStart" class="segment-btn-start">開始</button>
+                            <button id="segmentSwLap" class="segment-btn-lap segment-btn-lock">分段</button>
+                            <button id="segmentSwPause" class="segment-btn-pause segment-btn-lock">暫停</button>
+                            <button id="segmentSwStop" class="segment-btn-stop segment-btn-lock">結束</button>
                         </div>
                     </div>
                 </div>
@@ -1999,7 +2004,6 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     </div>
 </div>
 
-<!-- 課程選擇模態框 -->
 <div id="courseSelectModal" class="course-select-modal">
     <div class="modal-box" style="max-width: 400px;">
         <h3 style="color:var(--neon-blue); text-align:center; margin-bottom:15px;">選擇開始項目</h3>
@@ -2011,7 +2015,6 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     </div>
 </div>
 
-<!-- 確認刪除對話框 -->
 <div id="confirmDialog" class="confirm-dialog">
     <div class="confirm-box">
       <h3 style="color:var(--neon-red); margin-bottom:15px;">確認刪除</h3>
@@ -2023,26 +2026,12 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     </div>
 </div>
 
-<!-- 選手名稱編輯模態框 -->
-<div id="nameEditModal" class="name-edit-modal">
-    <div class="modal-box" style="max-width: 350px;">
-        <h3 style="color:var(--neon-green); text-align:center; margin-bottom:15px;">編輯選手名稱</h3>
-        <input type="text" id="nameEditInput" class="text-input-box" placeholder="輸入選手名稱" maxlength="20">
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button onclick="saveAthleteName()" class="btn-slim" style="background:var(--neon-green)">儲存</button>
-            <button onclick="closeNameEdit()" class="btn-slim" style="background:#444">取消</button>
-        </div>
-    </div>
-</div>
-
 <div id="segmentLoadingHint" class="segment-loading-hint">處理中...</div>
 
 <script>
 // ===============================
-// 游泳教練全能工作台 v4.9 - 修復版
-// 已修正：
-// 1. 計時鐘顏色邏輯：趟數倒數顯示紅色，休息時顯示綠色 ✓
-// 2. 趟數倒數邏輯：第一趟顯示X，第二趟顯示X-1 ✓
+// 游泳教練全能工作台 v4.9
+// 完全修正版 - 修復百分比工具網頁版與桌面版問題
 // ===============================
 
 // 全域變數
@@ -2074,7 +2063,7 @@ let percentageState = {
     mode: 'athlete', 
     multiIdx: 0,
     base: ["00", "00", "00"],
-    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false})),
+    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`})),
     isNew: true,
     currentPct: 100,
     multiPct: 100
@@ -2092,13 +2081,15 @@ let swipeStartY = 0;
 let swipeThreshold = 50;
 let currentSwipeCard = null;
 
+// 百分比選手卡滑動刪除狀態
+let percentageSwipeStartX = 0;
+let percentageSwipeStartY = 0;
+let currentPercentageSwipeCard = null;
+
 // 課程卡長按編輯狀態
 let longPressTimer = null;
 let longPressDuration = 1000;
 let isLongPressActive = false;
-
-// 選手名稱編輯狀態
-let editingAthleteIndex = -1;
 
 // 儲存相關
 const STORAGE_KEY = 'swim_coach_v4_data';
@@ -2218,10 +2209,11 @@ function playBeep(type) {
     }
 }
 
-// 螢幕喚醒鎖系統
+// 螢幕喚醒鎖系統 - 強化版本
 async function requestWakeLock() {
     if ('wakeLock' in navigator) {
         try {
+            // 如果已經有喚醒鎖，先釋放
             if (wakeLock) {
                 await releaseWakeLock();
             }
@@ -2229,10 +2221,12 @@ async function requestWakeLock() {
             wakeLock = await navigator.wakeLock.request('screen');
             console.log('螢幕保持亮起已啟用');
             
+            // 監聽釋放事件
             wakeLock.addEventListener('release', () => {
                 console.log('螢幕喚醒鎖已釋放');
                 wakeLock = null;
                 
+                // 如果計時器仍在運行，重新請求喚醒鎖
                 if (timerState.running && !timerState.paused) {
                     setTimeout(requestWakeLock, 100);
                 }
@@ -2242,6 +2236,7 @@ async function requestWakeLock() {
         } catch (err) {
             console.log(`無法啟用螢幕保持亮起: ${err.name}, ${err.message}`);
             
+            // 如果失敗，嘗試使用較寬鬆的策略
             if (err.name === 'NotAllowedError') {
                 showToast('請允許螢幕保持亮起功能', 'warning', 2000);
             }
@@ -2286,76 +2281,52 @@ function loadSavedData() {
     try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                items = data.items || [];
-                selectedZones = data.selectedZones || [];
-                selectedCats = data.selectedCats || [];
-                
-                if (data.percentageState) {
-                    percentageState = data.percentageState;
-                    if (percentageState.athletes) {
-                        percentageState.athletes.forEach((athlete, i) => {
-                            if (!athlete.name) {
-                                athlete.name = `選手 ${i+1}`;
-                            }
-                            if (athlete.isEditing === undefined) {
-                                athlete.isEditing = false;
-                            }
-                        });
-                    }
+            const data = JSON.parse(saved);
+            items = data.items || [];
+            selectedZones = data.selectedZones || [];
+            selectedCats = data.selectedCats || [];
+            
+            if (data.percentageState) {
+                percentageState = data.percentageState;
+                if (percentageState.athletes) {
+                    percentageState.athletes.forEach((athlete, i) => {
+                        if (!athlete.name) {
+                            athlete.name = `選手 ${i+1}`;
+                        }
+                    });
                 }
-                
-                if (data.segmentManualData) {
-                    segmentManualData = data.segmentManualData;
-                }
-                
-                if (data.segmentSwData) {
-                    segmentSwData = data.segmentSwData;
-                }
-                
-                if (data.soundEnabled !== undefined) {
-                    soundEnabled = data.soundEnabled;
-                    const soundBtn = document.getElementById('soundToggleBtn');
-                    if (soundBtn) {
-                        soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
-                    }
-                }
-                
-                updateList();
-                renderHUD();
-                updateZoneAndCatButtons();
-                
-                if (percentageState.mode === 'athlete') {
-                    if (percentageMainRange) percentageMainRange.value = percentageState.currentPct;
-                } else if (percentageState.mode === 'multi') {
-                    if (percentageMRange) percentageMRange.value = percentageState.multiPct;
-                }
-                
-                showToast('資料已恢復', 'success', 2000);
-            } catch (parseError) {
-                console.error('解析保存資料失敗:', parseError);
-                showToast('保存資料損壞，使用預設值', 'warning');
-                items = [];
-                selectedZones = [];
-                selectedCats = [];
-                percentageState = {
-                    focus: 0, 
-                    mode: 'athlete', 
-                    multiIdx: 0,
-                    base: ["00", "00", "00"],
-                    athletes: Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false})),
-                    isNew: true,
-                    currentPct: 100,
-                    multiPct: 100
-                };
-                segmentManualData = [];
-                segmentSwData = [];
             }
+            
+            if (data.segmentManualData) {
+                segmentManualData = data.segmentManualData;
+            }
+            
+            if (data.segmentSwData) {
+                segmentSwData = data.segmentSwData;
+            }
+            
+            if (data.soundEnabled !== undefined) {
+                soundEnabled = data.soundEnabled;
+                const soundBtn = document.getElementById('soundToggleBtn');
+                if (soundBtn) {
+                    soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+                }
+            }
+            
+            updateList();
+            renderHUD();
+            updateZoneAndCatButtons();
+            
+            if (percentageState.mode === 'athlete') {
+                if (percentageMainRange) percentageMainRange.value = percentageState.currentPct;
+            } else if (percentageState.mode === 'multi') {
+                if (percentageMRange) percentageMRange.value = percentageState.multiPct;
+            }
+            
+            showToast('資料已恢復', 'success', 2000);
         }
     } catch (e) {
         console.log('載入保存資料失敗:', e);
-        showToast('載入資料失敗，使用預設值', 'error');
     }
 }
 
@@ -2547,9 +2518,8 @@ function addItem() {
         return;
     }
     
-    // 修改：允許距離為0或不輸入
-    if (d === undefined || d === null || isNaN(d)) {
-        showToast("請輸入有效的距離！", "error");
+    if (!d) {
+        showToast("請輸入距離！", "error");
         return;
     }
     
@@ -2592,7 +2562,6 @@ function addItem() {
     showToast("項目已添加！", "success");
 }
 
-// 修復：完全重新設計的拖曳排序功能
 function updateList() {
     const listArea = document.getElementById('listArea');
     if (!listArea) return;
@@ -2649,9 +2618,6 @@ function updateList() {
             <button class="course-card-swipe-delete-btn" onclick="deleteItemWithSwipe(${i})">🗑️</button>
         </div>
     </div>`).join('');
-    
-    // 初始化拖曳排序功能
-    initializeSortable();
 }
 
 function handleCardTouchStart(event, index) {
@@ -2857,63 +2823,6 @@ function handleDragStart(event, index) {
     document.addEventListener('touchend', handleDragEnd);
 }
 
-// 修復：完全重新設計的拖曳排序功能
-function initializeSortable() {
-    const listArea = document.getElementById('listArea');
-    if (!listArea || items.length === 0) return;
-    
-    // 移除現有的Sortable實例
-    if (window.sortableInstance) {
-        window.sortableInstance.destroy();
-    }
-    
-    // 創建新的Sortable實例
-    window.sortableInstance = Sortable.create(listArea, {
-        animation: 150,
-        ghostClass: 'sortable-ghost',
-        chosenClass: 'sortable-chosen',
-        dragClass: 'dragging',
-        handle: '.drag-handle',
-        filter: '.course-card-swipe-overlay, .course-card-swipe-delete-btn',
-        preventOnFilter: false,
-        onStart: function(evt) {
-            // 開始拖曳時添加視覺效果
-            evt.item.classList.add('dragging');
-        },
-        onEnd: function(evt) {
-            // 移除視覺效果
-            evt.item.classList.remove('dragging');
-            
-            const oldIndex = evt.oldIndex;
-            const newIndex = evt.newIndex;
-            
-            if (oldIndex !== newIndex) {
-                // 重新排序items陣列
-                const movedItem = items.splice(oldIndex, 1)[0];
-                items.splice(newIndex, 0, movedItem);
-                
-                // 更新列表顯示
-                updateList();
-                renderHUD();
-                autoSaveData();
-                
-                // 如果計時器正在運行，需要更新計時器的當前項目索引
-                if (timerState.running) {
-                    if (timerState.currentItemIndex === oldIndex) {
-                        timerState.currentItemIndex = newIndex;
-                    } else if (timerState.currentItemIndex > oldIndex && timerState.currentItemIndex <= newIndex) {
-                        timerState.currentItemIndex--;
-                    } else if (timerState.currentItemIndex < oldIndex && timerState.currentItemIndex >= newIndex) {
-                        timerState.currentItemIndex++;
-                    }
-                }
-                
-                showToast("項目順序已更新", "success");
-            }
-        }
-    });
-}
-
 function openEdit(i) {
     editingIndex = i; 
     const it = items[i];
@@ -2949,24 +2858,10 @@ function confirmDelete() {
     if (deleteIndex === -1) {
         items = [];
         showToast("所有項目已刪除", "warning");
-    } else if (deleteIndex >= 0 && deleteIndex < items.length) {
+    } else {
         const deletedItem = items[deleteIndex];
         items.splice(deleteIndex, 1);
         showToast(`已刪除: ${deletedItem.title}`, "warning");
-    } else if (deleteIndex >= 0 && percentageState.athletes[deleteIndex]) {
-        // 處理刪除選手
-        const deletedName = percentageState.athletes[deleteIndex].name;
-        percentageState.athletes.splice(deleteIndex, 1);
-        
-        if (percentageState.multiIdx >= percentageState.athletes.length) {
-            percentageState.multiIdx = Math.max(0, percentageState.athletes.length - 1);
-        }
-        
-        updatePercentageMultiCards();
-        showToast(`已刪除選手: ${deletedName}`, "warning");
-        autoSaveData();
-        cancelDelete();
-        return;
     }
     
     updateList();
@@ -3076,7 +2971,7 @@ function clearInputs() {
 }
 
 // ===============================
-// 計時器功能 - 修正版
+// 計時器功能 - 強化螢幕保持亮起
 // ===============================
 
 function timerStart() { 
@@ -3086,6 +2981,7 @@ function timerStart() {
     }
     
     if (!timerState.running) {
+        // 請求螢幕保持亮起
         requestWakeLock().then(success => {
             if (success) {
                 showToast("螢幕保持亮起已啟用", "success", 2000);
@@ -3104,24 +3000,11 @@ function timerStart() {
         timerState.completedDistance = 0;
         timerState.totalItems = items.length;
         
-        // 修正：初始化當前項目的趟數
-        const currentItem = items[timerState.currentItemIndex];
-        timerState.totalLapsInSet = currentItem.laps;
-        
         startStep();
         showToast("計時開始！", "success");
     } else if (timerState.paused) {
         timerPause();
     }
-}
-
-function timerResetSelect() {
-    if (timerState.running && !timerState.paused) {
-        showToast("請先暫停計時器！", "error");
-        return;
-    }
-    
-    showCourseSelection();
 }
 
 function showCourseSelection() {
@@ -3136,31 +3019,45 @@ function showCourseSelection() {
         selectedCourseIndex = 0;
     }
     
-    const list = document.getElementById('courseSelectList');
-    list.innerHTML = items.map((it, i) => `
-        <div class="select-course-card ${i === selectedCourseIndex ? 'selected' : ''}" onclick="selectCourseForTimer(${i})">
-            <strong>${i+1}. ${it.title}</strong>
+    const listElement = document.getElementById('courseSelectList');
+    listElement.innerHTML = '';
+    
+    items.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.className = 'select-course-card';
+        card.innerHTML = `
+            <div style="font-weight:bold; margin-bottom:4px;">${index + 1}. ${item.title}</div>
             <div class="course-details">
-                <div>${it.tags}</div>
-                <div>距離: ${it.dist}m | 用時: ${formatTime(it.totalTime)}</div>
-                <div>配速: ${it.lapMin}:${it.lapSec.toString().padStart(2,'0')} | 休息: ${it.resMin}:${it.resSec.toString().padStart(2,'0')}</div>
+                <div>${item.tags}</div>
+                <div>${item.singleDist}m × ${item.laps}趟 × ${item.sets}組</div>
+                <div>配速: ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')}</div>
+                <div>休息: ${item.resMin}:${item.resSec.toString().padStart(2,'0')}</div>
+                <div>總距離: ${item.dist}m | 用時: ${formatTime(item.totalTime)}</div>
             </div>
-        </div>
-    `).join('');
+        `;
+        
+        if (index === selectedCourseIndex) {
+            card.classList.add('selected');
+        }
+        
+        card.onclick = () => {
+            document.querySelectorAll('.select-course-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedCourseIndex = index;
+        };
+        
+        listElement.appendChild(card);
+    });
     
     document.getElementById('courseSelectModal').classList.add('active');
 }
 
-function selectCourseForTimer(index) {
-    selectedCourseIndex = index;
-    document.querySelectorAll('.select-course-card').forEach((card, i) => {
-        card.classList.toggle('selected', i === index);
-    });
-}
-
 function confirmCourseSelection() {
-    timerState.currentItemIndex = selectedCourseIndex;
+    document.getElementById('courseSelectModal').classList.remove('active');
     
+    timerState.running = true;
+    timerState.paused = false;
+    timerState.currentItemIndex = selectedCourseIndex;
     timerState.currentSet = 1;
     timerState.currentLap = 0;
     timerState.currentLapInSet = 0;
@@ -3170,1032 +3067,982 @@ function confirmCourseSelection() {
     timerState.completedDistance = 0;
     timerState.totalItems = items.length;
     
-    for (let i = 0; i < selectedCourseIndex; i++) {
-        timerState.completedDistance += items[i].dist;
-    }
-    
-    // 修正：初始化當前項目的趟數
-    const currentItem = items[timerState.currentItemIndex];
-    timerState.totalLapsInSet = currentItem.laps;
+    // 請求螢幕保持亮起
+    requestWakeLock().then(success => {
+        if (success) {
+            showToast("螢幕保持亮起已啟用", "success", 2000);
+        }
+    });
     
     startStep();
-    document.getElementById('courseSelectModal').classList.remove('active');
-    showToast("已從第 " + (selectedCourseIndex + 1) + " 項開始", "success");
+    showToast("計時開始！", "success");
 }
 
 function cancelCourseSelection() {
     document.getElementById('courseSelectModal').classList.remove('active');
 }
 
-function timerPause() {
+function startStep() {
+    const it = items[timerState.currentItemIndex];
+    if (!it) {
+        timerEnd();
+        showToast("沒有訓練項目！", "error");
+        return;
+    }
+    
+    if (timerState.currentLap === 0 && timerState.currentSet === 1 && !timerState.isResting) { 
+        timerState.totalLapsInSet = it.laps;
+        timerState.currentLapInSet = 0;
+        timerState.currentLap = it.laps;
+        timerState.distRemaining = it.dist; 
+        timerState.completedDistance = 0;
+    }
+    
+    if (timerState.isResting) {
+        timerState.timeRemaining = (it.resMin * 60 + it.resSec);
+        playBeep('rest');
+    } else {
+        timerState.timeRemaining = (it.lapMin * 60 + it.lapSec);
+        playBeep('start');
+    }
+    
+    updateTimerUI(); 
+    runTimer();
+}
+
+function runTimer() {
+    clearInterval(timerState.intervalId);
+    timerState.intervalId = setInterval(() => {
+        if (timerState.paused) return;
+        
+        if (timerState.timeRemaining <= 3 && timerState.timeRemaining > 0) {
+            playBeep('tick');
+        }
+        
+        timerState.timeRemaining--;
+        if (timerState.timeRemaining <= 0) { 
+            clearInterval(timerState.intervalId); 
+            handleStepComplete(); 
+        } else {
+            updateTimerUI();
+        }
+    }, 1000);
+}
+
+function handleStepComplete() {
+    const it = items[timerState.currentItemIndex];
+    
+    if (!timerState.isResting) {
+        timerState.currentLap--; 
+        timerState.currentLapInSet++;
+        timerState.completedDistance += it.singleDist;
+        
+        timerState.distRemaining = it.dist - timerState.completedDistance;
+        
+        if (timerState.currentLapInSet < it.laps) {
+            startStep();
+        } else if (timerState.currentSet < it.sets) { 
+            timerState.isResting = true; 
+            startStep(); 
+        } else {
+            timerState.isResting = true; 
+            startStep();
+        }
+    } else { 
+        if (timerState.currentSet < it.sets) { 
+            timerState.isResting = false; 
+            timerState.currentSet++; 
+            timerState.currentLapInSet = 0;
+            timerState.currentLap = it.laps;
+            startStep(); 
+        } else {
+            nextItem();
+        }
+    }
+}
+
+function nextItem() {
+    timerState.currentItemIndex++;
+    if (timerState.currentItemIndex < items.length) { 
+        timerState.currentSet = 1; 
+        timerState.currentLap = 0; 
+        timerState.currentLapInSet = 0;
+        timerState.isResting = false; 
+        timerState.completedDistance = 0;
+        
+        startStep(); 
+        showToast(`開始第 ${timerState.currentItemIndex + 1} 個項目`, "info");
+    } else { 
+        timerEnd(); 
+        showToast("訓練完成！", "success"); 
+    }
+}
+
+function updateTimerUI() {
+    const m = Math.floor(timerState.timeRemaining/60), s = timerState.timeRemaining%60;
+    document.getElementById('timerDisplay').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    document.getElementById('timerDisplay').classList.toggle('resting', timerState.isResting);
+    
+    const it = items[timerState.currentItemIndex];
+    if(it) {
+        document.getElementById('clock-tags').innerText = it.tags || "---";
+        document.getElementById('clock-title').innerText = it.title + (timerState.isResting ? " (休息)" : "");
+        document.getElementById('currentLap').innerText = timerState.currentLap;
+        document.getElementById('currentSet').innerText = `${timerState.currentSet}/${it.sets}`;
+        document.getElementById('distRem').innerText = timerState.distRemaining + "m";
+        document.getElementById('restTime').innerText = `${it.resMin}:${it.resSec.toString().padStart(2,'0')}`;
+        
+        document.getElementById('currentItemNum').innerText = timerState.currentItemIndex + 1;
+        document.getElementById('totalItems').innerText = items.length;
+    } else {
+        document.getElementById('currentItemNum').innerText = "0";
+        document.getElementById('totalItems').innerText = items.length;
+    }
+}
+
+function timerPause() { 
     if (!timerState.running) return;
+    
+    timerState.paused = !timerState.paused;
+    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
     
     if (timerState.paused) {
-        timerState.paused = false;
-        document.querySelector('.timer-btn[style*="var(--neon-blue)"]').textContent = "暫停";
-        timerUpdateInterval();
-        showToast("計時繼續", "info");
-    } else {
-        timerState.paused = true;
-        if (timerState.intervalId) {
-            clearInterval(timerState.intervalId);
-            timerState.intervalId = null;
-        }
-        document.querySelector('.timer-btn[style*="var(--neon-blue)"]').textContent = "繼續";
-        showToast("計時已暫停", "warning");
-    }
-}
-
-function timerEnd() {
-    if (!timerState.running) return;
-    
-    timerState.running = false;
-    timerState.paused = false;
-    
-    if (timerState.intervalId) {
         clearInterval(timerState.intervalId);
-        timerState.intervalId = null;
-    }
-    
-    releaseWakeLock();
-    
-    document.getElementById('timerDisplay').classList.remove('resting');
-    document.getElementById('timerDisplay').textContent = "00:00";
-    document.getElementById('clock-title').textContent = "訓練結束";
-    document.getElementById('clock-tags').textContent = "已完成所有項目";
-    
-    document.querySelectorAll('.sub-val').forEach(el => el.textContent = "0");
-    
-    showToast("訓練完成！", "success", 3000);
-}
-
-// 修正：startStep函數 - 修復趟數邏輯和顏色顯示
-function startStep() {
-    if (timerState.currentItemIndex >= items.length) {
-        timerEnd();
-        return;
-    }
-    
-    const currentItem = items[timerState.currentItemIndex];
-    
-    // 修正：如果是新的一組，初始化趟數
-    if (timerState.currentLapInSet === 0) {
-        timerState.currentLapInSet = currentItem.laps; // 第一趟顯示X
-        timerState.totalLapsInSet = currentItem.laps;
-    }
-    
-    if (timerState.isResting) {
-        // 休息結束，開始工作（游泳）
-        timerState.timeRemaining = currentItem.lapMin * 60 + currentItem.lapSec;
-        timerState.isResting = false;
+        pauseBtn.textContent = '繼續';
+        pauseBtn.style.background = 'var(--neon-green)';
         
-        // 修正：趟數顯示邏輯 - 第一趟顯示X，第二趟顯示X-1
-        // 這裡不遞減，因為是在開始工作時顯示當前的趟數
-        
-        // 修正：時間顯示為紅色（工作時間）
-        document.getElementById('timerDisplay').classList.remove('resting');
-        showToast("休息結束，開始游泳！", "info", 1500);
-        playBeep('start');
+        // 暫停時釋放喚醒鎖
+        releaseWakeLock();
+        showToast("計時暫停", "warning");
     } else {
-        // 工作結束，開始休息
-        timerState.timeRemaining = currentItem.resMin * 60 + currentItem.resSec;
-        timerState.isResting = true;
-        
-        // 修正：完成一趟後遞減趟數
-        timerState.currentLapInSet--;
-        
-        // 如果這一組的所有趟數都完成了
-        if (timerState.currentLapInSet <= 0) {
-            timerState.currentLapInSet = 0;
-            
-            // 進入下一組
-            timerState.currentSet++;
-            if (timerState.currentSet > currentItem.sets) {
-                // 這一項完成
-                timerState.currentSet = 1;
-                timerState.currentItemIndex++;
-                timerState.completedDistance += currentItem.dist;
-                
-                // 重置下一項的趟數
-                if (timerState.currentItemIndex < items.length) {
-                    const nextItem = items[timerState.currentItemIndex];
-                    timerState.currentLapInSet = nextItem.laps;
-                    timerState.totalLapsInSet = nextItem.laps;
-                }
-            } else {
-                // 重置為下一組的趟數
-                timerState.currentLapInSet = currentItem.laps;
-            }
-        }
-        
-        // 修正：時間顯示為綠色（休息時間）
-        document.getElementById('timerDisplay').classList.add('resting');
-        playBeep('rest');
-    }
-    
-    updateTimerDisplay();
-    
-    if (timerState.intervalId) {
-        clearInterval(timerState.intervalId);
-    }
-    
-    timerState.intervalId = setInterval(timerUpdateInterval, 1000);
-}
-
-function timerUpdateInterval() {
-    if (!timerState.running || timerState.paused) return;
-    
-    timerState.timeRemaining--;
-    
-    if (timerState.timeRemaining <= 0) {
-        startStep();
-        return;
-    }
-    
-    updateTimerDisplay();
-    
-    if (timerState.timeRemaining <= 3) {
-        if (timerState.isResting) {
-            // 休息倒數時使用綠色
-            document.getElementById('timerDisplay').classList.add('resting');
-        } else {
-            // 工作倒數時使用紅色
-            document.getElementById('timerDisplay').classList.remove('resting');
-        }
-        playBeep('tick');
-    }
-}
-
-// 修正：updateTimerDisplay函數 - 修復趟數顯示邏輯
-function updateTimerDisplay() {
-    const mins = Math.floor(timerState.timeRemaining / 60);
-    const secs = timerState.timeRemaining % 60;
-    
-    document.getElementById('timerDisplay').textContent = `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-    
-    // 修正：根據是工作還是休息設置正確的顏色
-    if (timerState.isResting) {
-        document.getElementById('timerDisplay').classList.add('resting');
-    } else {
-        document.getElementById('timerDisplay').classList.remove('resting');
-    }
-    
-    if (timerState.currentItemIndex < items.length) {
-        const currentItem = items[timerState.currentItemIndex];
-        
-        document.getElementById('currentItemNum').textContent = timerState.currentItemIndex + 1;
-        document.getElementById('totalItems').textContent = items.length;
-        document.getElementById('clock-tags').textContent = currentItem.tags;
-        document.getElementById('clock-title').textContent = currentItem.title;
-        
-        // 修正：顯示剩餘趟數（第一趟顯示X，第二趟顯示X-1）
-        // 如果currentLapInSet為0，表示這一組已完成，顯示0
-        document.getElementById('currentLap').textContent = timerState.currentLapInSet;
-        
-        // 修正：剩餘趟數顯示紅色
-        document.getElementById('currentLap').style.color = 'var(--neon-red)';
-        
-        document.getElementById('currentSet').textContent = `${timerState.currentSet}/${currentItem.sets}`;
-        
-        const remainingDist = items.slice(timerState.currentItemIndex).reduce((sum, item, idx) => {
-            if (idx === 0) {
-                // 修正：計算剩餘距離時考慮當前趟數
-                return sum + (item.singleDist * timerState.currentLapInSet) + 
-                       (item.dist * (item.sets - timerState.currentSet));
-            }
-            return sum + item.dist;
-        }, 0);
-        
-        document.getElementById('distRem').textContent = remainingDist + "m";
-        
-        // 修正：休息時間預覽
-        if (timerState.isResting) {
-            document.getElementById('restTime').textContent = `${currentItem.resMin}:${currentItem.resSec.toString().padStart(2,'0')}`;
-            // 修正：休息時間顯示綠色
-            document.getElementById('restTime').style.color = 'var(--neon-green)';
-        } else {
-            document.getElementById('restTime').textContent = `${currentItem.resMin}:${currentItem.resSec.toString().padStart(2,'0')}`;
-            // 工作時間預覽顯示正常顏色
-            document.getElementById('restTime').style.color = '#ff9500';
-        }
-    }
-}
-
-// ===============================
-// 百分比工具功能 - 修復版
-// ===============================
-
-function switchPercentageMode(mode) {
-    percentageState.mode = mode;
-    
-    document.getElementById('percentageAthleteBtn').classList.toggle('active', mode === 'athlete');
-    document.getElementById('percentageCoachBtn').classList.toggle('active', mode === 'coach');
-    document.getElementById('percentageMultiBtn').classList.toggle('active', mode === 'multi');
-    
-    document.getElementById('percentageAthleteView').style.display = mode === 'athlete' ? 'flex' : 'none';
-    document.getElementById('percentageCoachView').style.display = mode === 'coach' ? 'flex' : 'none';
-    document.getElementById('percentageMultiView').style.display = mode === 'multi' ? 'flex' : 'none';
-    
-    if (mode === 'athlete') {
-        document.getElementById('percentageKeyboard').style.display = 'grid';
-        updatePercentageDisplay();
-        if (percentageMainRange) {
-            percentageMainRange.value = percentageState.currentPct;
-            updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
-            updatePercentageResult();
-        }
-    } else if (mode === 'coach') {
-        document.getElementById('percentageKeyboard').style.display = 'grid';
-        generatePercentageTable();
-    } else if (mode === 'multi') {
-        document.getElementById('percentageKeyboard').style.display = 'grid';
-        updatePercentageMultiCards();
-        if (percentageMRange) {
-            percentageMRange.value = percentageState.multiPct;
-            updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
-        }
-    }
-    
-    autoSaveData();
-}
-
-function percentageFocusBox(idx) {
-    percentageState.focus = idx;
-    document.querySelectorAll('.percentage-unit-box').forEach((b, i) => {
-        b.classList.toggle('active', i === idx);
-    });
-}
-
-function percentagePress(key) {
-    const idx = percentageState.focus;
-    
-    if (percentageState.mode === 'athlete') {
-        if (key === 'C') {
-            percentageState.base = ["00", "00", "00"];
-            percentageState.isNew = true;
-        } else if (key === 'X') {
-            if (percentageState.isNew) {
-                percentageState.base[idx] = "00";
-            } else {
-                percentageState.base[idx] = percentageState.base[idx].slice(0, -1) || "0";
-                if (percentageState.base[idx].length === 1) percentageState.base[idx] = "0" + percentageState.base[idx];
-            }
-        } else {
-            if (percentageState.isNew) {
-                percentageState.base[idx] = key;
-                percentageState.isNew = false;
-            } else {
-                if (percentageState.base[idx] === "00") {
-                    percentageState.base[idx] = key;
-                } else if (percentageState.base[idx].length < 2) {
-                    percentageState.base[idx] += key;
-                } else {
-                    percentageState.base[idx] = key;
-                }
-            }
-        }
-        
-        updatePercentageDisplay();
-        updatePercentageResult();
-        generatePercentageTable();
-    } else if (percentageState.mode === 'coach') {
-        percentageFocusBox(idx);
-    } else if (percentageState.mode === 'multi') {
-        if (percentageState.athletes.length === 0) return;
-        
-        const athlete = percentageState.athletes[percentageState.multiIdx];
-        
-        if (key === 'C') {
-            athlete.vals = ["00", "00", "00"];
-            percentageState.isNew = true;
-        } else if (key === 'X') {
-            if (percentageState.isNew) {
-                athlete.vals[idx] = "00";
-            } else {
-                athlete.vals[idx] = athlete.vals[idx].slice(0, -1) || "0";
-                if (athlete.vals[idx].length === 1) athlete.vals[idx] = "0" + athlete.vals[idx];
-            }
-        } else {
-            if (percentageState.isNew) {
-                athlete.vals[idx] = key;
-                percentageState.isNew = false;
-            } else {
-                if (athlete.vals[idx] === "00") {
-                    athlete.vals[idx] = key;
-                } else if (athlete.vals[idx].length < 2) {
-                    athlete.vals[idx] += key;
-                } else {
-                    athlete.vals[idx] = key;
-                }
-            }
-        }
-        
-        updatePercentageMultiCards();
-    }
-    
-    autoSaveData();
-}
-
-function updatePercentageDisplay() {
-    document.getElementById('percentage-box-0').textContent = percentageState.base[0];
-    document.getElementById('percentage-box-1').textContent = percentageState.base[1];
-    document.getElementById('percentage-box-2').textContent = percentageState.base[2];
-}
-
-// 修復：更新泡泡位置函數 - 使用transform提升性能
-function updateBubblePosition(bubbleId, rangeElement, value) {
-    const bubble = document.getElementById(bubbleId);
-    if (!bubble || !rangeElement) return;
-    
-    const rangeWidth = rangeElement.offsetWidth;
-    const thumbWidth = 50;
-    const min = parseInt(rangeElement.min);
-    const max = parseInt(rangeElement.max);
-    
-    // 計算百分比位置
-    const percentage = (value - min) / (max - min);
-    // 計算translateX距離
-    const translateX = percentage * (rangeWidth - thumbWidth);
-    
-    bubble.style.transform = `translateX(${translateX}px)`;
-    bubble.textContent = value + "%";
-}
-
-function updatePercentageResult() {
-    const totalMs = (parseInt(percentageState.base[0]) * 60000) + 
-                   (parseInt(percentageState.base[1]) * 1000) + 
-                   (parseInt(percentageState.base[2]) * 10);
-    
-    const pct = percentageMainRange ? parseInt(percentageMainRange.value) : 100;
-    const resultMs = Math.round(totalMs * (pct / 100));
-    
-    const resultMins = Math.floor(resultMs / 60000);
-    const resultSecs = Math.floor((resultMs % 60000) / 1000);
-    const resultCents = Math.floor((resultMs % 1000) / 10);
-    
-    const resultStr = `${resultMins.toString().padStart(2,'0')}:${resultSecs.toString().padStart(2,'0')}.${resultCents.toString().padStart(2,'0')}`;
-    document.getElementById('percentageResText').textContent = resultStr;
-    
-    // 每次更新結果時同步更新教練版表格
-    generatePercentageTable();
-}
-
-// 修復：添加教練版表格自動滾動功能
-function generatePercentageTable() {
-    const baseMs = (parseInt(percentageState.base[0]) * 60000) + 
-                  (parseInt(percentageState.base[1]) * 1000) + 
-                  (parseInt(percentageState.base[2]) * 10);
-    
-    const table = document.getElementById('percentageCoachTable');
-    if (!table) return;
-    
-    let html = '';
-    
-    // 修復：改為1%為單位，從50%到110%
-    for (let pct = 50; pct <= 110; pct++) {
-        const resultMs = Math.round(baseMs * (pct / 100));
-        const resultMins = Math.floor(resultMs / 60000);
-        const resultSecs = Math.floor((resultMs % 60000) / 1000);
-        const resultCents = Math.floor((resultMs % 1000) / 10);
-        
-        const resultStr = `${resultMins.toString().padStart(2,'0')}:${resultSecs.toString().padStart(2,'0')}.${resultCents.toString().padStart(2,'0')}`;
-        
-        const currentPct = percentageMainRange ? parseInt(percentageMainRange.value) : 100;
-        const isHighlight = pct === currentPct;
-        
-        html += `<tr ${isHighlight ? 'class="highlight"' : ''} data-pct="${pct}">
-            <td>${pct}%</td>
-            <td>${resultStr}</td>
-        </tr>`;
-    }
-    
-    table.innerHTML = html;
-    
-    // 修復：添加自動滾動到高亮行的功能
-    if (percentageState.mode === 'coach') {
-        setTimeout(() => {
-            const highlightRow = table.querySelector('tr.highlight');
-            if (highlightRow) {
-                highlightRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
-    }
-}
-
-function addPercentageAthlete() {
-    const newId = percentageState.athletes.length + 1;
-    percentageState.athletes.push({
-        vals: ["00", "00", "00"],
-        name: `選手 ${newId}`,
-        isEditing: false
-    });
-    
-    percentageState.multiIdx = percentageState.athletes.length - 1;
-    updatePercentageMultiCards();
-    autoSaveData();
-    showToast(`新增選手 ${newId}`, "success");
-}
-
-function clearAllPercentageMulti() {
-    if (percentageState.athletes.length === 0) {
-        showToast("目前沒有選手資料", "warning");
-        return;
-    }
-    
-    deleteIndex = -2; // 特殊標記表示清空選手資料
-    document.getElementById('confirmMessage').textContent = "確定要清空所有選手資料嗎？此動作無法復原！";
-    document.getElementById('confirmDialog').classList.add('active');
-}
-
-// 修復：更新百分比多人卡片顯示 - 完全修復刪除功能
-function updatePercentageMultiCards() {
-    const container = document.getElementById('percentageMultiCardsList');
-    if (!container) return;
-    
-    let html = '';
-    
-    percentageState.athletes.forEach((athlete, idx) => {
-        const baseMs = (parseInt(athlete.vals[0]) * 60000) + 
-                      (parseInt(athlete.vals[1]) * 1000) + 
-                      (parseInt(athlete.vals[2]) * 10);
-        
-        const pct = percentageMRange ? parseInt(percentageMRange.value) : 100;
-        const resultMs = Math.round(baseMs * (pct / 100));
-        const resultMins = Math.floor(resultMs / 60000);
-        const resultSecs = Math.floor((resultMs % 60000) / 1000);
-        const resultCents = Math.floor((resultMs % 1000) / 10);
-        
-        const resultStr = `${resultMins.toString().padStart(2,'0')}:${resultSecs.toString().padStart(2,'0')}.${resultCents.toString().padStart(2,'0')}`;
-        const baseStr = `${athlete.vals[0]}:${athlete.vals[1]}.${athlete.vals[2]}`;
-        
-        const isSelected = idx === percentageState.multiIdx;
-        
-        // 修復：完全修正刪除功能 - 改為直接點擊刪除按鈕
-        html += `
-        <div class="percentage-multi-card ${isSelected ? 'selected' : ''}" 
-             data-index="${idx}"
-             onclick="selectPercentageAthlete(${idx})">
-            <div class="percentage-multi-card-name-display" onclick="editAthleteName(${idx}, event)">
-                ${athlete.name}
-            </div>
-            <div class="percentage-multi-card-info">
-                <div class="percentage-multi-card-base">
-                    <span>基準:</span>
-                    <span>${baseStr}</span>
-                </div>
-            </div>
-            <div class="percentage-multi-res">${resultStr}</div>
-            <div class="percentage-multi-card-actions">
-                <button class="percentage-btn-delete-athlete" onclick="deletePercentageAthlete(${idx}, event)">🗑️</button>
-            </div>
-        </div>`;
-    });
-    
-    container.innerHTML = html;
-    
-    if (percentageState.athletes.length > 0 && percentageState.multiIdx < percentageState.athletes.length) {
-        const currentAthlete = percentageState.athletes[percentageState.multiIdx];
-        document.getElementById('percentage-box-0').textContent = currentAthlete.vals[0] || "00";
-        document.getElementById('percentage-box-1').textContent = currentAthlete.vals[1] || "00";
-        document.getElementById('percentage-box-2').textContent = currentAthlete.vals[2] || "00";
-    } else {
-        document.getElementById('percentage-box-0').textContent = "00";
-        document.getElementById('percentage-box-1').textContent = "00";
-        document.getElementById('percentage-box-2').textContent = "00";
-    }
-}
-
-function selectPercentageAthlete(idx) {
-    percentageState.multiIdx = idx;
-    percentageState.focus = 0;
-    
-    document.querySelectorAll('.percentage-unit-box').forEach((b, i) => {
-        b.classList.toggle('active', i === 0);
-    });
-    
-    updatePercentageMultiCards();
-    autoSaveData();
-}
-
-// 修復：百分比選手刪除功能 - 完全修正為點擊刪除
-function deletePercentageAthlete(idx, event) {
-    if (event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
-    
-    if (percentageState.athletes.length <= 1) {
-        showToast("至少需要保留一位選手", "error");
-        return;
-    }
-    
-    deleteIndex = idx;
-    const athleteName = percentageState.athletes[idx].name;
-    document.getElementById('confirmMessage').textContent = `確定要刪除選手「${athleteName}」嗎？`;
-    document.getElementById('confirmDialog').classList.add('active');
-}
-
-function editAthleteName(idx, event) {
-    if (event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
-    editingAthleteIndex = idx;
-    document.getElementById('nameEditInput').value = percentageState.athletes[idx].name;
-    document.getElementById('nameEditModal').classList.add('active');
-}
-
-function saveAthleteName() {
-    if (editingAthleteIndex >= 0) {
-        const newName = document.getElementById('nameEditInput').value.trim();
-        if (newName) {
-            percentageState.athletes[editingAthleteIndex].name = newName;
-            updatePercentageMultiCards();
-            autoSaveData();
-            showToast("選手名稱已更新", "success");
-        }
-    }
-    closeNameEdit();
-}
-
-function closeNameEdit() {
-    editingAthleteIndex = -1;
-    document.getElementById('nameEditModal').classList.remove('active');
-}
-
-// ===============================
-// 分段記錄器功能 - 已修正碼錶按鈕格式和分段差計算
-// ===============================
-
-function switchSegmentTab(tab) {
-    document.getElementById('segmentTabManual').classList.toggle('active', tab === 'manual');
-    document.getElementById('segmentTabSW').classList.toggle('active', tab === 'sw');
-    
-    document.getElementById('segment-page-manual').classList.toggle('active', tab === 'manual');
-    document.getElementById('segment-page-sw').classList.toggle('active', tab === 'sw');
-    
-    if (tab === 'manual') {
-        segmentManualRender();
-    } else if (tab === 'sw') {
-        segmentSwRender();
-    }
-}
-
-// 修復：手動輸入模式渲染函數
-function segmentManualRender() {
-    const tbody = document.getElementById('segmentTbody');
-    if (!tbody) return;
-    
-    if (segmentManualData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="color:#666; text-align:center; padding:30px 0;">尚無分段紀錄</td></tr>`;
-        return;
-    }
-    
-    let html = '';
-    let totalTime = 0;
-    let prevTime = 0;
-    
-    segmentManualData.forEach((item, idx) => {
-        const timeMs = (item.min * 60000) + (item.sec * 1000) + (item.ms * 10);
-        const segmentMs = timeMs; // 這是單次分段的時間
-        totalTime += segmentMs; // 累計總時間
-        
-        // 計算與前一次分段的差異（秒差）
-        const diffMs = idx === 0 ? segmentMs : segmentMs - segmentManualData[idx - 1].segmentMs;
-        
-        const totalMins = Math.floor(totalTime / 60000);
-        const totalSecs = Math.floor((totalTime % 60000) / 1000);
-        const totalCents = Math.floor((totalTime % 1000) / 10);
-        
-        const segmentMins = Math.floor(segmentMs / 60000);
-        const segmentSecs = Math.floor((segmentMs % 60000) / 1000);
-        const segmentCents = Math.floor((segmentMs % 1000) / 10);
-        
-        const diffSecs = Math.abs(diffMs) / 1000;
-        const diffSign = diffMs >= 0 ? '+' : '-';
-        
-        const diffClass = diffMs > 0 ? 'segment-diff-up' : (diffMs < 0 ? 'segment-diff-down' : '');
-        
-        html += `<tr>
-            <td>${idx + 1}</td>
-            <td>${totalMins.toString().padStart(2,'0')}:${totalSecs.toString().padStart(2,'0')}.${totalCents.toString().padStart(2,'0')}</td>
-            <td>${segmentMins.toString().padStart(2,'0')}:${segmentSecs.toString().padStart(2,'0')}.${segmentCents.toString().padStart(2,'0')}</td>
-            <td class="${diffClass}">${idx === 0 ? '--' : `${diffSign}${diffSecs.toFixed(2)}`}</td>
-            <td><button class="segment-btn-del-row" onclick="segmentDeleteRow(${idx})">✕</button></td>
-        </tr>`;
-        
-        prevTime = segmentMs;
-    });
-    
-    tbody.innerHTML = html;
-}
-
-// 修復：碼錶模式渲染函數 - 修正秒差計算
-function segmentSwRender() {
-    const tbody = document.getElementById('segmentTbodySW');
-    if (!tbody) return;
-    
-    if (segmentSwData.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="color:#666; text-align:center; padding:30px 0;">尚無碼錶紀錄</td></tr>`;
-        return;
-    }
-    
-    let html = '';
-    
-    segmentSwData.forEach((item, idx) => {
-        const totalTime = item.totalMs;
-        const segmentMs = item.segmentMs;
-        
-        // 修復：計算與前一次分段的差異（秒差）
-        // 對於第一個分段，秒差就是分段時間本身
-        // 對於後續分段，秒差是當前分段時間與前一分段時間的差異
-        const diffMs = idx === 0 ? segmentMs : segmentMs - segmentSwData[idx - 1].segmentMs;
-        
-        const totalMins = Math.floor(totalTime / 60000);
-        const totalSecs = Math.floor((totalTime % 60000) / 1000);
-        const totalCents = Math.floor((totalTime % 1000) / 10);
-        
-        const segmentMins = Math.floor(segmentMs / 60000);
-        const segmentSecs = Math.floor((segmentMs % 60000) / 1000);
-        const segmentCents = Math.floor((segmentMs % 1000) / 10);
-        
-        const diffSecs = Math.abs(diffMs) / 1000;
-        const diffSign = diffMs >= 0 ? '+' : '-';
-        
-        const diffClass = diffMs > 0 ? 'segment-diff-up' : (diffMs < 0 ? 'segment-diff-down' : '');
-        
-        html += `<tr>
-            <td>${idx + 1}</td>
-            <td>${totalMins.toString().padStart(2,'0')}:${totalSecs.toString().padStart(2,'0')}.${totalCents.toString().padStart(2,'0')}</td>
-            <td>${segmentMins.toString().padStart(2,'0')}:${segmentSecs.toString().padStart(2,'0')}.${segmentCents.toString().padStart(2,'0')}</td>
-            <td class="${diffClass}">${idx === 0 ? '--' : `${diffSign}${diffSecs.toFixed(2)}`}</td>
-            <td><button class="segment-btn-del-row" onclick="segmentSwDeleteRow(${idx})">✕</button></td>
-        </tr>`;
-    });
-    
-    tbody.innerHTML = html;
-}
-
-function segmentDeleteRow(idx) {
-    segmentManualData.splice(idx, 1);
-    segmentManualRender();
-    autoSaveData();
-    showToast("已刪除分段紀錄", "warning");
-}
-
-function segmentSwDeleteRow(idx) {
-    segmentSwData.splice(idx, 1);
-    segmentSwRender();
-    autoSaveData();
-    showToast("已刪除碼錶紀錄", "warning");
-}
-
-function segmentSwStart() {
-    if (segmentTimerState === "idling") {
-        segmentStartT = Date.now() - segmentElapsedT;
-        segmentTimerState = "running";
-        
-        document.getElementById('segmentSwStart').classList.add('segment-btn-lock');
-        document.getElementById('segmentSwLap').classList.remove('segment-btn-lock');
-        document.getElementById('segmentSwPause').classList.remove('segment-btn-lock');
-        document.getElementById('segmentSwStop').classList.remove('segment-btn-lock');
-        
-        segmentSwUpdate();
-        showToast("碼錶開始計時", "success");
-    }
-}
-
-function segmentSwPause() {
-    if (segmentTimerState === "running") {
-        segmentTimerState = "paused";
-        
-        document.getElementById('segmentSwPause').classList.add('segment-btn-lock');
-        document.getElementById('segmentSwStart').classList.remove('segment-btn-lock');
-        
-        if (segmentRaf) {
-            cancelAnimationFrame(segmentRaf);
-            segmentRaf = null;
-        }
-        
-        showToast("碼錶已暫停", "warning");
-    }
-}
-
-function segmentSwLap() {
-    if (segmentTimerState !== "running") return;
-    
-    const currentTime = Date.now();
-    const totalMs = currentTime - segmentStartT;
-    const prevTotalMs = segmentSwData.length > 0 ? segmentSwData[segmentSwData.length - 1].totalMs : 0;
-    const segmentMs = totalMs - prevTotalMs;
-    
-    segmentSwData.push({
-        totalMs: totalMs,
-        segmentMs: segmentMs,
-        timestamp: new Date().toISOString()
-    });
-    
-    segmentSwRender();
-    autoSaveData();
-    
-    showToast(`分段紀錄 #${segmentSwData.length}`, "info");
-    
-    const scrollArea = document.getElementById('segmentSwScrollArea');
-    if (scrollArea) {
-        setTimeout(() => {
-            scrollArea.scrollTop = scrollArea.scrollHeight;
-        }, 100);
-    }
-}
-
-function segmentSwStop() {
-    if (segmentTimerState === "running" || segmentTimerState === "paused") {
-        segmentTimerState = "idling";
-        segmentElapsedT = 0;
-        
-        document.getElementById('segmentSwStart').classList.remove('segment-btn-lock');
-        document.getElementById('segmentSwLap').classList.add('segment-btn-lock');
-        document.getElementById('segmentSwPause').classList.add('segment-btn-lock');
-        document.getElementById('segmentSwStop').classList.add('segment-btn-lock');
-        
-        document.getElementById('segmentSwDisplay').textContent = "00:00.00";
-        
-        if (segmentRaf) {
-            cancelAnimationFrame(segmentRaf);
-            segmentRaf = null;
-        }
-        
-        showToast("碼錶已結束", "warning");
-    }
-}
-
-function segmentSwUpdate() {
-    if (segmentTimerState !== "running") return;
-    
-    const currentTime = Date.now();
-    const elapsed = currentTime - segmentStartT;
-    
-    const mins = Math.floor(elapsed / 60000);
-    const secs = Math.floor((elapsed % 60000) / 1000);
-    const cents = Math.floor((elapsed % 1000) / 10);
-    
-    document.getElementById('segmentSwDisplay').textContent = 
-        `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}.${cents.toString().padStart(2,'0')}`;
-    
-    segmentRaf = requestAnimationFrame(segmentSwUpdate);
-}
-
-// ===============================
-// 頁面初始化 - 修復版
-// ===============================
-
-document.addEventListener('DOMContentLoaded', function() {
-    loadSavedData();
-    checkOrientation();
-    
-    document.getElementById('planKeyboard').style.display = 'grid';
-    document.getElementById('percentageKeyboard').style.display = 'grid';
-    
-    document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊' : '🔇';
-    
-    document.getElementById('classTime').value = '0';
-    
-    setFocus('classTime');
-    
-    // 修復：百分比滑桿事件監聽 - 使用requestAnimationFrame優化性能
-    if (percentageMainRange) {
-        let rangeUpdatePending = false;
-        
-        percentageMainRange.addEventListener('input', function() {
-            percentageState.currentPct = parseInt(this.value);
-            
-            if (!rangeUpdatePending) {
-                rangeUpdatePending = true;
-                requestAnimationFrame(() => {
-                    updateBubblePosition('percentageAthleteBubble', this, percentageState.currentPct);
-                    updatePercentageResult();
-                    autoSaveData();
-                    rangeUpdatePending = false;
-                });
+        // 繼續時重新請求喚醒鎖
+        requestWakeLock().then(success => {
+            if (success) {
+                showToast("螢幕保持亮起已啟用", "success", 1000);
             }
         });
         
-        // 修復：初始化泡泡位置 - 確保起始位置正確
-        setTimeout(() => {
-            updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
-        }, 300);
+        pauseBtn.textContent = '暫停';
+        pauseBtn.style.background = 'var(--neon-blue)';
+        runTimer();
+        showToast("計時繼續", "success");
+    }
+}
+
+function timerEnd() { 
+    clearInterval(timerState.intervalId); 
+    timerState = { 
+        running: false, 
+        paused: false, 
+        currentItemIndex: 0, 
+        currentSet: 1, 
+        currentLap: 0, 
+        currentLapInSet: 0,
+        isResting: false, 
+        timeRemaining: 0, 
+        distRemaining: 0, 
+        intervalId: null,
+        completedDistance: 0,
+        totalLapsInSet: 0,
+        totalItems: 0
+    }; 
+    
+    const pauseBtn = document.querySelector('.timer-btn[onclick="timerPause()"]');
+    if (pauseBtn) {
+        pauseBtn.textContent = '暫停';
+        pauseBtn.style.background = 'var(--neon-blue)';
+    }
+    
+    // 結束時釋放喚醒鎖
+    releaseWakeLock();
+    
+    updateTimerUI(); 
+    showToast("計時結束", "warning");
+}
+
+function timerResetSelect() { 
+    if (timerState.running) {
+        if (!timerState.paused) {
+            timerPause();
+        }
+    }
+    showCourseSelection();
+}
+
+// ===============================
+// 百分比工具功能 - 完全重新設計多人模式
+// ===============================
+
+function initPercentage() {
+    if (percentageMainRange) {
+        percentageMainRange.addEventListener('input', () => {
+            percentageState.currentPct = parseInt(percentageMainRange.value);
+            updatePercentageUI();
+            autoSaveData();
+        });
     }
     
     if (percentageMRange) {
-        let multiRangeUpdatePending = false;
-        
-        percentageMRange.addEventListener('input', function() {
-            percentageState.multiPct = parseInt(this.value);
+        percentageMRange.addEventListener('input', () => {
+            percentageState.multiPct = parseInt(percentageMRange.value);
+            updatePercentageUI();
+            autoSaveData();
+        });
+    }
+
+    switchPercentageMode('athlete');
+    renderPercentageTable();
+    
+    setTimeout(() => {
+        updatePercentageUI();
+        updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
+        updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
+    }, 100);
+}
+
+function updateBubblePosition(bubbleId, rangeElement, percentageValue) {
+    const bubble = document.getElementById(bubbleId);
+    if (bubble && rangeElement) {
+        setTimeout(() => {
+            const rangeRect = rangeElement.getBoundingClientRect();
+            if (rangeRect.width === 0) return;
             
-            if (!multiRangeUpdatePending) {
-                multiRangeUpdatePending = true;
-                requestAnimationFrame(() => {
-                    updateBubblePosition('percentageMultiBubble', this, percentageState.multiPct);
-                    updatePercentageMultiCards();
-                    autoSaveData();
-                    multiRangeUpdatePending = false;
-                });
-            }
-        });
-        
-        // 修復：初始化泡泡位置 - 確保起始位置正確
-        setTimeout(() => {
+            const min = 50, max = 110;
+            const normalizedValue = (percentageValue - min) / (max - min);
+            
+            const bubbleWidth = 50;
+            const trackWidth = rangeRect.width - bubbleWidth;
+            const position = normalizedValue * trackWidth;
+            
+            bubble.style.transform = `translateX(${position}px)`;
+            bubble.innerText = percentageValue + '%';
+        }, 10);
+    }
+}
+
+function switchPercentageMode(m) {
+    percentageState.mode = m;
+    document.querySelectorAll('.percentage-mode-switch button').forEach(b => {
+        b.classList.toggle('active', b.id === 'percentage'+m+'Btn');
+    });
+    
+    document.getElementById('percentageAthleteView').style.display = (m === 'athlete') ? 'flex' : 'none';
+    document.getElementById('percentageCoachView').style.display = (m === 'coach') ? 'block' : 'none';
+    document.getElementById('percentageMultiView').style.display = (m === 'multi') ? 'flex' : 'none';
+    document.getElementById('percentageKeyboard').style.display = (m === 'coach') ? 'none' : 'grid';
+    
+    updatePercentageDisplay(); 
+    if (m === 'coach') {
+        renderPercentageTable();
+        setTimeout(scrollToPercentageHighlight, 50); 
+    } else if (m === 'multi') {
+        renderPercentageCards();
+    }
+    
+    requestAnimationFrame(() => {
+        updatePercentageUI();
+        if (m === 'athlete') {
+            updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
+        } else if (m === 'multi') {
             updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
-        }, 300);
-    }
-    
-    // 修復：窗口大小改變時更新泡泡位置
-    window.addEventListener('resize', function() {
-        setTimeout(() => {
-            if (percentageState.mode === 'athlete' && percentageMainRange) {
-                updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
-            } else if (percentageState.mode === 'multi' && percentageMRange) {
-                updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
-            }
-        }, 300);
-    });
-    
-    // 修復：一鍵刪除所有秒數功能
-    document.getElementById('segmentBtnManualClear').addEventListener('click', function() {
-        deleteIndex = -3; // 特殊標記表示清空手動分段紀錄
-        document.getElementById('confirmMessage').textContent = "確定要清空所有手動紀錄嗎？此動作無法復原！";
-        document.getElementById('confirmDialog').classList.add('active');
-    });
-    
-    document.getElementById('segmentBtnSWClear').addEventListener('click', function() {
-        deleteIndex = -4; // 特殊標記表示重置碼錶並清空紀錄
-        document.getElementById('confirmMessage').textContent = "確定要重置碼錶並清空所有紀錄嗎？此動作無法復原！";
-        document.getElementById('confirmDialog').classList.add('active');
-    });
-    
-    document.querySelectorAll('.segment-k-num').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const num = this.textContent;
-            segmentManualInput(num);
-        });
-    });
-    
-    document.getElementById('segmentKeyDel').addEventListener('click', segmentManualDelete);
-    document.getElementById('segmentKeySave').addEventListener('click', segmentManualSave);
-    
-    document.getElementById('segmentSwStart').addEventListener('click', segmentSwStart);
-    document.getElementById('segmentSwLap').addEventListener('click', segmentSwLap);
-    document.getElementById('segmentSwPause').addEventListener('click', segmentSwPause);
-    document.getElementById('segmentSwStop').addEventListener('click', segmentSwStop);
-    
-    window.addEventListener('resize', checkOrientation);
-    window.addEventListener('orientationchange', checkOrientation);
-    
-    document.getElementById('nameEditInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            saveAthleteName();
         }
     });
     
-    // 初始生成教練版表格
-    generatePercentageTable();
-});
+    autoSaveData();
+}
 
-function segmentManualInput(num) {
-    const field = segmentFields[segmentFieldIdx];
-    const input = document.getElementById(field);
+function updatePercentageUI() {
+    const baseMs = percentageToMs(percentageState.base);
     
-    if (!input) return;
+    const cp = percentageState.currentPct;
+    const resText = document.getElementById('percentageResText');
+    if(resText) resText.innerText = percentageFmt(baseMs * (2 - cp / 100));
     
-    if (segmentInputCount === 0) {
-        input.textContent = num;
-        segmentInputCount = 1;
-    } else if (segmentInputCount === 1) {
-        input.textContent += num;
-        segmentInputCount = 0;
-        
-        segmentFieldIdx = (segmentFieldIdx + 1) % segmentFields.length;
-        document.querySelectorAll('.segment-time-input').forEach((el, idx) => {
-            el.classList.toggle('active', idx === segmentFieldIdx);
-        });
+    highlightPercentageRow(cp);
+
+    const mp = percentageState.multiPct;
+    
+    if (percentageState.mode === 'athlete') {
+        updateBubblePosition('percentageAthleteBubble', percentageMainRange, cp);
+    } else if (percentageState.mode === 'multi') {
+        updateBubblePosition('percentageMultiBubble', percentageMRange, mp);
+        renderPercentageCards();
     }
 }
 
-function segmentManualDelete() {
-    const field = segmentFields[segmentFieldIdx];
-    const input = document.getElementById(field);
-    
-    if (!input) return;
-    
-    if (segmentInputCount === 0) {
-        if (segmentFieldIdx > 0) {
-            segmentFieldIdx--;
-            const prevField = segmentFields[segmentFieldIdx];
-            const prevInput = document.getElementById(prevField);
-            if (prevInput) {
-                prevInput.textContent = prevInput.textContent.slice(0, -1) || "00";
-                segmentInputCount = 1;
-            }
+function percentageFocusBox(i) { 
+    percentageState.focus = i; 
+    percentageState.isNew = true; 
+    updatePercentageDisplay(); 
+}
+
+function updatePercentageDisplay() {
+    let d = (percentageState.mode === 'multi') ? percentageState.athletes[percentageState.multiIdx].vals : percentageState.base;
+    for(let i=0; i<3; i++) {
+        const box = document.getElementById('percentage-box-' + i);
+        if (box) {
+            box.classList.toggle('active', i === percentageState.focus);
+            box.childNodes[0].nodeValue = d[i];
         }
-    } else {
-        segmentInputCount = 0;
     }
-    
-    document.querySelectorAll('.segment-time-input').forEach((el, idx) => {
-        el.classList.toggle('active', idx === segmentFieldIdx);
-    });
 }
 
-function segmentManualSave() {
-    const min = parseInt(document.getElementById('segment-m_min').textContent) || 0;
-    const sec = parseInt(document.getElementById('segment-m_sec').textContent) || 0;
-    const ms = parseInt(document.getElementById('segment-m_ms').textContent) || 0;
+function percentagePress(k) {
+    let d = (percentageState.mode === 'multi') ? percentageState.athletes[percentageState.multiIdx].vals : percentageState.base;
+    if(k === 'C') { 
+        d[0]=d[1]=d[2]="00"; 
+        percentageState.focus=0; 
+        percentageState.isNew=true; 
+        showToast("數值已歸零", "info");
+    }
+    else if(k === 'X') { 
+        d[percentageState.focus]="00"; 
+        percentageState.isNew=true; 
+    }
+    else {
+        if(percentageState.isNew) { 
+            d[percentageState.focus] = "0"+k; 
+            percentageState.isNew=false; 
+        }
+        else { 
+            d[percentageState.focus] = (d[percentageState.focus].slice(-1)+k).slice(-2); 
+            if(percentageState.focus === 1 && parseInt(d[1]) > 59) d[1] = "59";
+            if(percentageState.focus<2){
+                percentageState.focus++; 
+                percentageState.isNew=true;
+            } 
+        }
+    }
+    renderPercentageTable(); 
+    updatePercentageDisplay(); 
+    updatePercentageUI();
+    autoSaveData();
+}
+
+function percentageToMs(a) { 
+    return (parseInt(a[0])*60000) + (parseInt(a[1])*1000) + (parseInt(a[2])*10); 
+}
+
+function percentageFmt(ms) {
+    if(ms < 0) ms = 0;
+    let m = Math.floor(ms/60000); 
+    ms%=60000;
+    let s = Math.floor(ms/1000); 
+    ms%=1000;
+    let cs = Math.floor(ms/10);
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+}
+
+function renderPercentageTable() {
+    const ms = percentageToMs(percentageState.base);
+    const tbody = document.getElementById('percentageCoachTable');
+    if (!tbody) return;
     
-    if (min === 0 && sec === 0 && ms === 0) {
-        showToast("請輸入有效的時間", "error");
+    let h = "";
+    for(let i=110; i>=50; i--) h += `<tr id="percentage-row-${i}"><td>${i}%</td><td>${percentageFmt(ms*(2-i/100))}</td></tr>`;
+    tbody.innerHTML = h;
+}
+
+function highlightPercentageRow(p) {
+    document.querySelectorAll('#percentageCoachTable tr').forEach(r => r.classList.remove('highlight'));
+    const target = document.getElementById(`percentage-row-${Math.round(p)}`);
+    if(target) target.classList.add('highlight');
+}
+
+function scrollToPercentageHighlight() {
+    const target = document.getElementById(`percentage-row-${percentageState.currentPct}`);
+    if(target) target.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+// 全新的百分比多人模式功能
+function addPercentageAthlete() {
+    if(percentageState.athletes.length >= 20) { 
+        showToast("最多 20 位選手", "warning");
+        return; 
+    }
+    percentageState.athletes.push({vals: ["00", "00", "00"], name: `選手 ${percentageState.athletes.length + 1}`}); 
+    percentageState.multiIdx = percentageState.athletes.length - 1; 
+    updatePercentageDisplay(); 
+    updatePercentageUI();
+    autoSaveData();
+    showToast(`新增選手 ${percentageState.athletes.length}`, "success");
+}
+
+function clearAllPercentageMulti() { 
+    if(confirm("確定要重置所有選手數據嗎？此操作無法復原！")) { 
+        percentageState.athletes.forEach((a, i) => {
+            a.vals = ["00","00","00"];
+            a.name = `選手 ${i+1}`;
+        }); 
+        updatePercentageDisplay(); 
+        updatePercentageUI(); 
+        autoSaveData();
+        showToast("所有選手數據已重置", "warning");
+    } 
+}
+
+function deletePercentageAthlete(idx, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    if (percentageState.athletes.length <= 1) {
+        showToast("至少需要保留一位選手！", "error");
         return;
     }
     
-    segmentManualData.push({
-        min: min,
-        sec: sec,
-        ms: ms,
-        segmentMs: (min * 60000) + (sec * 1000) + (ms * 10), // 儲存分段時間毫秒數
-        timestamp: new Date().toISOString()
-    });
+    percentageState.athletes.splice(idx, 1);
     
-    segmentManualRender();
-    autoSaveData();
-    
-    document.getElementById('segment-m_min').textContent = "00";
-    document.getElementById('segment-m_sec').textContent = "00";
-    document.getElementById('segment-m_ms').textContent = "00";
-    
-    segmentFieldIdx = 0;
-    segmentInputCount = 0;
-    
-    document.querySelectorAll('.segment-time-input').forEach((el, idx) => {
-        el.classList.toggle('active', idx === segmentFieldIdx);
-    });
-    
-    const scrollArea = document.getElementById('segmentManualScrollArea');
-    if (scrollArea) {
-        setTimeout(() => {
-            scrollArea.scrollTop = scrollArea.scrollHeight;
-        }, 100);
+    // 調整當前選中的選手索引
+    if (percentageState.multiIdx >= idx) {
+        if (percentageState.multiIdx > 0) {
+            percentageState.multiIdx--;
+        }
     }
     
-    showToast("分段紀錄已儲存", "success");
+    renderPercentageCards();
+    updatePercentageUI();
+    autoSaveData();
+    showToast("選手已刪除", "warning");
 }
 
-// 修復：擴展確認刪除功能以處理各種刪除情況
-function confirmDelete() {
-    if (deleteIndex === -1) {
-        // 刪除所有課程項目
-        items = [];
-        showToast("所有項目已刪除", "warning");
-        updateList();
-        renderHUD();
-    } else if (deleteIndex === -2) {
-        // 清空所有選手資料
-        percentageState.athletes = Array.from({length: 4}, (_, i) => ({vals: ["00", "00", "00"], name: `選手 ${i+1}`, isEditing: false}));
-        percentageState.multiIdx = 0;
-        updatePercentageMultiCards();
-        showToast("已清空所有選手資料", "warning");
-    } else if (deleteIndex === -3) {
-        // 清空所有手動紀錄
-        segmentManualData = [];
-        segmentManualRender();
-        showToast("已清空所有手動紀錄", "warning");
-    } else if (deleteIndex === -4) {
-        // 重置碼錶並清空紀錄
-        segmentSwData = [];
-        segmentSwRender();
-        segmentSwStop();
-        showToast("已重置碼錶並清空紀錄", "warning");
-    } else if (deleteIndex >= 0 && deleteIndex < items.length) {
-        // 刪除單個課程項目
-        const deletedItem = items[deleteIndex];
-        items.splice(deleteIndex, 1);
-        showToast(`已刪除: ${deletedItem.title}`, "warning");
-        updateList();
-        renderHUD();
-    } else if (deleteIndex >= 0 && percentageState.athletes[deleteIndex]) {
-        // 刪除選手
-        const deletedName = percentageState.athletes[deleteIndex].name;
-        percentageState.athletes.splice(deleteIndex, 1);
-        
-        if (percentageState.multiIdx >= percentageState.athletes.length) {
-            percentageState.multiIdx = Math.max(0, percentageState.athletes.length - 1);
-        }
-        
-        updatePercentageMultiCards();
-        showToast(`已刪除選手: ${deletedName}`, "warning");
+function updatePercentageAthleteName(idx, newName) {
+    if (idx >= 0 && idx < percentageState.athletes.length) {
+        percentageState.athletes[idx].name = newName || `選手 ${idx+1}`;
+        renderPercentageCards();
+        autoSaveData();
+    }
+}
+
+// 百分比選手卡滑動刪除功能
+function handlePercentageSwipeStart(event, index) {
+    const touch = event.touches[0];
+    percentageSwipeStartX = touch.clientX;
+    percentageSwipeStartY = touch.clientY;
+    currentPercentageSwipeCard = event.currentTarget;
+    event.currentTarget.classList.add('swiping');
+}
+
+function handlePercentageSwipeMove(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    const deltaY = touch.clientY - percentageSwipeStartY;
+    
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return;
     }
     
+    if (deltaX < 0) {
+        event.preventDefault();
+        const translateX = Math.max(deltaX, -80);
+        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
+        
+        if (translateX < -60) {
+            currentPercentageSwipeCard.classList.add('swipe-delete-ready');
+        } else {
+            currentPercentageSwipeCard.classList.remove('swipe-delete-ready');
+        }
+    }
+}
+
+function handlePercentageSwipeEnd(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    
+    if (deltaX < -60) {
+        deletePercentageAthlete(index);
+    } else {
+        currentPercentageSwipeCard.style.transform = 'translateX(0)';
+        currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
+    }
+    
+    currentPercentageSwipeCard = null;
+}
+
+function handlePercentageCardClick(event, index) {
+    // 如果正在滑動，不要觸發點擊事件
+    if (currentPercentageSwipeCard && Math.abs(percentageSwipeStartX - event.clientX) > 10) {
+        return;
+    }
+    
+    percentageState.multiIdx = index; 
+    updatePercentageDisplay(); 
+    updatePercentageUI(); 
     autoSaveData();
-    cancelDelete();
+}
+
+function renderPercentageCards() {
+    const l = document.getElementById('percentageMultiCardsList');
+    if(!l) return;
+    const p = percentageState.multiPct;
+    l.innerHTML = "";
+    percentageState.athletes.forEach((a, i) => {
+        const ms = percentageToMs(a.vals) * (2 - p / 100);
+        const card = document.createElement('div');
+        card.className = `percentage-multi-card ${i === percentageState.multiIdx ? 'selected' : ''}`;
+        card.setAttribute('data-index', i);
+        
+        // 添加觸控事件
+        card.addEventListener('touchstart', (e) => handlePercentageSwipeStart(e, i));
+        card.addEventListener('touchmove', (e) => handlePercentageSwipeMove(e, i));
+        card.addEventListener('touchend', (e) => handlePercentageSwipeEnd(e, i));
+        
+        // 添加滑鼠事件
+        card.addEventListener('mousedown', (e) => {
+            percentageSwipeStartX = e.clientX;
+            percentageSwipeStartY = e.clientY;
+            currentPercentageSwipeCard = card;
+            card.classList.add('swiping');
+        });
+        
+        card.addEventListener('mousemove', (e) => {
+            if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != i) return;
+            
+            const deltaX = e.clientX - percentageSwipeStartX;
+            const deltaY = e.clientY - percentageSwipeStartY;
+            
+            if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+            
+            if (deltaX < 0) {
+                e.preventDefault();
+                const translateX = Math.max(deltaX, -80);
+                card.style.transform = `translateX(${translateX}px)`;
+                
+                if (translateX < -60) {
+                    card.classList.add('swipe-delete-ready');
+                } else {
+                    card.classList.remove('swipe-delete-ready');
+                }
+            }
+        });
+        
+        card.addEventListener('mouseup', (e) => {
+            if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != i) return;
+            
+            const deltaX = e.clientX - percentageSwipeStartX;
+            
+            if (deltaX < -60) {
+                deletePercentageAthlete(i);
+            } else {
+                card.style.transform = 'translateX(0)';
+                card.classList.remove('swiping', 'swipe-delete-ready');
+                
+                // 如果沒有滑動，執行點擊選擇
+                if (Math.abs(deltaX) < 10) {
+                    handlePercentageCardClick(e, i);
+                }
+            }
+            
+            currentPercentageSwipeCard = null;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            if (currentPercentageSwipeCard && currentPercentageSwipeCard.dataset.index == i) {
+                card.style.transform = 'translateX(0)';
+                card.classList.remove('swiping', 'swipe-delete-ready');
+                currentPercentageSwipeCard = null;
+            }
+        });
+        
+        card.innerHTML = `
+            <div class="percentage-multi-card-name" contenteditable="true" 
+                 onblur="updatePercentageAthleteName(${i}, this.innerText)"
+                 onclick="event.stopPropagation()">${a.name}</div>
+            <div class="percentage-multi-card-info">
+                <div class="percentage-multi-card-base">
+                    <span>基時: ${a.vals[0]}:${a.vals[1]}.${a.vals[2]}</span>
+                </div>
+            </div>
+            <div class="percentage-multi-res">${percentageFmt(ms)}</div>
+            <div class="percentage-multi-card-actions">
+                <button class="percentage-btn-delete-athlete" onclick="deletePercentageAthlete(${i}, event)">🗑️</button>
+            </div>
+        `;
+        l.appendChild(card);
+    });
+}
+
+// ===============================
+// 分段記錄器功能
+// ===============================
+
+function initSegment() {
+    segmentFields.forEach((id,i) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.onclick = () => {
+                segmentFieldIdx = i;
+                segmentInputCount = 0;
+                updateSegmentFocus();
+            };
+        }
+    });
+
+    document.querySelectorAll(".segment-k-num").forEach(b => {
+        b.onclick = () => {
+            const currentField = document.getElementById(segmentFields[segmentFieldIdx]);
+            if (!currentField) return;
+            
+            const currentValue = currentField.innerText;
+            
+            if(segmentInputCount === 0){
+                currentField.innerText = "0" + b.innerText;
+                segmentInputCount = 1;
+            } else {
+                currentField.innerText = currentValue.charAt(1) + b.innerText;
+                segmentInputCount = 0;
+                
+                if(segmentFieldIdx < segmentFields.length - 1){
+                    segmentFieldIdx++;
+                    updateSegmentFocus();
+                }
+            }
+        };
+    });
+
+    document.getElementById("segmentKeyDel").onclick = () => {
+        const currentField = document.getElementById(segmentFields[segmentFieldIdx]);
+        if (currentField) {
+            currentField.innerText = "00";
+            segmentInputCount = 0;
+            if(segmentFieldIdx > 0){
+                segmentFieldIdx--;
+                updateSegmentFocus();
+            }
+        }
+    };
+
+    document.getElementById("segmentKeySave").onclick = () => {
+        const min = parseInt(document.getElementById("segment-m_min").innerText) || 0;
+        const sec = parseInt(document.getElementById("segment-m_sec").innerText) || 0;
+        const ms = parseInt(document.getElementById("segment-m_ms").innerText) || 0;
+        
+        const total = min * 60 + sec + ms / 100;
+        
+        if(total <= 0){
+            showToast("請輸入有效的時間！", "error");
+            return;
+        }
+        
+        segmentManualData.push({
+            id: Date.now() + Math.random(),
+            total: total
+        });
+        
+        segmentManualData.sort((a,b) => a.total - b.total);
+        
+        segmentFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = "00";
+        });
+        segmentFieldIdx = 0;
+        segmentInputCount = 0;
+        updateSegmentFocus();
+        
+        renderSegment();
+        scrollSegmentToBottom("segmentManualScrollArea");
+        autoSaveData();
+        
+        showToast("分段已記錄", "success");
+    };
+
+    document.getElementById("segmentBtnManualClear").onclick = () => { 
+        if(segmentManualData.length > 0 && confirm("確定刪除所有手動紀錄？")){ 
+            segmentManualData = []; 
+            renderSegment(); 
+            autoSaveData();
+            showToast("手動紀錄已清除", "warning");
+        } 
+    };
+
+    const sBtn = document.getElementById("segmentSwStart");
+    const lBtn = document.getElementById("segmentSwLap");
+    const pBtn = document.getElementById("segmentSwPause");
+    const tBtn = document.getElementById("segmentSwStop");
+
+    sBtn.onclick = () => {
+        if(segmentTimerState === "stopped") return;
+        
+        if(segmentTimerState === "idling" || segmentTimerState === "stopped"){
+            segmentTimerState = "running";
+            segmentStartT = performance.now() - (segmentElapsedT * 1000);
+            segmentTick();
+            showToast("碼錶開始", "success");
+        }
+        updateSegmentSwBtnState();
+    };
+
+    pBtn.onclick = () => {
+        if(segmentTimerState === "running"){
+            segmentTimerState = "paused";
+            cancelAnimationFrame(segmentRaf);
+            pBtn.innerText = "繼續";
+            showToast("碼錶暫停", "warning");
+        } else if(segmentTimerState === "paused"){
+            segmentTimerState = "running";
+            segmentStartT = performance.now() - (segmentElapsedT * 1000);
+            segmentTick();
+            pBtn.innerText = "暫停";
+            showToast("碼錶繼續", "success");
+        }
+        updateSegmentSwBtnState();
+    };
+
+    lBtn.onclick = () => {
+        if(segmentElapsedT > 0 && segmentTimerState === "running"){ 
+            segmentSwData.push({
+                id: Date.now() + Math.random(), 
+                total: segmentElapsedT
+            }); 
+            renderSegmentSW(); 
+            scrollSegmentToBottom("segmentSwScrollArea"); 
+            autoSaveData();
+            showToast("分段記錄", "info");
+        }
+    };
+
+    tBtn.onclick = () => {
+        if(segmentTimerState === "idling") return;
+        
+        cancelAnimationFrame(segmentRaf);
+        segmentTimerState = "stopped";
+        
+        if(segmentElapsedT > 0){
+            segmentSwData.push({
+                id: Date.now() + Math.random(), 
+                total: segmentElapsedT
+            });
+            renderSegmentSW();
+            scrollSegmentToBottom("segmentSwScrollArea");
+            autoSaveData();
+            showToast("碼錶結束", "warning");
+        }
+        
+        updateSegmentSwBtnState();
+    };
+
+    document.getElementById("segmentBtnSWClear").onclick = () => {
+        if(segmentSwData.length > 0 && confirm("確定重置碼錶並清空所有紀錄？")){
+            cancelAnimationFrame(segmentRaf);
+            segmentTimerState = "idling";
+            segmentElapsedT = 0;
+            segmentSwData = [];
+            document.getElementById("segmentSwDisplay").innerText = "00:00.00";
+            pBtn.innerText = "暫停";
+            renderSegmentSW();
+            updateSegmentSwBtnState();
+            autoSaveData();
+            showToast("碼錶已重置", "warning");
+        }
+    };
+
+    renderSegment();
+    renderSegmentSW();
+    updateSegmentSwBtnState();
+}
+
+function segmentTick(){
+    segmentElapsedT = (performance.now() - segmentStartT) / 1000;
+    let m = Math.floor(segmentElapsedT / 60);
+    let ss = (segmentElapsedT % 60).toFixed(2).padStart(5, "0");
+    document.getElementById("segmentSwDisplay").innerText = `${String(m).padStart(2, "0")}:${ss}`;
+    if(segmentTimerState === "running"){
+        segmentRaf = requestAnimationFrame(segmentTick);
+    }
+}
+
+function updateSegmentSwBtnState(){
+    const isRunning = segmentTimerState === "running";
+    const isPaused = segmentTimerState === "paused";
+    const isStopped = segmentTimerState === "stopped";
+    const isIdling = segmentTimerState === "idling";
+
+    const sBtn = document.getElementById("segmentSwStart");
+    const pBtn = document.getElementById("segmentSwPause");
+    const lBtn = document.getElementById("segmentSwLap");
+    const tBtn = document.getElementById("segmentSwStop");
+
+    if (sBtn) sBtn.classList.toggle("segment-btn-lock", isRunning || isPaused || isStopped);
+    if (pBtn) pBtn.classList.toggle("segment-btn-lock", isIdling || isStopped);
+    if (lBtn) lBtn.classList.toggle("segment-btn-lock", isIdling || isStopped || isPaused);
+    if (tBtn) tBtn.classList.toggle("segment-btn-lock", isIdling);
+    
+    if(isIdling || isStopped){
+        pBtn.innerText = "暫停";
+    }
+}
+
+function switchSegmentTab(tab){
+    document.getElementById("segmentTabManual").classList.toggle("active", tab === "manual");
+    document.getElementById("segmentTabSW").classList.toggle("active", tab === "sw");
+    document.getElementById("segment-page-manual").classList.toggle("active", tab === "manual");
+    document.getElementById("segment-page-sw").classList.toggle("active", tab === "sw");
+    tab === "manual" ? renderSegment() : renderSegmentSW();
+}
+
+function updateSegmentFocus(){
+    segmentFields.forEach((id,i) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.toggle("active", i === segmentFieldIdx);
+        }
+    });
+}
+
+function renderSegmentCore(data, bodyId, deleteFnName){
+    const body = document.getElementById(bodyId);
+    if (!body) return;
+    
+    if(data.length === 0) {
+        body.innerHTML = `<tr><td colspan="5" style="padding:40px;color:#444;text-align:center;">無紀錄</td></tr>`;
+        return;
+    }
+    
+    const rows = data.map((item, i) => {
+        const prevT = i > 0 ? data[i-1].total : 0;
+        const lap = item.total - prevT;
+        let dStr = "-";
+        let dCls = "";
+        
+        if(i > 0){
+            const pLap = (i === 1) ? data[0].total : data[i-1].total - data[i-2].total;
+            const diff = lap - pLap;
+            dStr = (diff > 0 ? "+" : "") + diff.toFixed(2);
+            dCls = diff > 0 ? "segment-diff-up" : "segment-diff-down";
+        }
+        
+        return `<tr>
+            <td>${i+1}</td>
+            <td style="color:var(--neon-blue);font-weight:700;">${segmentFmt(item.total)}</td>
+            <td>${segmentFmt(lap)}</td>
+            <td class="${dCls}">${dStr}</td>
+            <td><button class="segment-btn-del-row" onclick="${deleteFnName}(${item.id})">−</button></td>
+        </tr>`;
+    }).join('');
+    
+    body.innerHTML = rows;
+}
+
+function renderSegment(){ 
+    renderSegmentCore(segmentManualData, "segmentTbody", "delSegmentM"); 
+}
+
+function renderSegmentSW(){ 
+    renderSegmentCore(segmentSwData, "segmentTbodySW", "delSegmentS"); 
+}
+
+function delSegmentM(id){ 
+    segmentManualData = segmentManualData.filter(x => x.id !== id); 
+    renderSegment(); 
+    autoSaveData();
+    showToast("分段已刪除", "warning");
+}
+
+function delSegmentS(id){ 
+    segmentSwData = segmentSwData.filter(x => x.id !== id); 
+    renderSegmentSW(); 
+    autoSaveData();
+    showToast("分段已刪除", "warning");
+}
+
+function segmentFmt(s){ 
+    const m = Math.floor(s/60);
+    const ss = (s%60).toFixed(2).padStart(5,"0"); 
+    return `${String(m).padStart(2,"0")}:${ss}`; 
+}
+
+function scrollSegmentToBottom(id){ 
+    const el = document.getElementById(id); 
+    if (el) {
+        setTimeout(() => {
+            el.scrollTop = el.scrollHeight;
+        }, 50); 
+    }
+}
+
+// ===============================
+// 初始化與通用函數
+// ===============================
+
+window.onload = () => { 
+    loadSavedData();
+    
+    const listArea = document.getElementById('listArea');
+    if (listArea) {
+        new Sortable(listArea, { 
+            handle: '.drag-handle', 
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onStart: function(evt) {
+                isDragging = true;
+                evt.item.classList.add('dragging');
+            },
+            onEnd: function(evt) {
+                isDragging = false;
+                evt.item.classList.remove('dragging');
+                
+                const newOrder = [];
+                const cards = listArea.querySelectorAll('.course-card');
+                cards.forEach((card, index) => {
+                    const oldIndex = parseInt(card.dataset.index || index);
+                    if (items[oldIndex]) {
+                        newOrder.push(items[oldIndex]);
+                    }
+                });
+                items = newOrder;
+                
+                updateList();
+                autoSaveData();
+                showToast("項目順序已更新", "success");
+            }
+        });
+    }
+    
+    initPercentage();
+    initSegment();
+    checkOrientation();
+    
+    window.addEventListener('resize', () => {
+        checkOrientation();
+        
+        setTimeout(() => {
+            if (percentageState.mode === 'athlete') {
+                updateBubblePosition('percentageAthleteBubble', percentageMainRange, percentageState.currentPct);
+            } else if (percentageState.mode === 'multi') {
+                updateBubblePosition('percentageMultiBubble', percentageMRange, percentageState.multiPct);
+            }
+        }, 100);
+    });
+    
+    window.addEventListener('orientationchange', checkOrientation);
+    
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && audioContext && audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+    });
+    
+    initAudioContext();
+    switchTab('planner');
+    
+    setTimeout(() => {
+        showToast('游泳教練全能工作台 v4.9 已就緒', 'success', 2000);
+    }, 500);
+};
+
+window.oncontextmenu = e => { e.preventDefault(); return false; };
+</script>
+  <script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
 }
 </script>
+
 </body>
 </html>
