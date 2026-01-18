@@ -1718,6 +1718,24 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     align-items: center;
     gap: 2px;
 }
+
+/* 百分比選手卡滑動刪除樣式 */
+.percentage-multi-card.swipe-delete {
+    transform: translateX(-100px);
+    opacity: 0;
+}
+
+/* 手機拖曳優化 */
+@media (hover: none) and (pointer: coarse) {
+    .drag-handle {
+        padding: 0 12px;
+        font-size: 22px;
+    }
+    
+    .course-card {
+        min-height: 72px;
+    }
+}
 </style>
 </head>
 <body oncontextmenu="return false;">
@@ -1889,7 +1907,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                                 <button class="add-btn" onclick="addPercentageAthlete()">+ 新增選手</button>
                             </div>
                         </div>
-                        <div class="percentage-multi-hint">點擊選擇選手，長按選手名稱可編輯</div>
+                        <div class="percentage-multi-hint">點擊選擇選手，長按選手名稱可編輯，向左滑動可刪除</div>
                         <div class="percentage-range-wrapper">
                             <div class="percentage-range-track"></div>
                             <div class="percentage-bubble" id="percentageMultiBubble">100%</div>
@@ -2044,7 +2062,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 <script>
 // ===============================
 // 游泳教練全能工作台 v4.9
-// 修正版 - 解決拖曳問題、距離輸入可空白、百分比姓名編輯
+// 最終修正版 - 解決所有問題
 // ===============================
 
 // 全域變數
@@ -2226,11 +2244,10 @@ function playBeep(type) {
     }
 }
 
-// 螢幕喚醒鎖系統 - 強化版本
+// 螢幕喚醒鎖系統
 async function requestWakeLock() {
     if ('wakeLock' in navigator) {
         try {
-            // 如果已經有喚醒鎖，先釋放
             if (wakeLock) {
                 await releaseWakeLock();
             }
@@ -2238,12 +2255,10 @@ async function requestWakeLock() {
             wakeLock = await navigator.wakeLock.request('screen');
             console.log('螢幕保持亮起已啟用');
             
-            // 監聽釋放事件
             wakeLock.addEventListener('release', () => {
                 console.log('螢幕喚醒鎖已釋放');
                 wakeLock = null;
                 
-                // 如果計時器仍在運行，重新請求喚醒鎖
                 if (timerState.running && !timerState.paused) {
                     setTimeout(requestWakeLock, 100);
                 }
@@ -2253,7 +2268,6 @@ async function requestWakeLock() {
         } catch (err) {
             console.log(`無法啟用螢幕保持亮起: ${err.name}, ${err.message}`);
             
-            // 如果失敗，嘗試使用較寬鬆的策略
             if (err.name === 'NotAllowedError') {
                 showToast('請允許螢幕保持亮起功能', 'warning', 2000);
             }
@@ -2443,7 +2457,7 @@ function switchTab(t) {
 }
 
 // ===============================
-// 課程規劃功能
+// 課程規劃功能 - 完全修正拖曳問題
 // ===============================
 
 function setFocus(id) {
@@ -2578,6 +2592,9 @@ function addItem() {
     showToast("項目已添加！", "success");
 }
 
+// 修正：完全重新設計拖曳系統
+let sortableInstance = null;
+
 function updateList() {
     const listArea = document.getElementById('listArea');
     if (!listArea) return;
@@ -2590,21 +2607,18 @@ function updateList() {
                 <div style="font-size: 12px;">請在上方輸入項目資訊後點擊「加入訓練項目」</div>
             </div>
         `;
+        if (sortableInstance) {
+            sortableInstance.destroy();
+            sortableInstance = null;
+        }
         return;
     }
     
     listArea.innerHTML = items.map((it, i) => `
     <div class="course-card" style="border-left:6px solid ${typeof it.color === 'string' && it.color.includes('gradient') ? '#ff9500' : it.color}" 
-         data-index="${i}"
-         ontouchstart="handleCardTouchStart(event, ${i})"
-         ontouchmove="handleSwipeMove(event, ${i})"
-         ontouchend="handleCardTouchEnd(event, ${i})"
-         onmousedown="handleCardMouseDown(event, ${i})"
-         onmousemove="handleSwipeMoveMouse(event, ${i})"
-         onmouseup="handleCardMouseUp(event, ${i})"
-         onmouseleave="handleSwipeCancel(${i})">
+         data-index="${i}">
         <div class="card-index">${i+1}</div>
-        <div class="drag-handle" ontouchstart="handleDragStart(event, ${i})">⠿</div>
+        <div class="drag-handle">⠿</div>
         <div class="card-content">
             <div style="font-size:9px; color:${typeof it.color === 'string' && it.color.includes('gradient') ? '#ff9500' : it.color}; font-weight:900; margin-bottom:2px;">${it.tags}</div>
             <div class="card-title">${it.title}</div>
@@ -2635,8 +2649,31 @@ function updateList() {
         </div>
     </div>`).join('');
     
-    // 初始化Sortable拖曳功能
+    // 初始化拖曳系統
     initSortable();
+    
+    // 添加滑動刪除事件監聽器
+    addSwipeListeners();
+}
+
+function addSwipeListeners() {
+    const cards = document.querySelectorAll('.course-card');
+    cards.forEach(card => {
+        const index = parseInt(card.dataset.index);
+        
+        // 移除舊的事件監聽器
+        const newCard = card.cloneNode(true);
+        card.parentNode.replaceChild(newCard, card);
+        
+        // 添加新的事件監聽器
+        newCard.addEventListener('touchstart', (e) => handleCardTouchStart(e, index));
+        newCard.addEventListener('touchmove', (e) => handleSwipeMove(e, index));
+        newCard.addEventListener('touchend', (e) => handleCardTouchEnd(e, index));
+        newCard.addEventListener('mousedown', (e) => handleCardMouseDown(e, index));
+        newCard.addEventListener('mousemove', (e) => handleSwipeMoveMouse(e, index));
+        newCard.addEventListener('mouseup', (e) => handleCardMouseUp(e, index));
+        newCard.addEventListener('mouseleave', () => handleSwipeCancel(index));
+    });
 }
 
 function initSortable() {
@@ -2644,25 +2681,28 @@ function initSortable() {
     if (!listArea) return;
     
     // 先移除現有的Sortable實例
-    if (window.sortableInstance) {
-        window.sortableInstance.destroy();
+    if (sortableInstance) {
+        sortableInstance.destroy();
+        sortableInstance = null;
     }
     
     // 創建新的Sortable實例
-    window.sortableInstance = new Sortable(listArea, {
+    sortableInstance = new Sortable(listArea, {
         handle: '.drag-handle',
         animation: 150,
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
-        filter: '.course-card-swipe-delete-btn',
-        preventOnFilter: false,
+        filter: '.course-card-swipe-delete-btn, .card-index, .card-title, .card-info-compact, .card-distance',
+        preventOnFilter: true,
         onStart: function(evt) {
             isDragging = true;
             evt.item.classList.add('dragging');
+            evt.item.style.transform = 'rotate(2deg)';
         },
         onEnd: function(evt) {
             isDragging = false;
             evt.item.classList.remove('dragging');
+            evt.item.style.transform = '';
             
             // 更新項目順序
             const newOrder = [];
@@ -2671,13 +2711,13 @@ function initSortable() {
                 const oldIndex = parseInt(card.dataset.index || index);
                 if (items[oldIndex]) {
                     newOrder.push(items[oldIndex]);
+                    card.dataset.index = index; // 更新索引
                 }
             });
             items = newOrder;
             
-            // 更新卡片索引
+            // 更新卡片索引顯示
             cards.forEach((card, index) => {
-                card.dataset.index = index;
                 const indexBadge = card.querySelector('.card-index');
                 if (indexBadge) {
                     indexBadge.textContent = index + 1;
@@ -2686,11 +2726,16 @@ function initSortable() {
             
             autoSaveData();
             showToast("項目順序已更新", "success");
+        },
+        onMove: function(evt) {
+            // 防止在滑動刪除時觸發拖曳
+            return !evt.related.classList.contains('swiping');
         }
     });
 }
 
 function handleCardTouchStart(event, index) {
+    if (isDragging) return;
     if (event.target.closest('.drag-handle')) return;
     
     const touch = event.touches[0];
@@ -2707,6 +2752,7 @@ function handleCardTouchStart(event, index) {
 }
 
 function handleCardMouseDown(event, index) {
+    if (isDragging) return;
     if (event.target.closest('.drag-handle')) return;
     
     swipeStartX = event.clientX;
@@ -2774,6 +2820,7 @@ function handleCardMouseUp(event, index) {
 }
 
 function handleSwipeMove(event, index) {
+    if (isDragging) return;
     if (!currentSwipeCard || currentSwipeCard.dataset.index != index) return;
     
     const touch = event.touches[0];
@@ -2786,6 +2833,7 @@ function handleSwipeMove(event, index) {
         currentSwipeCard.classList.remove('long-press-active');
     }
     
+    // 如果垂直移動超過水平移動，可能是滾動，不處理滑動刪除
     if (Math.abs(deltaY) > Math.abs(deltaX)) {
         return;
     }
@@ -2809,6 +2857,7 @@ function handleSwipeMove(event, index) {
 }
 
 function handleSwipeMoveMouse(event, index) {
+    if (isDragging) return;
     if (!currentSwipeCard || currentSwipeCard.dataset.index != index) return;
     
     const deltaX = event.clientX - swipeStartX;
@@ -2865,19 +2914,6 @@ function deleteItemWithSwipe(index) {
             autoSaveData();
             showToast("項目已刪除", "warning");
         }, 200);
-    }
-}
-
-function handleDragStart(event, index) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    clearTimeout(longPressTimer);
-    isLongPressActive = false;
-    
-    const card = event.target.closest('.course-card');
-    if (card) {
-        card.classList.add('dragging');
     }
 }
 
@@ -3029,7 +3065,7 @@ function clearInputs() {
 }
 
 // ===============================
-// 計時器功能 - 強化螢幕保持亮起
+// 計時器功能
 // ===============================
 
 function timerStart() { 
@@ -3039,7 +3075,6 @@ function timerStart() {
     }
     
     if (!timerState.running) {
-        // 請求螢幕保持亮起
         requestWakeLock().then(success => {
             if (success) {
                 showToast("螢幕保持亮起已啟用", "success", 2000);
@@ -3125,7 +3160,6 @@ function confirmCourseSelection() {
     timerState.completedDistance = 0;
     timerState.totalItems = items.length;
     
-    // 請求螢幕保持亮起
     requestWakeLock().then(success => {
         if (success) {
             showToast("螢幕保持亮起已啟用", "success", 2000);
@@ -3269,11 +3303,9 @@ function timerPause() {
         pauseBtn.textContent = '繼續';
         pauseBtn.style.background = 'var(--neon-green)';
         
-        // 暫停時釋放喚醒鎖
         releaseWakeLock();
         showToast("計時暫停", "warning");
     } else {
-        // 繼續時重新請求喚醒鎖
         requestWakeLock().then(success => {
             if (success) {
                 showToast("螢幕保持亮起已啟用", "success", 1000);
@@ -3311,7 +3343,6 @@ function timerEnd() {
         pauseBtn.style.background = 'var(--neon-blue)';
     }
     
-    // 結束時釋放喚醒鎖
     releaseWakeLock();
     
     updateTimerUI(); 
@@ -3539,6 +3570,7 @@ function clearAllPercentageMulti() {
     } 
 }
 
+// 修正：恢復刪除選手功能
 function deletePercentageAthlete(idx, event) {
     if (event) {
         event.preventDefault();
@@ -3565,7 +3597,7 @@ function deletePercentageAthlete(idx, event) {
     showToast("選手已刪除", "warning");
 }
 
-// 新增：開啟選手姓名編輯對話框
+// 開啟選手姓名編輯對話框
 function openPercentageNameEdit(index, event) {
     if (event) {
         event.preventDefault();
@@ -3579,7 +3611,7 @@ function openPercentageNameEdit(index, event) {
     document.getElementById('editNameInput').focus();
 }
 
-// 新增：儲存選手姓名
+// 儲存選手姓名
 function savePercentageName() {
     const newName = document.getElementById('editNameInput').value.trim();
     if (!newName) {
@@ -3597,13 +3629,13 @@ function savePercentageName() {
     cancelPercentageNameEdit();
 }
 
-// 新增：取消選手姓名編輯
+// 取消選手姓名編輯
 function cancelPercentageNameEdit() {
     editingPercentageIndex = -1;
     document.getElementById('nameEditModal').classList.remove('active');
 }
 
-// 新增：處理選手卡點擊和長按
+// 處理選手卡點擊和長按
 function handlePercentageCardClick(event, index) {
     // 如果正在滑動或長按，不要觸發點擊事件
     if (currentPercentageSwipeCard || isNameEditLongPress) {
@@ -3638,6 +3670,60 @@ function handlePercentageNamePressEnd() {
     }, 100);
 }
 
+// 百分比選手卡滑動刪除功能
+function handlePercentageSwipeStart(event, index) {
+    if (isNameEditLongPress) return;
+    
+    const touch = event.touches ? event.touches[0] : event;
+    percentageSwipeStartX = touch.clientX;
+    percentageSwipeStartY = touch.clientY;
+    currentPercentageSwipeCard = event.currentTarget;
+    event.currentTarget.classList.add('swiping');
+}
+
+function handlePercentageSwipeMove(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.touches ? event.touches[0] : event;
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    const deltaY = touch.clientY - percentageSwipeStartY;
+    
+    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+        return;
+    }
+    
+    if (deltaX < 0) {
+        event.preventDefault();
+        const translateX = Math.max(deltaX, -80);
+        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
+        
+        if (translateX < -60) {
+            currentPercentageSwipeCard.classList.add('swipe-delete-ready');
+        } else {
+            currentPercentageSwipeCard.classList.remove('swipe-delete-ready');
+        }
+    }
+}
+
+function handlePercentageSwipeEnd(event, index) {
+    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
+    
+    const touch = event.changedTouches ? event.changedTouches[0] : event;
+    const deltaX = touch.clientX - percentageSwipeStartX;
+    
+    if (deltaX < -60) {
+        currentPercentageSwipeCard.classList.add('swipe-delete');
+        setTimeout(() => {
+            deletePercentageAthlete(index);
+        }, 200);
+    } else {
+        currentPercentageSwipeCard.style.transform = 'translateX(0)';
+        currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
+    }
+    
+    currentPercentageSwipeCard = null;
+}
+
 function renderPercentageCards() {
     const l = document.getElementById('percentageMultiCardsList');
     if(!l) return;
@@ -3649,8 +3735,21 @@ function renderPercentageCards() {
         card.className = `percentage-multi-card ${i === percentageState.multiIdx ? 'selected' : ''}`;
         card.setAttribute('data-index', i);
         
-        // 點擊選擇選手
-        card.addEventListener('click', (e) => handlePercentageCardClick(e, i));
+        // 滑動刪除事件
+        card.addEventListener('touchstart', (e) => handlePercentageSwipeStart(e, i));
+        card.addEventListener('touchmove', (e) => handlePercentageSwipeMove(e, i));
+        card.addEventListener('touchend', (e) => handlePercentageSwipeEnd(e, i));
+        
+        card.addEventListener('mousedown', (e) => handlePercentageSwipeStart(e, i));
+        card.addEventListener('mousemove', (e) => handlePercentageSwipeMove(e, i));
+        card.addEventListener('mouseup', (e) => handlePercentageSwipeEnd(e, i));
+        card.addEventListener('mouseleave', () => {
+            if (currentPercentageSwipeCard && currentPercentageSwipeCard.dataset.index == i) {
+                card.style.transform = 'translateX(0)';
+                card.classList.remove('swiping', 'swipe-delete-ready');
+                currentPercentageSwipeCard = null;
+            }
+        });
         
         card.innerHTML = `
             <div class="percentage-multi-card-name" 
