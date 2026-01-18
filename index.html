@@ -1518,7 +1518,7 @@ body {
 }
 
 /* 模態框樣式 */
-.edit-modal, .course-select-modal, .confirm-dialog { 
+.edit-modal, .course-select-modal, .confirm-dialog, .name-edit-modal { 
     display: none; 
     position: fixed; 
     top: 0; 
@@ -1531,7 +1531,7 @@ body {
     justify-content: center; 
 }
 
-.edit-modal.active, .course-select-modal.active, .confirm-dialog.active { 
+.edit-modal.active, .course-select-modal.active, .confirm-dialog.active, .name-edit-modal.active { 
     display: flex; 
 }
 
@@ -1889,7 +1889,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                                 <button class="add-btn" onclick="addPercentageAthlete()">+ 新增選手</button>
                             </div>
                         </div>
-                        <div class="percentage-multi-hint">點擊選擇選手，向左滑動可刪除選手</div>
+                        <div class="percentage-multi-hint">點擊選擇選手，長按選手名稱可編輯</div>
                         <div class="percentage-range-wrapper">
                             <div class="percentage-range-track"></div>
                             <div class="percentage-bubble" id="percentageMultiBubble">100%</div>
@@ -2004,6 +2004,19 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     </div>
 </div>
 
+<!-- 百分比多人模式姓名編輯模態框 -->
+<div id="nameEditModal" class="name-edit-modal">
+    <div class="modal-box">
+        <h3 style="color:var(--neon-green); text-align:center; margin-bottom:15px;">編輯選手姓名</h3>
+        <input type="text" id="editNameInput" class="text-input-box" placeholder="輸入選手姓名" maxlength="20">
+        <p style="font-size:11px; color:#888; margin-top:5px; text-align:center;">長按選手名稱可再次編輯</p>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button onclick="savePercentageName()" class="btn-slim" style="background:var(--neon-green)">儲存</button>
+            <button onclick="cancelPercentageNameEdit()" class="btn-slim" style="background:#444">取消</button>
+        </div>
+    </div>
+</div>
+
 <div id="courseSelectModal" class="course-select-modal">
     <div class="modal-box" style="max-width: 400px;">
         <h3 style="color:var(--neon-blue); text-align:center; margin-bottom:15px;">選擇開始項目</h3>
@@ -2031,7 +2044,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 <script>
 // ===============================
 // 游泳教練全能工作台 v4.9
-// 完全修正版 - 修復百分比工具網頁版與桌面版問題
+// 修正版 - 解決拖曳問題、距離輸入可空白、百分比姓名編輯
 // ===============================
 
 // 全域變數
@@ -2090,6 +2103,10 @@ let currentPercentageSwipeCard = null;
 let longPressTimer = null;
 let longPressDuration = 1000;
 let isLongPressActive = false;
+
+// 百分比選手姓名編輯狀態
+let editingPercentageIndex = -1;
+let nameEditLongPressTimer = null;
 
 // 儲存相關
 const STORAGE_KEY = 'swim_coach_v4_data';
@@ -2509,6 +2526,7 @@ function formatTime(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+// 修正：距離可以空白或0
 function addItem() {
     const g = id => parseInt(document.getElementById(id).value) || 0;
     const lp = g('laps'), st = g('sets') || 1, d = g('dist'), lm = g('lapMin'), ls = g('lapSec'), rm = g('resMin'), rs = g('resSec');
@@ -2518,10 +2536,8 @@ function addItem() {
         return;
     }
     
-    if (!d) {
-        showToast("請輸入距離！", "error");
-        return;
-    }
+    // 距離可以是0或空白
+    const actualDist = d || 0;
     
     if (!lm && !ls) {
         showToast("請輸入配速時間！", "error");
@@ -2549,7 +2565,7 @@ function addItem() {
     items.push({ 
         seconds: ((lm * 60 + ls) * lp * st) + ((rm * 60 + rs) * st),
         lapMin: lm, lapSec: ls, resMin: rm, resSec: rs, laps: lp, sets: st, 
-        dist: d * lp * st, singleDist: d, title: document.getElementById('courseNote').value || "訓練項目", tags: allTags, 
+        dist: actualDist * lp * st, singleDist: actualDist, title: document.getElementById('courseNote').value || "訓練項目", tags: allTags, 
         color: color,
         totalTime: totalTime
     });
@@ -2595,7 +2611,7 @@ function updateList() {
             <div class="card-info-compact">
                 <div class="card-info-item distance-item">
                     <span class="card-info-label">距離:</span>
-                    <span class="distance-value">${it.singleDist}m × ${it.laps}趟 × ${it.sets}組</span>
+                    <span class="distance-value">${it.singleDist ? it.singleDist + 'm × ' : ''}${it.laps}趟 × ${it.sets}組</span>
                 </div>
                 <div class="card-info-item">
                     <span class="card-info-label">配速:</span>
@@ -2612,12 +2628,66 @@ function updateList() {
             </div>
         </div>
         <div class="card-right">
-            <div class="card-distance">${it.dist}m</div>
+            <div class="card-distance">${it.dist ? it.dist + 'm' : '-'}</div>
         </div>
         <div class="course-card-swipe-overlay">
             <button class="course-card-swipe-delete-btn" onclick="deleteItemWithSwipe(${i})">🗑️</button>
         </div>
     </div>`).join('');
+    
+    // 初始化Sortable拖曳功能
+    initSortable();
+}
+
+function initSortable() {
+    const listArea = document.getElementById('listArea');
+    if (!listArea) return;
+    
+    // 先移除現有的Sortable實例
+    if (window.sortableInstance) {
+        window.sortableInstance.destroy();
+    }
+    
+    // 創建新的Sortable實例
+    window.sortableInstance = new Sortable(listArea, {
+        handle: '.drag-handle',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        filter: '.course-card-swipe-delete-btn',
+        preventOnFilter: false,
+        onStart: function(evt) {
+            isDragging = true;
+            evt.item.classList.add('dragging');
+        },
+        onEnd: function(evt) {
+            isDragging = false;
+            evt.item.classList.remove('dragging');
+            
+            // 更新項目順序
+            const newOrder = [];
+            const cards = listArea.querySelectorAll('.course-card');
+            cards.forEach((card, index) => {
+                const oldIndex = parseInt(card.dataset.index || index);
+                if (items[oldIndex]) {
+                    newOrder.push(items[oldIndex]);
+                }
+            });
+            items = newOrder;
+            
+            // 更新卡片索引
+            cards.forEach((card, index) => {
+                card.dataset.index = index;
+                const indexBadge = card.querySelector('.card-index');
+                if (indexBadge) {
+                    indexBadge.textContent = index + 1;
+                }
+            });
+            
+            autoSaveData();
+            showToast("項目順序已更新", "success");
+        }
+    });
 }
 
 function handleCardTouchStart(event, index) {
@@ -2809,18 +2879,6 @@ function handleDragStart(event, index) {
     if (card) {
         card.classList.add('dragging');
     }
-    
-    const handleDragEnd = () => {
-        document.removeEventListener('mouseup', handleDragEnd);
-        document.removeEventListener('touchend', handleDragEnd);
-        
-        if (card) {
-            card.classList.remove('dragging');
-        }
-    };
-    
-    document.addEventListener('mouseup', handleDragEnd);
-    document.addEventListener('touchend', handleDragEnd);
 }
 
 function openEdit(i) {
@@ -2883,7 +2941,7 @@ function saveEdit() {
     items[i].lapSec = g('editLapSec');
     items[i].laps = g('editLaps'); 
     items[i].sets = g('editSets');
-    items[i].singleDist = g('editDist');
+    items[i].singleDist = g('editDist'); // 距離可以是0
     items[i].resMin = g('editResMin'); 
     items[i].resSec = g('editResSec');
     items[i].dist = items[i].singleDist * items[i].laps * items[i].sets;
@@ -2922,10 +2980,10 @@ function copyCoursesToClipboard() {
     items.forEach((item, index) => {
         exportText += `${index + 1}. ${item.title}\n`;
         exportText += `${item.tags}\n`;
-        exportText += `${item.singleDist}m × ${item.laps}趟 × ${item.sets}組\n`;
+        exportText += `${item.singleDist ? item.singleDist + 'm × ' : ''}${item.laps}趟 × ${item.sets}組\n`;
         exportText += `配速: ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')}\n`;
         exportText += `休息: ${item.resMin}:${item.resSec.toString().padStart(2,'0')}\n`;
-        exportText += `總距離: ${item.dist}m\n`;
+        exportText += `總距離: ${item.dist ? item.dist + 'm' : '-'}\n`;
         exportText += `單項用時: ${formatTime(item.totalTime)}\n`;
         exportText += "─".repeat(25) + "\n\n";
     });
@@ -3029,10 +3087,10 @@ function showCourseSelection() {
             <div style="font-weight:bold; margin-bottom:4px;">${index + 1}. ${item.title}</div>
             <div class="course-details">
                 <div>${item.tags}</div>
-                <div>${item.singleDist}m × ${item.laps}趟 × ${item.sets}組</div>
+                <div>${item.singleDist ? item.singleDist + 'm × ' : ''}${item.laps}趟 × ${item.sets}組</div>
                 <div>配速: ${item.lapMin}:${item.lapSec.toString().padStart(2,'0')}</div>
                 <div>休息: ${item.resMin}:${item.resSec.toString().padStart(2,'0')}</div>
-                <div>總距離: ${item.dist}m | 用時: ${formatTime(item.totalTime)}</div>
+                <div>總距離: ${item.dist ? item.dist + 'm' : '-'} | 用時: ${formatTime(item.totalTime)}</div>
             </div>
         `;
         
@@ -3270,7 +3328,7 @@ function timerResetSelect() {
 }
 
 // ===============================
-// 百分比工具功能 - 完全重新設計多人模式
+// 百分比工具功能 - 修正多人模式
 // ===============================
 
 function initPercentage() {
@@ -3454,7 +3512,7 @@ function scrollToPercentageHighlight() {
     if(target) target.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
-// 全新的百分比多人模式功能
+// 百分比多人模式功能
 function addPercentageAthlete() {
     if(percentageState.athletes.length >= 20) { 
         showToast("最多 20 位選手", "warning");
@@ -3507,66 +3565,48 @@ function deletePercentageAthlete(idx, event) {
     showToast("選手已刪除", "warning");
 }
 
-function updatePercentageAthleteName(idx, newName) {
-    if (idx >= 0 && idx < percentageState.athletes.length) {
-        percentageState.athletes[idx].name = newName || `選手 ${idx+1}`;
-        renderPercentageCards();
-        autoSaveData();
+// 新增：開啟選手姓名編輯對話框
+function openPercentageNameEdit(index, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
+    
+    editingPercentageIndex = index;
+    const currentName = percentageState.athletes[index].name;
+    document.getElementById('editNameInput').value = currentName;
+    document.getElementById('nameEditModal').classList.add('active');
+    document.getElementById('editNameInput').focus();
 }
 
-// 百分比選手卡滑動刪除功能
-function handlePercentageSwipeStart(event, index) {
-    const touch = event.touches[0];
-    percentageSwipeStartX = touch.clientX;
-    percentageSwipeStartY = touch.clientY;
-    currentPercentageSwipeCard = event.currentTarget;
-    event.currentTarget.classList.add('swiping');
-}
-
-function handlePercentageSwipeMove(event, index) {
-    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
-    
-    const touch = event.touches[0];
-    const deltaX = touch.clientX - percentageSwipeStartX;
-    const deltaY = touch.clientY - percentageSwipeStartY;
-    
-    if (Math.abs(deltaY) > Math.abs(deltaX)) {
+// 新增：儲存選手姓名
+function savePercentageName() {
+    const newName = document.getElementById('editNameInput').value.trim();
+    if (!newName) {
+        showToast("請輸入選手姓名！", "error");
         return;
     }
     
-    if (deltaX < 0) {
-        event.preventDefault();
-        const translateX = Math.max(deltaX, -80);
-        currentPercentageSwipeCard.style.transform = `translateX(${translateX}px)`;
-        
-        if (translateX < -60) {
-            currentPercentageSwipeCard.classList.add('swipe-delete-ready');
-        } else {
-            currentPercentageSwipeCard.classList.remove('swipe-delete-ready');
-        }
-    }
-}
-
-function handlePercentageSwipeEnd(event, index) {
-    if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != index) return;
-    
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - percentageSwipeStartX;
-    
-    if (deltaX < -60) {
-        deletePercentageAthlete(index);
-    } else {
-        currentPercentageSwipeCard.style.transform = 'translateX(0)';
-        currentPercentageSwipeCard.classList.remove('swiping', 'swipe-delete-ready');
+    if (editingPercentageIndex >= 0) {
+        percentageState.athletes[editingPercentageIndex].name = newName;
+        renderPercentageCards();
+        autoSaveData();
+        showToast("姓名已更新", "success");
     }
     
-    currentPercentageSwipeCard = null;
+    cancelPercentageNameEdit();
 }
 
+// 新增：取消選手姓名編輯
+function cancelPercentageNameEdit() {
+    editingPercentageIndex = -1;
+    document.getElementById('nameEditModal').classList.remove('active');
+}
+
+// 新增：處理選手卡點擊和長按
 function handlePercentageCardClick(event, index) {
-    // 如果正在滑動，不要觸發點擊事件
-    if (currentPercentageSwipeCard && Math.abs(percentageSwipeStartX - event.clientX) > 10) {
+    // 如果正在滑動或長按，不要觸發點擊事件
+    if (currentPercentageSwipeCard || isNameEditLongPress) {
         return;
     }
     
@@ -3574,6 +3614,28 @@ function handlePercentageCardClick(event, index) {
     updatePercentageDisplay(); 
     updatePercentageUI(); 
     autoSaveData();
+}
+
+let isNameEditLongPress = false;
+let nameEditPressTimer = null;
+
+function handlePercentageNamePressStart(event, index) {
+    if (event.cancelable) event.preventDefault();
+    
+    clearTimeout(nameEditPressTimer);
+    isNameEditLongPress = false;
+    
+    nameEditPressTimer = setTimeout(() => {
+        isNameEditLongPress = true;
+        openPercentageNameEdit(index, event);
+    }, 800); // 長按0.8秒觸發編輯
+}
+
+function handlePercentageNamePressEnd() {
+    clearTimeout(nameEditPressTimer);
+    setTimeout(() => {
+        isNameEditLongPress = false;
+    }, 100);
 }
 
 function renderPercentageCards() {
@@ -3587,72 +3649,18 @@ function renderPercentageCards() {
         card.className = `percentage-multi-card ${i === percentageState.multiIdx ? 'selected' : ''}`;
         card.setAttribute('data-index', i);
         
-        // 添加觸控事件
-        card.addEventListener('touchstart', (e) => handlePercentageSwipeStart(e, i));
-        card.addEventListener('touchmove', (e) => handlePercentageSwipeMove(e, i));
-        card.addEventListener('touchend', (e) => handlePercentageSwipeEnd(e, i));
-        
-        // 添加滑鼠事件
-        card.addEventListener('mousedown', (e) => {
-            percentageSwipeStartX = e.clientX;
-            percentageSwipeStartY = e.clientY;
-            currentPercentageSwipeCard = card;
-            card.classList.add('swiping');
-        });
-        
-        card.addEventListener('mousemove', (e) => {
-            if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != i) return;
-            
-            const deltaX = e.clientX - percentageSwipeStartX;
-            const deltaY = e.clientY - percentageSwipeStartY;
-            
-            if (Math.abs(deltaY) > Math.abs(deltaX)) return;
-            
-            if (deltaX < 0) {
-                e.preventDefault();
-                const translateX = Math.max(deltaX, -80);
-                card.style.transform = `translateX(${translateX}px)`;
-                
-                if (translateX < -60) {
-                    card.classList.add('swipe-delete-ready');
-                } else {
-                    card.classList.remove('swipe-delete-ready');
-                }
-            }
-        });
-        
-        card.addEventListener('mouseup', (e) => {
-            if (!currentPercentageSwipeCard || currentPercentageSwipeCard.dataset.index != i) return;
-            
-            const deltaX = e.clientX - percentageSwipeStartX;
-            
-            if (deltaX < -60) {
-                deletePercentageAthlete(i);
-            } else {
-                card.style.transform = 'translateX(0)';
-                card.classList.remove('swiping', 'swipe-delete-ready');
-                
-                // 如果沒有滑動，執行點擊選擇
-                if (Math.abs(deltaX) < 10) {
-                    handlePercentageCardClick(e, i);
-                }
-            }
-            
-            currentPercentageSwipeCard = null;
-        });
-        
-        card.addEventListener('mouseleave', () => {
-            if (currentPercentageSwipeCard && currentPercentageSwipeCard.dataset.index == i) {
-                card.style.transform = 'translateX(0)';
-                card.classList.remove('swiping', 'swipe-delete-ready');
-                currentPercentageSwipeCard = null;
-            }
-        });
+        // 點擊選擇選手
+        card.addEventListener('click', (e) => handlePercentageCardClick(e, i));
         
         card.innerHTML = `
-            <div class="percentage-multi-card-name" contenteditable="true" 
-                 onblur="updatePercentageAthleteName(${i}, this.innerText)"
-                 onclick="event.stopPropagation()">${a.name}</div>
+            <div class="percentage-multi-card-name" 
+                 ontouchstart="handlePercentageNamePressStart(event, ${i})"
+                 ontouchend="handlePercentageNamePressEnd()"
+                 ontouchcancel="handlePercentageNamePressEnd()"
+                 onmousedown="handlePercentageNamePressStart(event, ${i})"
+                 onmouseup="handlePercentageNamePressEnd()"
+                 onmouseleave="handlePercentageNamePressEnd()"
+                 title="長按可編輯姓名">${a.name}</div>
             <div class="percentage-multi-card-info">
                 <div class="percentage-multi-card-base">
                     <span>基時: ${a.vals[0]}:${a.vals[1]}.${a.vals[2]}</span>
@@ -3971,38 +3979,6 @@ function scrollSegmentToBottom(id){
 
 window.onload = () => { 
     loadSavedData();
-    
-    const listArea = document.getElementById('listArea');
-    if (listArea) {
-        new Sortable(listArea, { 
-            handle: '.drag-handle', 
-            animation: 150,
-            ghostClass: 'sortable-ghost',
-            chosenClass: 'sortable-chosen',
-            onStart: function(evt) {
-                isDragging = true;
-                evt.item.classList.add('dragging');
-            },
-            onEnd: function(evt) {
-                isDragging = false;
-                evt.item.classList.remove('dragging');
-                
-                const newOrder = [];
-                const cards = listArea.querySelectorAll('.course-card');
-                cards.forEach((card, index) => {
-                    const oldIndex = parseInt(card.dataset.index || index);
-                    if (items[oldIndex]) {
-                        newOrder.push(items[oldIndex]);
-                    }
-                });
-                items = newOrder;
-                
-                updateList();
-                autoSaveData();
-                showToast("項目順序已更新", "success");
-            }
-        });
-    }
     
     initPercentage();
     initSegment();
