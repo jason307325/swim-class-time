@@ -2319,12 +2319,10 @@ function loadSavedData() {
             
             if (data.percentageState) {
                 percentageState = data.percentageState;
-                if (percentageState.athletes) {
-                    percentageState.athletes.forEach((athlete, i) => {
-                        if (!athlete.name) {
-                            athlete.name = `選手 ${i+1}`;
-                        }
-                    });
+                // 確保至少有4位選手
+                while (percentageState.athletes.length < 4) {
+                    const i = percentageState.athletes.length + 1;
+                    percentageState.athletes.push({vals: ["00", "00", "00"], name: `選手 ${i}`});
                 }
             }
             
@@ -3485,6 +3483,7 @@ function percentagePress(k) {
         showToast("數值已歸零", "info");
     }
     else if(k === 'X') { 
+        // 修正：刪除時不改變焦點位置
         d[percentageState.focus]="00"; 
         percentageState.isNew=true; 
     }
@@ -3496,10 +3495,8 @@ function percentagePress(k) {
         else { 
             d[percentageState.focus] = (d[percentageState.focus].slice(-1)+k).slice(-2); 
             if(percentageState.focus === 1 && parseInt(d[1]) > 59) d[1] = "59";
-            if(percentageState.focus<2){
-                percentageState.focus++; 
-                percentageState.isNew=true;
-            } 
+            // 修正：輸入完兩位數後不自動跳到下一格
+            // 只有當用戶手動點擊下一格或按下確定鍵時才跳轉
         }
     }
     renderPercentageTable(); 
@@ -3577,8 +3574,9 @@ function deletePercentageAthlete(idx, event) {
         event.stopPropagation();
     }
     
-    if (percentageState.athletes.length <= 1) {
-        showToast("至少需要保留一位選手！", "error");
+    // 修正：至少保留4位選手
+    if (percentageState.athletes.length <= 4) {
+        showToast("至少需要保留四位選手！", "error");
         return;
     }
     
@@ -3841,10 +3839,8 @@ function initSegment() {
         if (currentField) {
             currentField.innerText = "00";
             segmentInputCount = 0;
-            if(segmentFieldIdx > 0){
-                segmentFieldIdx--;
-                updateSegmentFocus();
-            }
+            // 修正：刪除時不改變焦點位置
+            // 光標保持在當前輸入格
         }
     };
 
