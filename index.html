@@ -2067,6 +2067,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 // ===============================
 // 游泳教練全能工作台 v4.10
 // 新增循環次數功能，與計時鐘整合
+// 修正：第一個課程在跑完設定的循環次數時會卡住，無法往第二個課程繼續往下跑的問題
 // ===============================
 
 // 全域變數
@@ -3244,6 +3245,9 @@ function runTimer() {
     }, 1000);
 }
 
+// ===============================
+// 修正：處理步驟完成邏輯 - 修復循環次數完成後無法進入下一個項目的問題
+// ===============================
 function handleStepComplete() {
     const it = items[timerState.currentItemIndex];
     
@@ -3285,10 +3289,42 @@ function handleStepComplete() {
                 showToast(`開始第 ${timerState.currentCycle} 次循環`, "info");
             } else {
                 // 所有循環完成，進入下一個項目
-                timerState.cyclesCompleted = true;
                 nextItem();
             }
         }
+    }
+}
+
+// ===============================
+// 新增：nextItem 函數 - 處理進入下一個訓練項目
+// ===============================
+function nextItem() {
+    // 移到下一個項目
+    timerState.currentItemIndex++;
+    
+    // 檢查是否還有更多項目
+    if (timerState.currentItemIndex < items.length) {
+        // 重置狀態以開始新項目
+        timerState.currentSet = 1;
+        timerState.currentLap = 0;
+        timerState.currentLapInSet = 0;
+        timerState.isResting = false;
+        timerState.completedDistance = 0;
+        timerState.currentCycle = 1;
+        timerState.totalCycles = items[timerState.currentItemIndex].cycles || 1;
+        timerState.cyclesCompleted = false;
+        
+        // 更新距離顯示
+        const it = items[timerState.currentItemIndex];
+        timerState.distRemaining = it.dist;
+        
+        // 開始新項目的第一步
+        startStep();
+        showToast(`開始第 ${timerState.currentItemIndex + 1} 項訓練: ${it.title}`, "success");
+    } else {
+        // 所有項目完成
+        timerEnd();
+        showToast("所有訓練項目已完成！", "success");
     }
 }
 
