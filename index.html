@@ -4178,7 +4178,7 @@ function scrollSegmentToBottom(id){
 }
 
 // ===============================
-// 新增：分段紀錄匯出功能
+// 新增：分段紀錄匯出功能 - 修改為只複製文字不下載檔案
 // ===============================
 
 function exportSegmentData(mode) {
@@ -4254,18 +4254,9 @@ function exportSegmentData(mode) {
         exportText += `分段差異：${segmentFmt(slowestLap - fastestLap)}\n`;
     }
     
-    // 複製到剪貼簿
+    // 只複製到剪貼簿，不下載檔案
     navigator.clipboard.writeText(exportText).then(() => {
         showToast("分段紀錄已複製到剪貼簿！", "success");
-        
-        // 提供下載檔案選項
-        const blob = new Blob([exportText], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `分段紀錄_${modeName}_${new Date().toISOString().slice(0,10)}.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
         
     }).catch(err => {
         console.error('複製失敗: ', err);
