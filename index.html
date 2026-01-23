@@ -1238,6 +1238,22 @@ body {
     color: var(--neon-red); 
 }
 
+.segment-btn-export-footer { 
+    width: 100%; 
+    padding: 12px; 
+    background: transparent; 
+    color: var(--neon-blue); 
+    font-size: 12px; 
+    font-weight: bold; 
+    border-top: 1px dashed #333; 
+    margin-top: 0; 
+}
+
+.segment-btn-export-footer:active { 
+    color: #fff; 
+    background: rgba(0,162,255,0.1); 
+}
+
 .segment-diff-up { 
     color: var(--neon-red); 
 }
@@ -1958,6 +1974,8 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                             </thead>
                             <tbody id="segmentTbody"></tbody>
                         </table>
+                        <!-- 新增匯出按鈕 -->
+                        <button id="segmentBtnManualExport" class="segment-btn-export-footer" onclick="exportSegmentData('manual')">📤 匯出分段紀錄與秒差</button>
                         <button id="segmentBtnManualClear" class="segment-btn-clear-footer">✕ 清空所有手動紀錄</button>
                     </div>
                     <div class="segment-control-panel">
@@ -1984,6 +2002,8 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                             </thead>
                             <tbody id="segmentTbodySW"></tbody>
                         </table>
+                        <!-- 新增匯出按鈕 -->
+                        <button id="segmentBtnSWExport" class="segment-btn-export-footer" onclick="exportSegmentData('sw')">📤 匯出分段紀錄與秒差</button>
                         <button id="segmentBtnSWClear" class="segment-btn-clear-footer">✕ 重置碼錶並清空紀錄</button>
                     </div>
                     <div class="segment-control-panel">
@@ -4155,6 +4175,107 @@ function scrollSegmentToBottom(id){
             el.scrollTop = el.scrollHeight;
         }, 50); 
     }
+}
+
+// ===============================
+// 新增：分段紀錄匯出功能
+// ===============================
+
+function exportSegmentData(mode) {
+    // 顯示載入提示
+    const loadingHint = document.getElementById('segmentLoadingHint');
+    if (loadingHint) {
+        loadingHint.textContent = "匯出中...";
+        loadingHint.classList.add('show');
+    }
+    
+    let data = [];
+    let modeName = "";
+    
+    if (mode === 'manual') {
+        data = segmentManualData;
+        modeName = "手動輸入模式";
+    } else if (mode === 'sw') {
+        data = segmentSwData;
+        modeName = "碼錶計時模式";
+    }
+    
+    if (data.length === 0) {
+        showToast("沒有分段紀錄可以匯出！", "error");
+        if (loadingHint) loadingHint.classList.remove('show');
+        return;
+    }
+    
+    // 建立匯出文字
+    let exportText = `游泳教練全能工作台 - 分段紀錄匯出\n`;
+    exportText += `模式：${modeName}\n`;
+    exportText += `紀錄筆數：${data.length} 筆\n`;
+    exportText += `匯出時間：${new Date().toLocaleString('zh-TW')}\n\n`;
+    
+    exportText += "序號 | 總時間 | 分段時間 | 秒差\n";
+    exportText += "----|--------|----------|------\n";
+    
+    data.forEach((item, i) => {
+        const prevT = i > 0 ? data[i-1].total : 0;
+        const lap = item.total - prevT;
+        let diffStr = "-";
+        
+        if (i > 0) {
+            const pLap = (i === 1) ? data[0].total : data[i-1].total - data[i-2].total;
+            const diff = lap - pLap;
+            diffStr = (diff > 0 ? "+" : "") + diff.toFixed(2);
+        }
+        
+        exportText += `${(i+1).toString().padStart(2, ' ')} | ${segmentFmt(item.total)} | ${segmentFmt(lap)} | ${diffStr}\n`;
+    });
+    
+    // 計算統計數據
+    exportText += "\n=== 統計數據 ===\n";
+    
+    if (data.length >= 2) {
+        // 總時間範圍
+        const totalTimeRange = data[data.length-1].total - data[0].total;
+        exportText += `總時間範圍：${segmentFmt(totalTimeRange)}\n`;
+        
+        // 平均分段時間
+        const lapTimes = [];
+        for (let i = 0; i < data.length; i++) {
+            const prevT = i > 0 ? data[i-1].total : 0;
+            lapTimes.push(data[i].total - prevT);
+        }
+        const avgLapTime = lapTimes.reduce((a, b) => a + b, 0) / lapTimes.length;
+        exportText += `平均分段時間：${segmentFmt(avgLapTime)}\n`;
+        
+        // 最快和最慢分段
+        const fastestLap = Math.min(...lapTimes.slice(1)); // 排除第一個分段（通常較慢）
+        const slowestLap = Math.max(...lapTimes.slice(1));
+        exportText += `最快分段：${segmentFmt(fastestLap)}\n`;
+        exportText += `最慢分段：${segmentFmt(slowestLap)}\n`;
+        exportText += `分段差異：${segmentFmt(slowestLap - fastestLap)}\n`;
+    }
+    
+    // 複製到剪貼簿
+    navigator.clipboard.writeText(exportText).then(() => {
+        showToast("分段紀錄已複製到剪貼簿！", "success");
+        
+        // 提供下載檔案選項
+        const blob = new Blob([exportText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `分段紀錄_${modeName}_${new Date().toISOString().slice(0,10)}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+    }).catch(err => {
+        console.error('複製失敗: ', err);
+        showToast("複製失敗，請手動複製文字", "error");
+    }).finally(() => {
+        // 隱藏載入提示
+        if (loadingHint) {
+            loadingHint.classList.remove('show');
+        }
+    });
 }
 
 // ===============================
