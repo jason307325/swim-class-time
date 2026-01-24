@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>游泳教練全能工作台 v4.10</title>
-  <link rel="manifest" href="manifest.json">
+<title>游泳教練全能工作台 v4.11</title>
+<link rel="manifest" href="manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
 :root {
@@ -921,20 +921,22 @@ body {
     background: rgba(255, 59, 48, 0.4);
 }
 
-/* 統一鍵盤樣式 */
+/* 統一鍵盤樣式 - 調整高度與課程規劃一致 */
 .unified-keyboard {
     flex-shrink: 0; 
     display: grid; 
     grid-template-columns: repeat(3, 1fr); 
     gap: 5px;
-    padding: 5px 8px calc(5px + env(safe-area-inset-bottom));
+    padding: 8px 8px calc(10px + env(safe-area-inset-bottom));
     background: #000; 
     border-top: 1px solid #333;
+    min-height: 240px; /* 與課程規劃鍵盤高度一致 */
+    align-content: start;
 }
 
 .unified-keyboard button { 
-    padding: 10px 0;
-    font-size: 18px;
+    padding: 16px 0;
+    font-size: 22px;
     font-weight: 800; 
     color: #fff; 
     background: #1a1f26; 
@@ -943,6 +945,10 @@ body {
     cursor: pointer; 
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     touch-action: manipulation;
+    height: 60px; /* 固定按鈕高度 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .unified-keyboard button:active { 
@@ -951,7 +957,7 @@ body {
 }
 
 .unified-keyboard .key-cmd {
-    font-size: 13px !important;
+    font-size: 16px !important;
 }
 
 .key-clear { 
@@ -1509,6 +1515,18 @@ body {
     .percentage-multi-header button {
         flex: 1;
     }
+
+    /* 橫屏模式鍵盤調整 */
+    .unified-keyboard {
+        min-height: 200px;
+        padding: 5px 8px calc(5px + env(safe-area-inset-bottom));
+    }
+    
+    .unified-keyboard button {
+        padding: 12px 0;
+        height: 50px;
+        font-size: 20px;
+    }
 }
 
 /* 新增橫屏導航列 */
@@ -1639,6 +1657,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 @media (orientation: portrait) and (max-height: 700px) {
     .unified-keyboard {
         padding-bottom: calc(10px + env(safe-area-inset-bottom));
+        min-height: 220px;
     }
     
     .course-card {
@@ -1651,8 +1670,9 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
     }
     
     .unified-keyboard button {
-        padding: 8px 0;
-        font-size: 16px;
+        padding: 14px 0;
+        height: 55px;
+        font-size: 20px;
     }
 }
 
@@ -1752,6 +1772,39 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
         min-height: 72px;
     }
 }
+
+/* 分段計時器標題輸入格樣式 */
+.segment-title-input-container {
+    padding: 0 10px 10px 10px;
+    border-bottom: 1px solid #222;
+    margin-bottom: 10px;
+}
+
+.segment-title-input {
+    width: 100%;
+    height: 40px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #444;
+    border-radius: 8px;
+    color: #fff;
+    padding: 0 15px;
+    font-size: 14px;
+    font-weight: normal;
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+.segment-title-input::placeholder {
+    color: #888;
+    font-size: 12px;
+}
+
+.segment-title-input:focus {
+    outline: none;
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 10px rgba(0,162,255,0.3);
+}
 </style>
 </head>
 <body oncontextmenu="return false;">
@@ -1815,7 +1868,7 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
         </div>
 
         <div class="plan-panel">
-          <input type="text" id="courseNote" class="text-input-box" placeholder="輸入訓練項目(例如: FreeStyle)...">
+          <input type="text" id="courseNote" class="text-input-box" placeholder="輸入訓練項目(例如: FreeStyle)..." style="-webkit-user-select: text; user-select: text; -webkit-touch-callout: default;">
           <div class="row">
             <div style="flex:1"><div class="glass-box" id="box-lapMin" onclick="setFocus('lapMin')"><input id="lapMin" placeholder="分" readonly></div></div>
             <div style="flex:1"><div class="glass-box" id="box-lapSec" onclick="setFocus('lapSec')"><input id="lapSec" placeholder="秒" readonly></div></div>
@@ -1968,6 +2021,10 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
                 <!-- 手動輸入模式 -->
                 <div id="segment-page-manual" class="segment-page active">
                     <div class="segment-table-container" id="segmentManualScrollArea">
+                        <!-- 新增：分段紀錄標題輸入格 -->
+                        <div class="segment-title-input-container">
+                            <input type="text" id="segmentManualTitle" class="segment-title-input" placeholder="輸入分段紀錄標題（例如：比賽項目、選手姓名等）可留空">
+                        </div>
                         <table>
                             <thead>
                                 <tr><th>段</th><th>總時間</th><th>分段</th><th>秒差</th><th></th></tr>
@@ -2085,9 +2142,11 @@ button, .timer-btn, .function-btn, .btn-slim, .card-btn, .confirm-btn {
 
 <script>
 // ===============================
-// 游泳教練全能工作台 v4.10
-// 新增循環次數功能，與計時鐘整合
-// 修正：第一個課程在跑完設定的循環次數時會卡住，無法往第二個課程繼續往下跑的問題
+// 游泳教練全能工作台 v4.11
+// 優化功能：
+// 1. 分段計時器中增加標題輸入格
+// 2. 統一虛擬鍵盤高度
+// 3. 保持畫面恆亮
 // ===============================
 
 // 全域變數
@@ -2134,6 +2193,9 @@ let segmentManualData = [], segmentSwData = [];
 let segmentFields = ["segment-m_min", "segment-m_sec", "segment-m_ms"];
 let segmentFieldIdx = 0, segmentInputCount = 0;
 let segmentTimerState = "idling", segmentStartT = 0, segmentElapsedT = 0, segmentRaf = null;
+
+// 新增：分段紀錄標題
+let segmentManualTitle = "";
 
 // 課程卡滑動刪除狀態
 let swipeStartX = 0;
@@ -2273,7 +2335,7 @@ function playBeep(type) {
     }
 }
 
-// 螢幕喚醒鎖系統
+// 螢幕喚醒鎖系統 - 保持畫面恆亮
 async function requestWakeLock() {
     if ('wakeLock' in navigator) {
         try {
@@ -2284,12 +2346,21 @@ async function requestWakeLock() {
             wakeLock = await navigator.wakeLock.request('screen');
             console.log('螢幕保持亮起已啟用');
             
+            // 監聽釋放事件
             wakeLock.addEventListener('release', () => {
                 console.log('螢幕喚醒鎖已釋放');
                 wakeLock = null;
                 
+                // 如果計時器還在運行，重新請求Wake Lock
                 if (timerState.running && !timerState.paused) {
                     setTimeout(requestWakeLock, 100);
+                }
+            });
+            
+            // 當頁面可見性改變時重新請求
+            document.addEventListener('visibilitychange', async () => {
+                if (document.visibilityState === 'visible' && wakeLock === null && timerState.running && !timerState.paused) {
+                    await requestWakeLock();
                 }
             });
             
@@ -2328,6 +2399,7 @@ function autoSaveData() {
             percentageState: percentageState,
             segmentManualData: segmentManualData,
             segmentSwData: segmentSwData,
+            segmentManualTitle: segmentManualTitle,
             soundEnabled: soundEnabled,
             lastUpdated: new Date().toISOString()
         };
@@ -2361,6 +2433,14 @@ function loadSavedData() {
             
             if (data.segmentSwData) {
                 segmentSwData = data.segmentSwData;
+            }
+            
+            if (data.segmentManualTitle) {
+                segmentManualTitle = data.segmentManualTitle;
+                const titleInput = document.getElementById('segmentManualTitle');
+                if (titleInput) {
+                    titleInput.value = segmentManualTitle;
+                }
             }
             
             if (data.soundEnabled !== undefined) {
@@ -2436,6 +2516,7 @@ function switchTab(t) {
         clearInterval(timerState.intervalId);
     }
     
+    // 只在離開計時器頁面時釋放Wake Lock
     if (t !== 'clock') {
         releaseWakeLock();
     }
@@ -2465,6 +2546,15 @@ function switchTab(t) {
         } else {
             soundBtn.style.display = 'none';
         }
+    }
+    
+    // 如果切換到計時器頁面且計時器正在運行，請求Wake Lock
+    if (t === 'clock' && timerState.running && !timerState.paused) {
+        requestWakeLock().then(success => {
+            if (success) {
+                console.log('回到計時器頁面，重新啟用螢幕保持亮起');
+            }
+        });
     }
     
     if (t !== 'clock') {
@@ -4178,7 +4268,7 @@ function scrollSegmentToBottom(id){
 }
 
 // ===============================
-// 新增：分段紀錄匯出功能 - 修改為只複製文字不下載檔案
+// 修改：分段紀錄匯出功能 - 加入標題輸入格內容
 // ===============================
 
 function exportSegmentData(mode) {
@@ -4206,8 +4296,22 @@ function exportSegmentData(mode) {
         return;
     }
     
-    // 建立匯出文字
-    let exportText = `游泳教練全能工作台 - 分段紀錄匯出\n`;
+    // 建立匯出文字 - 加入標題
+    let exportText = "";
+    
+    // 如果是手動輸入模式，加入標題
+    if (mode === 'manual') {
+        const titleInput = document.getElementById('segmentManualTitle');
+        const title = titleInput ? titleInput.value.trim() : '';
+        if (title) {
+            exportText += `分段紀錄標題：${title}\n`;
+        }
+        // 保存標題
+        segmentManualTitle = title;
+        autoSaveData();
+    }
+    
+    exportText += `游泳教練全能工作台 - 分段紀錄匯出\n`;
     exportText += `模式：${modeName}\n`;
     exportText += `紀錄筆數：${data.length} 筆\n`;
     exportText += `匯出時間：${new Date().toLocaleString('zh-TW')}\n\n`;
@@ -4254,7 +4358,7 @@ function exportSegmentData(mode) {
         exportText += `分段差異：${segmentFmt(slowestLap - fastestLap)}\n`;
     }
     
-    // 只複製到剪貼簿，不下載檔案
+    // 複製到剪貼簿
     navigator.clipboard.writeText(exportText).then(() => {
         showToast("分段紀錄已複製到剪貼簿！", "success");
         
@@ -4280,6 +4384,26 @@ window.onload = () => {
     initSegment();
     checkOrientation();
     
+    // 監聽分段標題輸入變化
+    const segmentTitleInput = document.getElementById('segmentManualTitle');
+    if (segmentTitleInput) {
+        segmentTitleInput.addEventListener('input', () => {
+            segmentManualTitle = segmentTitleInput.value;
+            autoSaveData();
+        });
+        
+        // 設置正確的屬性以彈出原生鍵盤
+        segmentTitleInput.setAttribute('inputmode', 'text');
+        segmentTitleInput.setAttribute('enterkeyhint', 'done');
+    }
+    
+    // 監聽課程規劃輸入格以彈出原生鍵盤
+    const courseNoteInput = document.getElementById('courseNote');
+    if (courseNoteInput) {
+        courseNoteInput.setAttribute('inputmode', 'text');
+        courseNoteInput.setAttribute('enterkeyhint', 'done');
+    }
+    
     window.addEventListener('resize', () => {
         checkOrientation();
         
@@ -4298,19 +4422,24 @@ window.onload = () => {
         if (document.visibilityState === 'visible' && audioContext && audioContext.state === 'suspended') {
             audioContext.resume();
         }
+        
+        // 當頁面變為可見時，如果計時器正在運行，重新請求Wake Lock
+        if (document.visibilityState === 'visible' && timerState.running && !timerState.paused) {
+            requestWakeLock();
+        }
     });
     
     initAudioContext();
     switchTab('planner');
     
     setTimeout(() => {
-        showToast('游泳教練全能工作台 v4.10 已就緒', 'success', 2000);
+        showToast('游泳教練全能工作台 v4.11 已就緒', 'success', 2000);
     }, 500);
 };
 
 window.oncontextmenu = e => { e.preventDefault(); return false; };
 </script>
-  <script>
+<script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
